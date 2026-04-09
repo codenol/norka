@@ -60,7 +60,7 @@ function copyCode() {
           class="rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
           @click="toggleFormat"
         >
-          {{ jsxFormat === 'openpencil' ? 'OpenPencil' : 'Tailwind' }}
+          {{ jsxFormat === 'openpencil' ? 'Береста' : 'Tailwind' }}
         </button>
       </div>
       <button

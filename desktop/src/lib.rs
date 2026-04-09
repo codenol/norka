@@ -242,10 +242,10 @@ pub fn run() {
         })
         .setup(|app| {
             #[cfg(target_os = "macos")]
-            let app_menu = SubmenuBuilder::new(app, "OpenPencil")
+            let app_menu = SubmenuBuilder::new(app, "Береста")
                 .item(&PredefinedMenuItem::about(
                     app,
-                    Some("About OpenPencil"),
+                    Some("About Береста"),
                     None,
                 )?)
                 .separator()
@@ -458,7 +458,7 @@ pub fn run() {
                     .separator()
                     .item(&PredefinedMenuItem::about(
                         app,
-                        Some("About OpenPencil"),
+                        Some("About Береста"),
                         None,
                     )?);
             }

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "OpenPencil",
+  "productName": "Береста",
   "version": "0.11.6",
-  "identifier": "net.dannote.open-pencil",
+  "identifier": "io.beresta.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "OpenPencil",
+        "title": "Береста",
         "width": 1280,
         "height": 800
       }

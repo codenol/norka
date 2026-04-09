@@ -6,13 +6,7 @@ import type { Locale } from './locale'
 import type { ComponentsJSON } from '@nanostores/i18n'
 
 const localeLoaders: Record<Exclude<Locale, 'en'>, () => Promise<{ default: ComponentsJSON }>> = {
-  de: () => import('../locales/de.json'),
-  es: () => import('../locales/es.json'),
-  fr: () => import('../locales/fr.json'),
-  it: () => import('../locales/it.json'),
-  pl: () => import('../locales/pl.json'),
-  ru: () => import('../locales/ru.json'),
-  'zh-CN': () => import('../locales/zh-CN.json')
+  ru: () => import('../locales/ru.json')
 }
 
 export const i18n = createI18n<Locale, 'en'>(locale, {
