@@ -11,7 +11,7 @@
  */
 
 import { shallowRef, computed, type ComputedRef } from 'vue'
-import { readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@open-pencil/core'
+import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@open-pencil/core'
 
 import type { LibraryManifest, SceneGraph } from '@open-pencil/core'
 
@@ -222,6 +222,76 @@ function importStyleToDoc(
 }
 
 /**
+ * Add a library from a raw ArrayBuffer (e.g. fetched from a URL).
+ * Returns the new library id.
+ */
+async function addLibraryFromBuffer(name: string, buf: ArrayBuffer): Promise<string> {
+  _loading.value = true
+  _error.value = null
+  try {
+    const graph = await parseFigFile(buf)
+    const id = crypto.randomUUID()
+    const manifest = LibraryRegistry.buildManifest(id, name, graph)
+    const saved = saveLibraryData(id, buf)
+    if (!saved) {
+      _error.value = 'Файл слишком большой для хранения в браузере'
+      return ''
+    }
+    libraryRegistry.register(manifest, graph)
+    const updated = [..._manifests.value, manifest]
+    _manifests.value = updated
+    saveManifests(updated)
+    return id
+  } catch (err) {
+    _error.value = err instanceof Error ? err.message : String(err)
+    console.error('[library] Failed to add library from buffer:', err)
+    return ''
+  } finally {
+    _loading.value = false
+  }
+}
+
+/**
+ * Replace an existing library's data with a new buffer.
+ * Updates the manifest counts and re-registers in the registry.
+ */
+async function replaceLibrary(id: string, buf: ArrayBuffer): Promise<void> {
+  _loading.value = true
+  _error.value = null
+  try {
+    const existing = _manifests.value.find((m) => m.id === id)
+    if (!existing) return
+    const graph = await parseFigFile(buf)
+    const newManifest = LibraryRegistry.buildManifest(id, existing.name, graph)
+    libraryRegistry.unregister(id)
+    libraryRegistry.register(newManifest, graph)
+    saveLibraryData(id, buf)
+    _manifests.value = _manifests.value.map((m) => (m.id === id ? newManifest : m))
+    saveManifests(_manifests.value)
+  } catch (err) {
+    _error.value = err instanceof Error ? err.message : String(err)
+    console.error('[library] Failed to replace library:', err)
+  } finally {
+    _loading.value = false
+  }
+}
+
+/**
+ * Export a library's current graph as a .fig buffer.
+ * Used for publishing.
+ */
+async function exportLibraryBuffer(id: string): Promise<Uint8Array | null> {
+  const graph = libraryRegistry.getGraph(id)
+  if (!graph) return null
+  try {
+    return await exportFigFile(graph)
+  } catch (err) {
+    console.error('[library] Failed to export library buffer:', err)
+    return null
+  }
+}
+
+/**
  * Load all libraries from localStorage and register them.
  * Call this once on app startup.
  */
@@ -266,6 +336,9 @@ export interface LibraryStore {
   error: ReturnType<typeof shallowRef<string | null>>
   libraryCount: ComputedRef<number>
   addLibraryFromFile: (file: File) => Promise<void>
+  addLibraryFromBuffer: (name: string, buf: ArrayBuffer) => Promise<string>
+  replaceLibrary: (id: string, buf: ArrayBuffer) => Promise<void>
+  exportLibraryBuffer: (id: string) => Promise<Uint8Array | null>
   removeLibrary: (id: string) => void
   enableForGraph: (graph: SceneGraph) => void
   insertComponent: (
@@ -287,6 +360,9 @@ const store: LibraryStore = {
   error: _error,
   libraryCount,
   addLibraryFromFile,
+  addLibraryFromBuffer,
+  replaceLibrary,
+  exportLibraryBuffer,
   removeLibrary,
   enableForGraph,
   insertComponent,

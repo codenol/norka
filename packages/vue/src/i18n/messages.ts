@@ -289,5 +289,36 @@ export const dialogMessages = i18n('dialogs', {
   noLibraryComponents: 'No components in libraries',
   noLibraryVariables: 'No variables in libraries',
   noLibraryStyles: 'No styles in libraries',
-  libraryLoadError: 'Failed to load library'
+  libraryLoadError: 'Failed to load library',
+
+  libTabMine: 'My Libraries',
+  libTabUrl: 'By URL',
+  libTabPublish: 'Publish',
+
+  libUrlPlaceholder: 'Paste a direct download URL (.fig)…',
+  libUrlCheck: 'Check',
+  libUrlAdd: 'Add',
+  libUrlEmpty: 'No URL-based libraries yet. Add one above.',
+  libUpdateAvailable: 'Update available',
+  libDiffAdded: 'added',
+  libDiffRemoved: 'removed',
+  libUpdateAll: 'Update all',
+  libUpdateDismiss: 'Dismiss',
+  libCheckUpdates: 'Check for updates',
+  libChecking: 'Checking…',
+
+  libPublishHosting: 'Hosting',
+  libPublishTokenPlaceholder: 'GitHub Personal Access Token…',
+  libPublishRepoPlaceholder: 'Repository name (e.g. beresta-libraries)',
+  libPublishTokenHint: 'Token requires repo scope. Stored locally only.',
+  libPublishConnect: 'Connect',
+  libPublishConnecting: 'Connecting…',
+  libPublishChange: 'Change',
+  libPublishDisconnect: 'Disconnect',
+  libPublishGetToken: 'Create a GitHub token →',
+  libPublishSelectLibrary: 'Library to publish',
+  libPublish: 'Publish to GitHub',
+  libPublishing: 'Publishing…',
+  libPublishCopyUrl: 'Copy link',
+  libPublishShareHint: 'Share this link with teammates so they can subscribe.'
 })

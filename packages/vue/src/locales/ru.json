@@ -267,6 +267,37 @@
     "noLibraryComponents": "Нет компонентов в библиотеках",
     "noLibraryVariables": "Нет переменных в библиотеках",
     "noLibraryStyles": "Нет стилей в библиотеках",
-    "libraryLoadError": "Не удалось загрузить библиотеку"
+    "libraryLoadError": "Не удалось загрузить библиотеку",
+
+    "libTabMine": "Мои",
+    "libTabUrl": "По ссылке",
+    "libTabPublish": "Публикация",
+
+    "libUrlPlaceholder": "Вставьте прямую ссылку на файл (.fig)…",
+    "libUrlCheck": "Проверить",
+    "libUrlAdd": "Добавить",
+    "libUrlEmpty": "Нет библиотек по ссылке. Добавьте первую выше.",
+    "libUpdateAvailable": "Обновление",
+    "libDiffAdded": "добавлено",
+    "libDiffRemoved": "удалено",
+    "libUpdateAll": "Обновить всё",
+    "libUpdateDismiss": "Пропустить",
+    "libCheckUpdates": "Проверить обновления",
+    "libChecking": "Проверяю…",
+
+    "libPublishHosting": "Хостинг",
+    "libPublishTokenPlaceholder": "GitHub Personal Access Token…",
+    "libPublishRepoPlaceholder": "Название репозитория (например, beresta-libraries)",
+    "libPublishTokenHint": "Токен нужен с правом repo. Хранится только локально.",
+    "libPublishConnect": "Подключить",
+    "libPublishConnecting": "Подключаю…",
+    "libPublishChange": "Изменить",
+    "libPublishDisconnect": "Отключить",
+    "libPublishGetToken": "Создать GitHub-токен →",
+    "libPublishSelectLibrary": "Библиотека для публикации",
+    "libPublish": "Опубликовать на GitHub",
+    "libPublishing": "Публикую…",
+    "libPublishCopyUrl": "Скопировать ссылку",
+    "libPublishShareHint": "Поделитесь ссылкой с командой — они смогут подписаться на обновления."
   }
 }
