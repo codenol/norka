@@ -7,9 +7,11 @@ import { provideToolbar } from './context'
 
 import type { EditorToolDef, Tool } from '@beresta/core/editor'
 
-const { tools = EDITOR_TOOLS } = defineProps<{
+const props = defineProps<{
   tools?: EditorToolDef[]
 }>()
+
+const tools = computed(() => props.tools ?? EDITOR_TOOLS)
 
 const editor = useEditor()
 const activeTool = computed(() => editor.state.activeTool)
@@ -30,7 +32,7 @@ function closeFlyout() {
 
 provideToolbar({
   editor,
-  tools,
+  tools: tools.value,
   activeTool,
   expandedFlyout,
   setTool,
@@ -42,7 +44,7 @@ provideToolbar({
 <template>
   <slot
     :tools="tools"
-    :active-tool="activeTool"
+    :active-tool="activeTool.value"
     :expanded-flyout="expandedFlyout"
     :set-tool="setTool"
     :toggle-flyout="toggleFlyout"
