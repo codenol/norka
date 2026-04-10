@@ -5,7 +5,7 @@ description: Créez des designs avec JSX — la syntaxe que les LLMs connaissent
 
 # Moteur de rendu JSX
 
-OpenPencil utilise JSX comme langage de création de design. Les LLMs ont vu des millions de composants React — décrire une mise en page avec `<Frame><Text>` est naturel, aucun entraînement spécial nécessaire. Chaque token compte quand un agent IA effectue des dizaines d'opérations, et JSX est la représentation déclarative la plus compacte.
+Beresta utilise JSX comme langage de création de design. Les LLMs ont vu des millions de composants React — décrire une mise en page avec `<Frame><Text>` est naturel, aucun entraînement spécial nécessaire. Chaque token compte quand un agent IA effectue des dizaines d'opérations, et JSX est la représentation déclarative la plus compacte.
 
 JSX est aussi diffable. Quand une IA modifie un design, le changement est un diff JSX — lisible, vérifiable, versionnable.
 
@@ -95,8 +95,8 @@ Props raccourcies compactes inspirées des conventions de nommage de Tailwind.
 Convertissez des designs existants en JSX :
 
 ```sh
-open-pencil export design.fig -f jsx                   # Format OpenPencil
-open-pencil export design.fig -f jsx --style tailwind  # Classes Tailwind
+beresta export design.fig -f jsx                   # Format Beresta
+beresta export design.fig -f jsx --style tailwind  # Classes Tailwind
 ```
 
 L'aller-retour fonctionne : exportez un design en JSX, modifiez le code, rendez-le à nouveau.

@@ -6,7 +6,7 @@ import AppSelect from './ui/AppSelect.vue'
 
 import { useEditorStore } from '@/stores/editor'
 
-import type { Fill, ImageScaleMode } from '@open-pencil/core'
+import type { Fill, ImageScaleMode } from '@beresta/core'
 
 const IMAGE_SCALE_MODES: { value: ImageScaleMode; label: string }[] = [
   { value: 'FILL', label: 'Fill' },

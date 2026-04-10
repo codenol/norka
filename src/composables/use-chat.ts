@@ -19,12 +19,12 @@ import {
   IS_TAURI,
   setPexelsApiKey,
   setUnsplashAccessKey
-} from '@open-pencil/core'
+} from '@beresta/core'
 
-import type { ACPAgentID, AIProviderID } from '@open-pencil/core'
+import type { ACPAgentID, AIProviderID } from '@beresta/core'
 import type { LanguageModel, UIMessage } from 'ai'
 
-const STORAGE_PREFIX = 'open-pencil:'
+const STORAGE_PREFIX = 'beresta:'
 const LEGACY_KEY_STORAGE = `${STORAGE_PREFIX}openrouter-api-key`
 
 function keyStorageKey(id: string) {
@@ -133,7 +133,7 @@ function createModel(): LanguageModel {
         apiKey: key,
         headers: {
           'X-OpenRouter-Title': 'Береста',
-          'HTTP-Referer': 'https://github.com/open-pencil/open-pencil'
+          'HTTP-Referer': 'https://github.com/beresta/open-pencil'
         }
       })
       return openrouter(effectiveModelID)

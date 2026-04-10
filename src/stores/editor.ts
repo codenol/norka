@@ -24,7 +24,7 @@ import {
   SceneGraph,
   splitSegmentAt,
   prefetchFigmaSchema
-} from '@open-pencil/core'
+} from '@beresta/core'
 import { useLibraryStore } from '@/stores/library'
 
 import type {
@@ -41,11 +41,11 @@ import type {
   VectorSegment,
   VectorVertex,
   Tool
-} from '@open-pencil/core'
+} from '@beresta/core'
 
-export type { Tool } from '@open-pencil/core'
-export type { EditorToolDef as ToolDef } from '@open-pencil/core'
-export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core'
+export type { Tool } from '@beresta/core'
+export type { EditorToolDef as ToolDef } from '@beresta/core'
+export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@beresta/core'
 
 export function createEditorStore(initialGraph?: SceneGraph) {
   const graph = initialGraph ?? new SceneGraph()
@@ -1105,7 +1105,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
   async function exportTarget(
     target: ExportRequest['target'],
     formatId: string,
-    options?: { scale?: number; quality?: number; jsxFormat?: 'openpencil' | 'tailwind' }
+    options?: { scale?: number; quality?: number; jsxFormat?: 'beresta' | 'tailwind' }
   ) {
     const format = io.getFormat(formatId)
     if (!format) throw new Error(`Unknown export format: ${formatId}`)
@@ -1118,7 +1118,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
         quality: options?.quality
       }
     } else if (formatId === 'jsx') {
-      exportOptions = { format: options?.jsxFormat ?? 'openpencil' }
+      exportOptions = { format: options?.jsxFormat ?? 'beresta' }
     }
 
     const result = await io.exportContent(

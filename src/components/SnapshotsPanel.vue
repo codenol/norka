@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import { useEditorStore } from '@/stores/editor'
 import { useSnapshotStore, formatTimestamp } from '@/stores/snapshots'

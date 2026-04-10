@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import { useLibraryStore } from '@/stores/library'
 import { useLibraryGitHubStore } from '@/stores/library-github'

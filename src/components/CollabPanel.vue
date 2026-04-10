@@ -4,13 +4,13 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent } from 'reka-ui'
 
-import { colorToCSS } from '@open-pencil/core'
+import { colorToCSS } from '@beresta/core'
 import Tip from '@/components/ui/Tip.vue'
 import { usePopoverUI } from '@/components/ui/popover'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/composables/use-collab'
 import { toast } from '@/utils/toast'
 import { initials } from '@/utils/text'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 const route = useRoute()
 const router = useRouter()

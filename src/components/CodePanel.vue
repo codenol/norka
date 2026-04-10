@@ -5,14 +5,14 @@ import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewpor
 import { useClipboard } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
-import { selectionToJSX, selectionToCode } from '@open-pencil/core'
-import { useI18n, useSceneComputed } from '@open-pencil/vue'
+import { selectionToJSX, selectionToCode } from '@beresta/core'
+import { useI18n, useSceneComputed } from '@beresta/vue'
 
 import { useEditorStore } from '@/stores/editor'
 import { useCodeConnectStore } from '@/stores/code-connect'
 import CodeConnectDialog from '@/components/CodeConnectDialog.vue'
 
-import type { JSXFormat, CodeFramework } from '@open-pencil/core'
+import type { JSXFormat, CodeFramework } from '@beresta/core'
 
 const store = useEditorStore()
 const codeConnect = useCodeConnectStore()
@@ -21,13 +21,13 @@ const { dialogs } = useI18n()
 
 // ── Format / Framework toggles ────────────────────────────────────────────────
 
-const jsxFormat = ref<JSXFormat>('openpencil')
+const jsxFormat = ref<JSXFormat>('beresta')
 const codeFramework = ref<CodeFramework>('react-tsx')
 const useCodeConnect = ref(true)  // use Code Connect map when available
 const codeConnectOpen = ref(false)
 
 function toggleFormat() {
-  jsxFormat.value = jsxFormat.value === 'openpencil' ? 'tailwind' : 'openpencil'
+  jsxFormat.value = jsxFormat.value === 'beresta' ? 'tailwind' : 'beresta'
 }
 
 const frameworkLabel = computed(() => {
@@ -126,7 +126,7 @@ function copyFull() {
           class="rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
           @click="toggleFormat"
         >
-          {{ jsxFormat === 'openpencil' ? 'Береста' : 'Tailwind' }}
+          {{ jsxFormat === 'beresta' ? 'Береста' : 'Tailwind' }}
         </button>
 
         <!-- Framework selector (when Code Connect is active) -->

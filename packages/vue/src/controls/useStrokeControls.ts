@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useI18n } from '@open-pencil/vue/i18n'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useI18n } from '@beresta/vue/i18n'
 
-import type { SceneNode, Stroke } from '@open-pencil/core'
+import type { SceneNode, Stroke } from '@beresta/core'
 
 type StrokeSides = 'ALL' | 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'CUSTOM'
 

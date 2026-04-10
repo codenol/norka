@@ -4,8 +4,8 @@ export type {
   EditorOptions,
   Tool,
   EditorToolDef
-} from '@open-pencil/core/editor'
-export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core/editor'
+} from '@beresta/core/editor'
+export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@beresta/core/editor'
 
 /**
  * Public editor-context API for the Vue SDK.

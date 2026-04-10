@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 
-import { FONT_WEIGHT_NAMES, weightToStyle } from '@open-pencil/core'
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
-import { useNodeFontStatus } from '@open-pencil/vue/shared/useFontStatus'
+import { FONT_WEIGHT_NAMES, weightToStyle } from '@beresta/core'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useNodeFontStatus } from '@beresta/vue/shared/useFontStatus'
 
-import type { SceneNode, TextDecoration } from '@open-pencil/core'
+import type { SceneNode, TextDecoration } from '@beresta/core'
 
 type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
 type TextDirection = SceneNode['textDirection']

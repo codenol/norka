@@ -5,7 +5,7 @@ import {
   parseFigFile,
   initCodec,
   SceneGraph,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 beforeAll(async () => {
   await initCodec()

@@ -10,7 +10,7 @@
     "order": "asc",
     "ignoreCase": true,
     "newlinesBetween": true,
-    "internalPattern": ["@open-pencil/", "@/"],
+    "internalPattern": ["@beresta/", "@/"],
     "groups": [
       "builtin",
       "external",

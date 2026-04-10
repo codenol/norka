@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import Tip from '@/components/ui/Tip.vue'
 import { useSectionUI } from '@/components/ui/section'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 import { useLibraryStore } from '@/stores/library'
 
 const emit = defineEmits<{ openPanel: []; openDialog: [] }>()

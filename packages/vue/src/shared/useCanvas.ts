@@ -1,11 +1,11 @@
 import { useRafFn, useResizeObserver } from '@vueuse/core'
 import { onMounted, onScopeDispose, type Ref } from 'vue'
 
-import { getCanvasKit, SkiaRenderer } from '@open-pencil/core'
+import { getCanvasKit, SkiaRenderer } from '@beresta/core'
 
 import { useViewportKind } from '../viewport/useViewportKind'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@beresta/core/editor'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 /**
@@ -32,7 +32,7 @@ export interface UseCanvasOptions {
 }
 
 /**
- * Connects an OpenPencil editor to a real canvas element using CanvasKit.
+ * Connects an Beresta editor to a real canvas element using CanvasKit.
  *
  * This composable owns renderer creation, surface recreation on resize,
  * render scheduling, and renderer-backed hit testing helpers used by higher-

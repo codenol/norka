@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, FigmaAPI, SceneGraph, initCodec, parseFigFile } from '@open-pencil/core'
+import { exportFigFile, FigmaAPI, SceneGraph, initCodec, parseFigFile } from '@beresta/core'
 
 describe('plugin data', () => {
   test('figma proxy supports private and shared plugin data methods', () => {

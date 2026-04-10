@@ -2,9 +2,9 @@ import { computed } from 'vue'
 
 import { openFileDialog } from '@/composables/use-menu'
 import { useEditorStore } from '@/stores/editor'
-import { useEditorCommands, useI18n } from '@open-pencil/vue'
+import { useEditorCommands, useI18n } from '@beresta/vue'
 
-import type { MenuEntry } from '@open-pencil/vue'
+import type { MenuEntry } from '@beresta/vue'
 
 export interface AppMenuGroup {
   label: string

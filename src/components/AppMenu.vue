@@ -18,7 +18,7 @@ import IconChevronRight from '~icons/lucide/chevron-right'
 
 import { computed } from 'vue'
 
-import { useI18n, useInlineRename } from '@open-pencil/vue'
+import { useI18n, useInlineRename } from '@beresta/vue'
 import { useMenuUI } from '@/components/ui/menu'
 import { IS_TAURI } from '@/constants'
 import { useAppMenu } from '@/composables/use-app-menu'

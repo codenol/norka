@@ -1,11 +1,11 @@
 ---
 title: Composables
-description: Core composable APIs in @open-pencil/vue.
+description: Core composable APIs in @beresta/vue.
 ---
 
 # Composables
 
-These are the main composables most `@open-pencil/vue` consumers will use.
+These are the main composables most `@beresta/vue` consumers will use.
 
 ## Context and canvas
 

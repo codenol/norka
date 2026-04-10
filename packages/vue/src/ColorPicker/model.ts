@@ -1,8 +1,8 @@
 import { convertToHsb, convertToHsl, convertToRgb } from 'reka-ui'
 
-import { colorToCSS, okhclToRGBA, rgba255ToColor } from '@open-pencil/core'
+import { colorToCSS, okhclToRGBA, rgba255ToColor } from '@beresta/core'
 
-import type { Color, OkHCLColor } from '@open-pencil/core'
+import type { Color, OkHCLColor } from '@beresta/core'
 import type { Color as RekaColor, HSBColor, HSLColor, RGBColor } from 'reka-ui'
 
 export interface ColorPickerModel {

@@ -14,7 +14,7 @@ import {
 } from 'reka-ui'
 import { FlexRender } from '@tanstack/vue-table'
 
-import { useI18n, useVariablesEditor } from '@open-pencil/vue'
+import { useI18n, useVariablesEditor } from '@beresta/vue'
 
 import IconHash from '~icons/lucide/hash'
 import IconPalette from '~icons/lucide/palette'

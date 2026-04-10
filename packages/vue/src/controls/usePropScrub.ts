@@ -1,4 +1,4 @@
-import type { Editor, SceneNode } from '@open-pencil/core'
+import type { Editor, SceneNode } from '@beresta/core'
 
 export function usePropScrub(editor: Editor) {
   const previousValues = new Map<string, Record<string, number | string>>()

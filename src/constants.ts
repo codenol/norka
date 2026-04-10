@@ -55,11 +55,11 @@ export {
   COMPONENT_LABEL_ICON_GAP,
   RULER_TARGET_PIXEL_SPACING,
   RULER_MAJOR_TOLERANCE
-} from '@open-pencil/core'
+} from '@beresta/core'
 
-import type { Color } from '@open-pencil/core'
+import type { Color } from '@beresta/core'
 
-export const TRYSTERO_APP_ID = 'openpencil'
+export const TRYSTERO_APP_ID = 'beresta'
 export const ROOM_ID_LENGTH = 8
 export const ROOM_ID_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
@@ -92,7 +92,7 @@ export {
   ZOOM_DIVISOR,
   ZOOM_SCALE_MIN,
   ZOOM_SCALE_MAX
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 export const HANDLE_SIZE = 6
 
@@ -117,7 +117,7 @@ export const HANDLE_HIT_RADIUS = 6
 export const ACP_PERMISSION_TIMEOUT_MS = 60_000
 
 export const ACP_DESIGN_CONTEXT = `You are inside Береста, a design editor (like Figma). \
-Use the open-pencil MCP tools to create and modify designs on the live canvas. \
+Use the beresta MCP tools to create and modify designs on the live canvas. \
 Key tools: render (JSX to design), create_shape, set_fill, set_layout, find_nodes, get_page_tree, export_image. \
 The render tool accepts JSX with components: Frame, Text, Rectangle, Ellipse, Icon, Group, Section. \
 Props: w, h, bg, flex, gap, p, rounded, color, size, weight, items, justify, stroke, opacity, shadow. \

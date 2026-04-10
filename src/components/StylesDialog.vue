@@ -13,15 +13,15 @@ import {
   TabsTrigger
 } from 'reka-ui'
 
-import { useI18n, useSceneComputed } from '@open-pencil/vue'
+import { useI18n, useSceneComputed } from '@beresta/vue'
 
-import { colorToCSS } from '@open-pencil/core'
+import { colorToCSS } from '@beresta/core'
 
 import { useEditorStore } from '@/stores/editor'
 import { useDialogUI } from '@/components/ui/dialog'
 import Tip from './ui/Tip.vue'
 
-import type { NamedStyle, FillStyle, TextStyle } from '@open-pencil/core'
+import type { NamedStyle, FillStyle, TextStyle } from '@beresta/core'
 
 type StyleTab = 'FILL' | 'TEXT' | 'EFFECT'
 

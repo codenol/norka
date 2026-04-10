@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import { isFontLoaded, DEFAULT_FONT_FAMILY } from '@open-pencil/core'
+import { isFontLoaded, DEFAULT_FONT_FAMILY } from '@beresta/core'
 
-import type { SceneNode } from '@open-pencil/core'
+import type { SceneNode } from '@beresta/core'
 
 /**
  * Returns missing-font information for a text node getter.

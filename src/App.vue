@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useHead } from '@unhead/vue'
 import { TooltipProvider } from 'reka-ui'
 
-import { provideEditor } from '@open-pencil/vue'
+import { provideEditor } from '@beresta/vue'
 import AppToast from '@/components/AppToast.vue'
 import { useEditorStore } from '@/stores/editor'
 import { toast } from '@/utils/toast'

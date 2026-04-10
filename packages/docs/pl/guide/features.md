@@ -4,7 +4,7 @@
 
 Otwieraj i zapisuj natywne pliki Figmy bezpośrednio. Pipeline importu/eksportu używa tego samego binarnego kodeka Kiwi co Figma — 194 definicje schematu, ~390 pól na węzeł. Zapisz: <kbd>⌘</kbd><kbd>S</kbd>, Zapisz jako: <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd>.
 
-**Kopiuj i wklej z Figmą** — zaznacz węzły w Figmie, <kbd>⌘</kbd><kbd>C</kbd>, przełącz się na OpenPencil, <kbd>⌘</kbd><kbd>V</kbd>. Wypełnienia, obrysy, auto-layout, tekst, efekty, promienie narożników i sieci wektorowe są zachowane. Działa w obie strony.
+**Kopiuj i wklej z Figmą** — zaznacz węzły w Figmie, <kbd>⌘</kbd><kbd>C</kbd>, przełącz się na Beresta, <kbd>⌘</kbd><kbd>V</kbd>. Wypełnienia, obrysy, auto-layout, tekst, efekty, promienie narożników i sieci wektorowe są zachowane. Działa w obie strony.
 
 ## Rysowanie i edycja
 
@@ -61,7 +61,7 @@ Otwieraj wiele dokumentów w kartach. <kbd>⌘</kbd><kbd>T</kbd> nowa karta, <kb
 - **Tailwind JSX** — HTML z klasami utility Tailwind v4, gotowy dla React lub Vue
 - **Kopiuj jako** — tekst, SVG, PNG (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd>) lub JSX przez menu kontekstowe
 
-CLI: `open-pencil export design.fig -f jsx --style tailwind`
+CLI: `beresta export design.fig -f jsx --style tailwind`
 
 ## Chat AI
 
@@ -76,14 +76,14 @@ Zobacz [Czat AI](/programmable/ai-chat) dla konfiguracji i szczegółów dostawc
 Podłącz Claude Code, Cursor, Windsurf lub dowolnego klienta MCP do odczytu i zapisu plików `.fig` headlessly. 90+ narzędzi. Dwa transporty: stdio i HTTP.
 
 ```sh
-bun add -g @open-pencil/mcp
+bun add -g @beresta/mcp
 ```
 
 ```json
 {
   "mcpServers": {
-    "open-pencil": {
-      "command": "openpencil-mcp"
+    "beresta": {
+      "command": "beresta-mcp"
     }
   }
 }
@@ -96,22 +96,22 @@ Zobacz [Referencja narzędzi MCP](/programmable/mcp-server) dla pełnej listy na
 Inspekcja, eksport i analiza plików `.fig` z terminala:
 
 ```sh
-open-pencil tree design.fig          # Drzewo węzłów
-open-pencil find design.fig --type TEXT  # Wyszukiwanie
-open-pencil export design.fig -f png     # Renderowanie
-open-pencil analyze colors design.fig    # Audyt kolorów
-open-pencil analyze clusters design.fig  # Powtarzające się wzorce
-open-pencil eval design.fig -c "..."     # Figma Plugin API
+beresta tree design.fig          # Drzewo węzłów
+beresta find design.fig --type TEXT  # Wyszukiwanie
+beresta export design.fig -f png     # Renderowanie
+beresta analyze colors design.fig    # Audyt kolorów
+beresta analyze clusters design.fig  # Powtarzające się wzorce
+beresta eval design.fig -c "..."     # Figma Plugin API
 ```
 
 Gdy aplikacja desktopowa jest uruchomiona, pomiń plik aby sterować edytorem na żywo przez RPC:
 
 ```sh
-open-pencil tree                     # Aktywny dokument
-open-pencil export -f png            # Zrzut ekranu canvasu
+beresta tree                     # Aktywny dokument
+beresta export -f png            # Zrzut ekranu canvasu
 ```
 
-Wszystkie komendy obsługują `--json`. Instalacja: `bun add -g @open-pencil/cli`
+Wszystkie komendy obsługują `--json`. Instalacja: `bun add -g @beresta/cli`
 
 ## Współpraca w czasie rzeczywistym
 
@@ -127,14 +127,14 @@ P2P przez WebRTC — bez serwera. Udostępnij link i edytujcie razem.
 
 **Desktop** — Tauri v2, ~7 MB. macOS (podpisany i notaryzowany), Windows, Linux. Natywne menu, tryb offline, automatyczny zapis.
 
-**Web** — działa na [app.openpencil.dev](https://app.openpencil.dev), instalowalny jako PWA na urządzeniach mobilnych z UI zoptymalizowanym pod dotyk.
+**Web** — działa na [app.beresta.dev](https://app.beresta.dev), instalowalny jako PWA na urządzeniach mobilnych z UI zoptymalizowanym pod dotyk.
 
 **Homebrew:**
 
 ```sh
-brew install open-pencil/tap/open-pencil
+brew install beresta/tap/beresta
 ```
 
 ## Google Fonts Fallback
 
-Gdy czcionka nie jest dostępna lokalnie, OpenPencil pobiera ją automatycznie z Google Fonts. Nie trzeba ręcznie instalować czcionek przy otwieraniu plików .fig z nieznanymi fontami.
+Gdy czcionka nie jest dostępna lokalnie, Beresta pobiera ją automatycznie z Google Fonts. Nie trzeba ręcznie instalować czcionek przy otwieraniu plików .fig z nieznanymi fontami.

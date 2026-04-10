@@ -8,9 +8,9 @@ import Tip from '@/components/ui/Tip.vue'
 import { useButtonUI } from '@/components/ui/button'
 import { useInputUI } from '@/components/ui/input'
 import { useAIChat } from '@/composables/use-chat'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
-import { ACP_AGENTS } from '@open-pencil/core'
+import { ACP_AGENTS } from '@beresta/core'
 
 const { providerID, providerDef, modelID, customModelID } = useAIChat()
 const { dialogs } = useI18n()

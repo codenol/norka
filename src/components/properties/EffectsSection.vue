@@ -4,11 +4,11 @@ import ColorInput from '@/components/ColorInput.vue'
 import ScrubInput from '@/components/ScrubInput.vue'
 import { useIconButtonUI } from '@/components/ui/icon-button'
 import { useSectionUI } from '@/components/ui/section'
-import { PropertyListRoot, useEffectsControls, useI18n } from '@open-pencil/vue'
+import { PropertyListRoot, useEffectsControls, useI18n } from '@beresta/vue'
 
-import { colorToCSS } from '@open-pencil/core'
+import { colorToCSS } from '@beresta/core'
 
-import type { Effect } from '@open-pencil/core'
+import type { Effect } from '@beresta/core'
 
 const effectsCtx = useEffectsControls()
 const { panels } = useI18n()

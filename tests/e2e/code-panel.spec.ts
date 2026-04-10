@@ -61,11 +61,11 @@ test('selecting a rectangle shows JSX code', async () => {
   expect(code).toContain('Rectangle')
 })
 
-test('format toggle switches between OpenPencil and Tailwind', async () => {
+test('format toggle switches between Beresta and Tailwind', async () => {
   await expect(formatToggle()).toBeVisible()
 
   const initialFormat = await formatToggle().textContent()
-  expect(initialFormat).toContain('OpenPencil')
+  expect(initialFormat).toContain('Beresta')
 
   await formatToggle().click()
   await expect(formatToggle()).toContainText('Tailwind')
@@ -77,7 +77,7 @@ test('format toggle switches between OpenPencil and Tailwind', async () => {
   expect(code).toContain('div')
 
   await formatToggle().click()
-  await expect(formatToggle()).toContainText('OpenPencil')
+  await expect(formatToggle()).toContainText('Beresta')
 })
 
 test('copy button works and shows confirmation', async () => {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ColorInputRoot } from '@open-pencil/vue'
+import { ColorInputRoot } from '@beresta/vue'
 
 import ColorPicker from './ColorPicker.vue'
 
-import type { Color } from '@open-pencil/core'
-import type { OkHCLControls } from '@open-pencil/vue/ColorPicker/types'
+import type { Color } from '@beresta/core'
+import type { OkHCLControls } from '@beresta/vue/ColorPicker/types'
 
 const {
   editable = false,

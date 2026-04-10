@@ -1,13 +1,13 @@
 # MCP Server
 
-OpenPencil includes an MCP (Model Context Protocol) server that lets AI coding tools — Claude Code, Cursor, Windsurf, etc. — read and modify `.fig` files headlessly.
+Beresta includes an MCP (Model Context Protocol) server that lets AI coding tools — Claude Code, Cursor, Windsurf, etc. — read and modify `.fig` files headlessly.
 
 Two transports: **stdio** for MCP clients, **HTTP** for everything else.
 
 ## Install
 
 ```sh
-bun add -g @open-pencil/mcp
+bun add -g @beresta/mcp
 ```
 
 ## Stdio (Claude Code, Cursor, etc.)
@@ -17,8 +17,8 @@ Add to your MCP config (e.g. `~/.claude/settings.json` or `.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "open-pencil": {
-      "command": "openpencil-mcp"
+    "beresta": {
+      "command": "beresta-mcp"
     }
   }
 }
@@ -30,9 +30,9 @@ Or run from source without installing:
 ```json [Bun]
 {
   "mcpServers": {
-    "open-pencil": {
+    "beresta": {
       "command": "bun",
-      "args": ["/path/to/open-pencil/packages/mcp/src/index.ts"]
+      "args": ["/path/to/beresta/packages/mcp/src/index.ts"]
     }
   }
 }
@@ -40,9 +40,9 @@ Or run from source without installing:
 ```json [Node.js]
 {
   "mcpServers": {
-    "open-pencil": {
+    "beresta": {
       "command": "npx",
-      "args": ["tsx", "/path/to/open-pencil/packages/mcp/src/index.ts"]
+      "args": ["tsx", "/path/to/beresta/packages/mcp/src/index.ts"]
     }
   }
 }
@@ -54,7 +54,7 @@ Or run from source without installing:
 For browser extensions, scripts, CI, or any HTTP client:
 
 ```sh
-openpencil-mcp-http
+beresta-mcp-http
 ```
 
 Or from source: `bun packages/mcp/src/http.ts` / `npx tsx packages/mcp/src/http.ts`
@@ -83,10 +83,10 @@ Server starts on port 3100 (override with `PORT` env var). Endpoints:
 
 ## AI Agent Skill
 
-Teach your AI coding agent to use OpenPencil tools:
+Teach your AI coding agent to use Beresta tools:
 
 ```sh
-npx skills add open-pencil/skills@open-pencil
+npx skills add beresta/skills@beresta
 ```
 
 Works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports [skills](https://skills.sh). The skill covers the CLI, MCP tools, JSX rendering, eval, and the running app's automation bridge.

@@ -9,11 +9,11 @@
 
 import { shallowRef, computed } from 'vue'
 
-import { parseFigFile, libraryRegistry } from '@open-pencil/core'
+import { parseFigFile, libraryRegistry } from '@beresta/core'
 
 import { useLibraryStore } from './library'
 
-import type { SceneGraph } from '@open-pencil/core'
+import type { SceneGraph } from '@beresta/core'
 
 // ---------------------------------------------------------------------------
 // Types

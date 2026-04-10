@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { useAppearance, useI18n } from '@open-pencil/vue'
+import { useAppearance, useI18n } from '@beresta/vue'
 
 import ScrubInput from '@/components/ScrubInput.vue'
 import Tip from '@/components/ui/Tip.vue'

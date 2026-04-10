@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import AppGroupedSelect from '@/components/ui/AppGroupedSelect.vue'
-import { ACP_AGENTS, AI_PROVIDERS, AUTOMATION_HTTP_PORT, IS_TAURI } from '@open-pencil/core'
+import { ACP_AGENTS, AI_PROVIDERS, AUTOMATION_HTTP_PORT, IS_TAURI } from '@beresta/core'
 import { useAIChat } from '@/composables/use-chat'
 
 const { providerID, providerDef } = useAIChat()

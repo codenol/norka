@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts } from '@open-pencil/core'
+import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts } from '@beresta/core'
 
 function setup() {
   const graph = new SceneGraph()

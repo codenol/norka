@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
-import type { SceneNode } from '@open-pencil/core'
+import type { SceneNode } from '@beresta/core'
 
 /**
  * Returns reactive selection-derived state for the current editor.

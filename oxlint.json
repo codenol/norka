@@ -26,7 +26,7 @@
         "paths": [
           {
             "name": "@/types",
-            "message": "Import types directly from @open-pencil/core."
+            "message": "Import types directly from @beresta/core."
           }
         ],
         "patterns": [
@@ -34,7 +34,7 @@
             "group": [
               "@/engine/*"
             ],
-            "message": "Import from @open-pencil/core unless the module adds platform-specific logic.",
+            "message": "Import from @beresta/core unless the module adds platform-specific logic.",
             "allowImportNames": [
               "loadFont",
               "listFamilies",
@@ -46,7 +46,7 @@
               "../../packages/*",
               "../../../packages/*"
             ],
-            "message": "Use the workspace package name (e.g. @open-pencil/core) instead of relative paths to packages/."
+            "message": "Use the workspace package name (e.g. @beresta/core) instead of relative paths to packages/."
           }
         ]
       }
@@ -103,7 +103,7 @@
     "vue/define-emits-declaration": "error",
     "vue/define-props-destructuring": "error",
     "vue/require-typed-ref": "error",
-    "open-pencil/no-inline-named-types": [
+    "beresta/no-inline-named-types": [
       "error",
       {
         "Vector": "x:number,y:number",
@@ -113,12 +113,12 @@
         "Matrix": "m00:number,m01:number,m02:number,m10:number,m11:number,m12:number"
       }
     ],
-    "open-pencil/no-structuredclone-scene-arrays": "error",
-    "open-pencil/no-math-random": "error",
-    "open-pencil/no-hand-rolled-color": "error",
-    "open-pencil/no-raw-console-format": "off",
-    "open-pencil/no-silent-catch": "error",
-    "open-pencil/no-typeof-window-check": "error"
+    "beresta/no-structuredclone-scene-arrays": "error",
+    "beresta/no-math-random": "error",
+    "beresta/no-hand-rolled-color": "error",
+    "beresta/no-raw-console-format": "off",
+    "beresta/no-silent-catch": "error",
+    "beresta/no-typeof-window-check": "error"
   },
   "overrides": [
     {
@@ -129,7 +129,7 @@
       "rules": {
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off",
-        "open-pencil/no-silent-catch": "off"
+        "beresta/no-silent-catch": "off"
       }
     },
     {
@@ -199,7 +199,7 @@
         "packages/cli/src/commands/**"
       ],
       "rules": {
-        "open-pencil/no-raw-console-format": "error"
+        "beresta/no-raw-console-format": "error"
       }
     }
   ],

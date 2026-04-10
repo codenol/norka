@@ -9,7 +9,7 @@ import {
   ContextMenuPortal
 } from 'reka-ui'
 import { useClipboard } from '@vueuse/core'
-import { useEditorCommands, useMenuModel, useSelectionState } from '@open-pencil/vue'
+import { useEditorCommands, useMenuModel, useSelectionState } from '@beresta/vue'
 import { toast } from '@/utils/toast'
 
 import { useEditorStore } from '@/stores/editor'

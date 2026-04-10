@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
+import { useEditor } from '@beresta/vue/context/editorContext'
 
-import type { Color, Effect, SceneNode } from '@open-pencil/core'
+import type { Color, Effect, SceneNode } from '@beresta/core'
 
 type EffectType = Effect['type']
 

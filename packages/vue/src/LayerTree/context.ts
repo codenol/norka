@@ -1,6 +1,6 @@
 import { type InjectionKey, inject, provide } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@beresta/core/editor'
 import type { ComputedRef, Ref } from 'vue'
 
 export interface LayerNode {
@@ -36,6 +36,6 @@ export function provideLayerTree(ctx: LayerTreeContext) {
 
 export function useLayerTree(): LayerTreeContext {
   const ctx = inject(LAYER_TREE_KEY)
-  if (!ctx) throw new Error('[open-pencil] useLayerTree() called outside <LayerTreeRoot>')
+  if (!ctx) throw new Error('[beresta] useLayerTree() called outside <LayerTreeRoot>')
   return ctx
 }

@@ -8,7 +8,7 @@ import {
   useStrokeControls,
   useOkHCL,
   useI18n
-} from '@open-pencil/vue'
+} from '@beresta/vue'
 
 import ColorStyleRow from '@/components/properties/ColorStyleRow.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
@@ -18,7 +18,7 @@ import Tip from '@/components/ui/Tip.vue'
 import { useIconButtonUI } from '@/components/ui/icon-button'
 import { useSectionUI } from '@/components/ui/section'
 
-import type { SceneNode, Stroke } from '@open-pencil/core'
+import type { SceneNode, Stroke } from '@beresta/core'
 
 const strokeCtx = useStrokeControls()
 const strokeVarCtx = useColorVariableBinding('strokes')

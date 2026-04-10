@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, TextEditor, UndoManager } from '@open-pencil/core'
-import { createTextActions } from '@open-pencil/core/editor'
+import { SceneGraph, TextEditor, UndoManager } from '@beresta/core'
+import { createTextActions } from '@beresta/core/editor'
 
-import type { StyleRun } from '@open-pencil/core'
-import type { EditorContext, EditorState } from '@open-pencil/core/editor'
+import type { StyleRun } from '@beresta/core'
+import type { EditorContext, EditorState } from '@beresta/core/editor'
 
 function setup() {
   const graph = new SceneGraph()

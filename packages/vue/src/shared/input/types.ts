@@ -1,6 +1,6 @@
-import type { NodeType, Rect, VectorNetwork } from '@open-pencil/core'
-import type { Vector } from '@open-pencil/core'
-import type { Tool } from '@open-pencil/core/editor'
+import type { NodeType, Rect, VectorNetwork } from '@beresta/core'
+import type { Vector } from '@beresta/core'
+import type { Tool } from '@beresta/core/editor'
 
 export type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 

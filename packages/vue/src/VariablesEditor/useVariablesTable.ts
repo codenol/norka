@@ -1,7 +1,7 @@
 import { EditableArea, EditableInput, EditablePreview, EditableRoot } from 'reka-ui'
 import { computed, h, type Component } from 'vue'
 
-import type { Color, Variable, VariableValue } from '@open-pencil/core'
+import type { Color, Variable, VariableValue } from '@beresta/core'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { ComputedRef } from 'vue'
 

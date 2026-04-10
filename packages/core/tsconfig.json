@@ -14,8 +14,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@open-pencil/core": ["./src/index.ts"],
-      "@open-pencil/core/*": ["./src/*"]
+      "@beresta/core": ["./src/index.ts"],
+      "@beresta/core/*": ["./src/*"]
     }
   },
   "include": ["src"]

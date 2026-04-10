@@ -17,7 +17,7 @@ const { app, httpPort } = startServer({
 
 serve({ fetch: app.fetch, port: httpPort, hostname: host })
 
-console.log(`OpenPencil MCP server`)
+console.log(`Beresta MCP server`)
 console.log(`  HTTP:  http://${host}:${httpPort}`)
 console.log(`  WS:    ws://${host}:${wsPort}`)
 console.log(`  MCP:   http://${host}:${httpPort}/mcp`)

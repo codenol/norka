@@ -9,9 +9,9 @@ import {
   updateHSLChannel,
   updateHue,
   updateRGBChannel
-} from '@open-pencil/vue'
+} from '@beresta/vue'
 
-import type { Color } from '@open-pencil/core'
+import type { Color } from '@beresta/core'
 
 describe('color picker model', () => {
   const base: Color = { r: 0.4, g: 0.2, b: 0.6, a: 0.75 }

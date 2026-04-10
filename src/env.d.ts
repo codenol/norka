@@ -2,7 +2,7 @@
 /// <reference types="vite-plugin-pwa/vanillajs" />
 /// <reference types="unplugin-icons/types/vue" />
 
-declare const __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__: string | null
+declare const __BERESTA_LOCAL_AUTOMATION_TOKEN__: string | null
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'

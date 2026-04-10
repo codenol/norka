@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
 /**
  * Returns reactive page state and page-management actions.

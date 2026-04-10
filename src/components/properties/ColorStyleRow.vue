@@ -15,10 +15,10 @@ import ScrubInput from '@/components/ScrubInput.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { useIconButtonUI } from '@/components/ui/icon-button'
 
-import { colorToCSS } from '@open-pencil/core'
-import { useI18n } from '@open-pencil/vue'
+import { colorToCSS } from '@beresta/core'
+import { useI18n } from '@beresta/vue'
 
-import type { Variable } from '@open-pencil/core'
+import type { Variable } from '@beresta/core'
 
 type BindingApi = {
   store: {

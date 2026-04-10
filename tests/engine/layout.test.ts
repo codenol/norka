@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, type SceneNode, type GridTrack, computeLayout, computeAllLayouts, createEditor, setTextMeasurer, FigmaAPI, readFigFile } from '@open-pencil/core'
+import { SceneGraph, type SceneNode, type GridTrack, computeLayout, computeAllLayouts, createEditor, setTextMeasurer, FigmaAPI, readFigFile } from '@beresta/core'
 
 import { createEditorStore } from '@/stores/editor'
 

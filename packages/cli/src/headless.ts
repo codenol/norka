@@ -4,7 +4,7 @@ import {
   computeAllLayouts,
   initCanvasKit,
   type SceneGraph
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 export { initCanvasKit }
 

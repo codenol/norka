@@ -6,7 +6,7 @@ import {
   exportFigFile,
   parseFigFile,
   initCodec,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 beforeAll(async () => {
   await initCodec()

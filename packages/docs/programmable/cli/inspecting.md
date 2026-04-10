@@ -9,9 +9,9 @@ The CLI lets you explore design documents without opening the editor. Every comm
 
 ::: tip Install
 ```sh
-bun add -g @open-pencil/cli
+bun add -g @beresta/cli
 # or
-brew install open-pencil/tap/open-pencil
+brew install beresta/tap/beresta
 ```
 :::
 
@@ -20,7 +20,7 @@ brew install open-pencil/tap/open-pencil
 Get a quick overview — page count, total nodes, fonts used, file size:
 
 ```sh
-open-pencil info design.fig
+beresta info design.fig
 ```
 
 ## Node Tree
@@ -28,7 +28,7 @@ open-pencil info design.fig
 Print the full node hierarchy:
 
 ```sh
-open-pencil tree design.fig
+beresta tree design.fig
 ```
 
 ```
@@ -45,13 +45,13 @@ open-pencil tree design.fig
 Search by type:
 
 ```sh
-open-pencil find design.fig --type TEXT
+beresta find design.fig --type TEXT
 ```
 
 Search by name:
 
 ```sh
-open-pencil find design.fig --name "Button"
+beresta find design.fig --name "Button"
 ```
 
 Both flags can be combined to narrow results further.
@@ -61,7 +61,7 @@ Both flags can be combined to narrow results further.
 Use XPath selectors to find nodes by type, attributes, and tree structure:
 
 ```sh
-open-pencil query design.fig "//FRAME"
+beresta query design.fig "//FRAME"
 ```
 
 ### Useful patterns
@@ -69,34 +69,34 @@ open-pencil query design.fig "//FRAME"
 **By type:**
 
 ```sh
-open-pencil query design.fig "//TEXT"                    # All text nodes
-open-pencil query design.fig "//COMPONENT"               # All components
-open-pencil query design.fig "//INSTANCE"                # All instances
+beresta query design.fig "//TEXT"                    # All text nodes
+beresta query design.fig "//COMPONENT"               # All components
+beresta query design.fig "//INSTANCE"                # All instances
 ```
 
 **By attributes:**
 
 ```sh
-open-pencil query design.fig "//FRAME[@width < 300]"                # Frames under 300px wide
-open-pencil query design.fig "//*[@cornerRadius > 0]"               # Rounded corners
-open-pencil query design.fig "//*[@visible = false]"                # Hidden nodes
-open-pencil query design.fig "//TEXT[@fontSize >= 24]"              # Large text
-open-pencil query design.fig "//*[@opacity < 1]"                    # Semi-transparent nodes
+beresta query design.fig "//FRAME[@width < 300]"                # Frames under 300px wide
+beresta query design.fig "//*[@cornerRadius > 0]"               # Rounded corners
+beresta query design.fig "//*[@visible = false]"                # Hidden nodes
+beresta query design.fig "//TEXT[@fontSize >= 24]"              # Large text
+beresta query design.fig "//*[@opacity < 1]"                    # Semi-transparent nodes
 ```
 
 **By name and text content:**
 
 ```sh
-open-pencil query design.fig "//TEXT[contains(@name, 'Button')]"    # Name contains 'Button'
-open-pencil query design.fig "//TEXT[contains(@text, 'Hello')]"     # Text content contains 'Hello'
+beresta query design.fig "//TEXT[contains(@name, 'Button')]"    # Name contains 'Button'
+beresta query design.fig "//TEXT[contains(@text, 'Hello')]"     # Text content contains 'Hello'
 ```
 
 **By hierarchy:**
 
 ```sh
-open-pencil query design.fig "//SECTION//TEXT"            # Text inside sections
-open-pencil query design.fig "//FRAME/TEXT"               # Direct text children of frames
-open-pencil query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside component sets
+beresta query design.fig "//SECTION//TEXT"            # Text inside sections
+beresta query design.fig "//FRAME/TEXT"               # Direct text children of frames
+beresta query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside component sets
 ```
 
 ### Queryable attributes
@@ -120,7 +120,7 @@ open-pencil query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside com
 Inspect all properties of a specific node by its ID:
 
 ```sh
-open-pencil node design.fig --id 1:23
+beresta node design.fig --id 1:23
 ```
 
 ## Pages
@@ -128,7 +128,7 @@ open-pencil node design.fig --id 1:23
 List all pages in the document:
 
 ```sh
-open-pencil pages design.fig
+beresta pages design.fig
 ```
 
 ## Variables
@@ -136,7 +136,7 @@ open-pencil pages design.fig
 List design variables and their collections:
 
 ```sh
-open-pencil variables design.fig
+beresta variables design.fig
 ```
 
 ## Live App Mode
@@ -144,8 +144,8 @@ open-pencil variables design.fig
 When the desktop app is running, omit the file argument — the CLI connects via RPC and operates on the live canvas:
 
 ```sh
-open-pencil tree              # inspect the live document
-open-pencil eval -c "..."     # query the editor
+beresta tree              # inspect the live document
+beresta eval -c "..."     # query the editor
 ```
 
 ## Lint Designs
@@ -153,10 +153,10 @@ open-pencil eval -c "..."     # query the editor
 Check documents for naming, layout, structure, and accessibility issues:
 
 ```sh
-open-pencil lint design.fig
-open-pencil lint design.pen --preset strict
-open-pencil lint design.fig --rule color-contrast
-open-pencil lint design.fig --list-rules
+beresta lint design.fig
+beresta lint design.pen --preset strict
+beresta lint design.fig --rule color-contrast
+beresta lint design.fig --list-rules
 ```
 
 Use `--json` for machine-readable output.
@@ -166,5 +166,5 @@ Use `--json` for machine-readable output.
 All commands support `--json` for machine-readable output — pipe into `jq`, feed to CI scripts, or process with other tools:
 
 ```sh
-open-pencil tree design.fig --json | jq '.[] | .name'
+beresta tree design.fig --json | jq '.[] | .name'
 ```

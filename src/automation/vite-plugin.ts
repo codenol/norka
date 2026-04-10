@@ -7,7 +7,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
   let child: ReturnType<typeof spawn> | null = null
 
   return {
-    name: 'open-pencil-automation',
+    name: 'beresta-automation',
     configureServer() {
       if (child) return
 

@@ -1,11 +1,11 @@
 import { shallowRef, computed, triggerRef } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
 
 import { createEditorStore, setActiveEditorStore } from './editor'
 
 import type { EditorStore } from './editor'
-import type { SceneGraph } from '@open-pencil/core'
+import type { SceneGraph } from '@beresta/core'
 
 export interface Tab {
   id: string

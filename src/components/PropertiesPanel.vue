@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 import { useAIChat } from '@/composables/use-chat'
 import { useLinterStore } from '@/stores/linter'
 

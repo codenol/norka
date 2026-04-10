@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { clearNodeFillOkHCL, clearNodeStrokeOkHCL, getFillOkHCL, getStrokeOkHCL, SceneGraph, setNodeFillOkHCL, setNodeStrokeOkHCL } from '@open-pencil/core'
+import { clearNodeFillOkHCL, clearNodeStrokeOkHCL, getFillOkHCL, getStrokeOkHCL, SceneGraph, setNodeFillOkHCL, setNodeStrokeOkHCL } from '@beresta/core'
 
 describe('OkHCL metadata toggling', () => {
   test('can disable fill OkHCL metadata', () => {

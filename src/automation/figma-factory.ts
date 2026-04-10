@@ -1,4 +1,4 @@
-import { FigmaAPI } from '@open-pencil/core'
+import { FigmaAPI } from '@beresta/core'
 
 import type { EditorStore } from '@/stores/editor'
 

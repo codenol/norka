@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@open-pencil/core'
+import { executeRpcCommand } from '@beresta/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { bold, entity, fmtList, fmtSummary } from '../format'
 import { loadDocument } from '../headless'
 
-import type { VariablesResult } from '@open-pencil/core'
+import type { VariablesResult } from '@beresta/core'
 
 async function getData(
   file: string | undefined,

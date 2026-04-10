@@ -1,14 +1,14 @@
-# `open-pencil eval` — Figma-like Plugin API for Headless Scripting
+# `beresta eval` — Figma-like Plugin API for Headless Scripting
 
 ## Overview
 
-`bun open-pencil eval <file> --code '<js>'` executes JavaScript against a `.fig` file with a Figma-compatible `figma` global object. This enables headless scripting, batch operations, AI tool execution, and testing — all without the GUI.
+`bun beresta eval <file> --code '<js>'` executes JavaScript against a `.fig` file with a Figma-compatible `figma` global object. This enables headless scripting, batch operations, AI tool execution, and testing — all without the GUI.
 
 The `figma` object mirrors Figma's Plugin API surface as closely as possible, so existing Figma plugin knowledge and code snippets transfer directly.
 
 ```bash
 # Create a frame, set auto-layout, add children
-bun open-pencil eval design.fig --code '
+bun beresta eval design.fig --code '
   const frame = figma.createFrame()
   frame.name = "Card"
   frame.resize(300, 200)
@@ -27,24 +27,24 @@ bun open-pencil eval design.fig --code '
 '
 
 # Query nodes
-bun open-pencil eval design.fig --code '
+bun beresta eval design.fig --code '
   const buttons = figma.currentPage.findAll(n => n.type === "FRAME" && n.name.includes("Button"))
   return buttons.map(b => ({ id: b.id, name: b.name, w: b.width, h: b.height }))
 '
 
 # Read from stdin (for multiline scripts / piping)
-cat transform.js | bun open-pencil eval design.fig --stdin
+cat transform.js | bun beresta eval design.fig --stdin
 
 # Write changes back
-bun open-pencil eval design.fig --code '...' --write
-bun open-pencil eval design.fig --code '...' -o modified.fig
+bun beresta eval design.fig --code '...' --write
+bun beresta eval design.fig --code '...' -o modified.fig
 ```
 
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  CLI: `open-pencil eval <file> --code '...'`         │
+│  CLI: `beresta eval <file> --code '...'`         │
 │    ↓                                                 │
 │  loadDocument(file) → SceneGraph                     │
 │    ↓                                                 │
@@ -65,7 +65,7 @@ bun open-pencil eval design.fig --code '...' -o modified.fig
 | `FigmaNode` | `packages/core/src/figma-api.ts` | Proxy wrapping `SceneNode` with Figma-style property access (`.fills`, `.resize()`, `.appendChild()`, etc.) |
 | `eval` command | `packages/cli/src/commands/eval.ts` | CLI command that loads doc, creates API, executes code |
 
-### Why in `@open-pencil/core`?
+### Why in `@beresta/core`?
 
 The `FigmaAPI` class lives in core (not CLI) because:
 - **AI tools reuse it** — the chat panel's `render` tool can execute JSX through the same API
@@ -297,7 +297,7 @@ class FigmaNode {
 ## CLI Command
 
 ```
-bun open-pencil eval <file> [options]
+bun beresta eval <file> [options]
 
 Arguments:
   file            .fig file to operate on
@@ -387,7 +387,7 @@ packages/cli/src/commands/eval.test.ts  # Integration tests
 2. **Create + read** — create a frame, return its properties
 3. **Query nodes** — `findAll` returns correct nodes
 4. **Write back** — `--write` saves changes, reloading shows them
-5. **Stdin** — `echo 'return 42' | bun open-pencil eval test.fig --stdin` → `42`
+5. **Stdin** — `echo 'return 42' | bun beresta eval test.fig --stdin` → `42`
 6. **JSON output** — `--json` returns valid JSON
 7. **Error handling** — syntax errors, runtime errors reported cleanly
 

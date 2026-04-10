@@ -82,7 +82,7 @@ function emitFallbackCode(
   indent: number,
   framework: CodeFramework
 ): string {
-  const jsxFormat: JSXFormat = framework === 'html-tailwind' ? 'tailwind' : 'openpencil'
+  const jsxFormat: JSXFormat = framework === 'html-tailwind' ? 'tailwind' : 'beresta'
   const raw = sceneNodeToJSX(nodeId, graph, jsxFormat)
   // Indent the raw JSX lines
   const pad = '  '.repeat(indent)

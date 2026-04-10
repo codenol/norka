@@ -34,11 +34,11 @@ import {
   useI18n,
   useToolbarState,
   useViewportKind
-} from '@open-pencil/vue'
+} from '@beresta/vue'
 import { computed } from 'vue'
 
 import type { Component } from 'vue'
-import type { Tool } from '@open-pencil/vue'
+import type { Tool } from '@beresta/vue'
 
 const store = useEditorStore()
 const { isMobile } = useViewportKind()

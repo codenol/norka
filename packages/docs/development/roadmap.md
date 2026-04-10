@@ -84,7 +84,7 @@ Components, instances, overrides, variables, collections, modes, image export.
 - System font enumeration via font-kit Rust crate, OnceLock cache, preload on startup
 - Font picker: virtual scroll (reka-ui ListboxVirtualizer), search filter, CSS font preview
 - ColorInput component extraction, ColorPicker alpha slider checkerboard fix
-- App identity: pencil icon, Cargo crate open_pencil, macOS Dock "OpenPencil"
+- App identity: pencil icon, Cargo crate beresta, macOS Dock "Beresta"
 - Splash loader during WASM initialization
 - Rich text style runs: per-selection <kbd>⌘</kbd><kbd>B</kbd>/I/U, StyleRun model, ParagraphBuilder pushStyle/pop, .fig roundtrip
 - B/I/U/S toggle buttons in TypographySection
@@ -100,8 +100,8 @@ Components, instances, overrides, variables, collections, modes, image export.
 Core extraction, CLI, MCP server, AI tools, eval command.
 
 **Delivered:**
-- @open-pencil/core extracted to packages/core/ (zero DOM deps, Bun workspace)
-- @open-pencil/cli with headless .fig operations (info, tree, find, export, analyze, node, pages, variables, eval), CanvasKit CPU rasterization, --json output
+- @beresta/core extracted to packages/core/ (zero DOM deps, Bun workspace)
+- @beresta/cli with headless .fig operations (info, tree, find, export, analyze, node, pages, variables, eval), CanvasKit CPU rasterization, --json output
 - `eval` command with Figma-compatible Plugin API for headless scripting
 - JSX renderer: TreeNode builders (Frame, Text, Rectangle, etc.), renderTreeNode/renderJsx, Tailwind-like shorthand props, 27 tests
 - jscpd copy-paste detection (15.6% → 0.62%), kiwi-serialize.ts consolidation
@@ -109,7 +109,7 @@ Core extraction, CLI, MCP server, AI tools, eval command.
 - .fig import O(n²) → O(n) fix (37s → 535ms on 87K nodes), ByteBuffer optimization
 - AI chat: OpenRouter direct (no backend), Stronghold key storage, 87 tools split across domain files in `tools/`, model selector, <kbd>⌘</kbd><kbd>J</kbd> toggle, streaming markdown, Playwright tests with mock transport
 - 49 additional AI/MCP tools ported from figma-use (87 total): granular set tools, node operations, variable CRUD, boolean operations, vector path tools, viewport control
-- MCP server (@open-pencil/mcp): stdio + HTTP (Hono + Streamable HTTP with sessions), 87 core tools + 3 file management tools (90 total), runs on Bun and Node.js
+- MCP server (@beresta/mcp): stdio + HTTP (Hono + Streamable HTTP with sessions), 87 core tools + 3 file management tools (90 total), runs on Bun and Node.js
 - Unified tool definitions: define once in `packages/core/src/tools/` (split by domain), adapt for AI chat (valibot), MCP (zod), CLI (eval)
 - Code panel: sceneNodeToJsx() export, Prism.js highlighting, line numbers, copy button, 14 tests
 - Properties panel restructured: Design | Code | AI tabs
@@ -139,7 +139,7 @@ Real-time collaboration, prototyping, comments, desktop distribution.
 - Apple code signing and notarization for macOS builds
 - Linux builds (x64) added to CI
 - Git LFS moved to Cloudflare R2
-- VitePress documentation site at openpencil.dev with i18n (6 languages)
+- VitePress documentation site at beresta.dev with i18n (6 languages)
 - CI/PR templates, CONTRIBUTING.md, SECURITY.md
 
 **Planned:**

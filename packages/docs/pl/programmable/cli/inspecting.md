@@ -9,9 +9,9 @@ CLI pozwala eksplorować pliki `.fig` bez otwierania edytora. Każde polecenie d
 
 ::: tip Instalacja
 ```sh
-bun add -g @open-pencil/cli
+bun add -g @beresta/cli
 # lub
-brew install open-pencil/tap/open-pencil
+brew install beresta/tap/beresta
 ```
 :::
 
@@ -20,7 +20,7 @@ brew install open-pencil/tap/open-pencil
 Szybki przegląd — liczba stron, łączna liczba węzłów, użyte czcionki, rozmiar pliku:
 
 ```sh
-open-pencil info design.fig
+beresta info design.fig
 ```
 
 ## Drzewo węzłów
@@ -28,7 +28,7 @@ open-pencil info design.fig
 Wyświetl pełną hierarchię węzłów:
 
 ```sh
-open-pencil tree design.fig
+beresta tree design.fig
 ```
 
 ```
@@ -45,13 +45,13 @@ open-pencil tree design.fig
 Szukaj po typie:
 
 ```sh
-open-pencil find design.fig --type TEXT
+beresta find design.fig --type TEXT
 ```
 
 Szukaj po nazwie:
 
 ```sh
-open-pencil find design.fig --name "Button"
+beresta find design.fig --name "Button"
 ```
 
 Obie flagi można łączyć, aby zawęzić wyniki.
@@ -61,7 +61,7 @@ Obie flagi można łączyć, aby zawęzić wyniki.
 Sprawdź wszystkie właściwości konkretnego węzła po jego ID:
 
 ```sh
-open-pencil node design.fig --id 1:23
+beresta node design.fig --id 1:23
 ```
 
 ## Strony
@@ -69,7 +69,7 @@ open-pencil node design.fig --id 1:23
 Wylistuj wszystkie strony w dokumencie:
 
 ```sh
-open-pencil pages design.fig
+beresta pages design.fig
 ```
 
 ## Zmienne
@@ -77,7 +77,7 @@ open-pencil pages design.fig
 Wylistuj zmienne projektowe i ich kolekcje:
 
 ```sh
-open-pencil variables design.fig
+beresta variables design.fig
 ```
 
 ## Tryb żywej aplikacji
@@ -85,8 +85,8 @@ open-pencil variables design.fig
 Gdy aplikacja desktopowa jest uruchomiona, pomiń argument pliku — CLI łączy się przez RPC i operuje na żywym płótnie:
 
 ```sh
-open-pencil tree              # przeglądaj żywy dokument
-open-pencil eval -c "..."     # odpytuj edytor
+beresta tree              # przeglądaj żywy dokument
+beresta eval -c "..."     # odpytuj edytor
 ```
 
 ## Wyjście JSON
@@ -94,5 +94,5 @@ open-pencil eval -c "..."     # odpytuj edytor
 Wszystkie polecenia obsługują `--json` dla wyjścia w formacie do odczytu maszynowego — przekieruj do `jq`, zasilaj skrypty CI lub przetwarzaj innymi narzędziami:
 
 ```sh
-open-pencil tree design.fig --json | jq '.[] | .name'
+beresta tree design.fig --json | jq '.[] | .name'
 ```

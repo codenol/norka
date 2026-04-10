@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
-import { colorToCSS } from '@open-pencil/core'
+import { colorToCSS } from '@beresta/core'
 
-import type { Color } from '@open-pencil/core'
+import type { Color } from '@beresta/core'
 
 const props = defineProps<{
   color: Color

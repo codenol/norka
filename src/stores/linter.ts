@@ -7,9 +7,9 @@
 
 import { shallowRef } from 'vue'
 
-import { createLinter } from '@open-pencil/core'
+import { createLinter } from '@beresta/core'
 
-import type { LintResult, SceneGraph } from '@open-pencil/core'
+import type { LintResult, SceneGraph } from '@beresta/core'
 
 export type LintPreset = 'recommended' | 'strict' | 'accessibility'
 

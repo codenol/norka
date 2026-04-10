@@ -11,7 +11,7 @@ import {
   parseFigFile,
   rgbaToOkHCL,
   SceneGraph
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 describe('OkHCL metadata', () => {
   test('applies rgba rendering color while preserving fill metadata', () => {

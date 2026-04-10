@@ -8,8 +8,8 @@ import { duplicateAndDrag, detectAutoLayoutParent } from './move'
 import { tryStartResize } from './resize'
 
 import type { DragEditHandle, DragEditNode, DragState } from './types'
-import type { SceneNode, Vector, VectorSegment, VectorVertex } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { SceneNode, Vector, VectorSegment, VectorVertex } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 
 type NodeEditState = {
   nodeId: string

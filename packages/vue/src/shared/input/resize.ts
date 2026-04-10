@@ -1,10 +1,10 @@
-import { cloneVectorNetwork } from '@open-pencil/core'
+import { cloneVectorNetwork } from '@beresta/core'
 
 import { hitTestHandle } from './geometry'
 
 import type { DragResize, HandlePosition } from './types'
-import type { Rect, SceneNode } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { Rect, SceneNode } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 
 export function constrainToAspectRatio(
   handle: HandlePosition,

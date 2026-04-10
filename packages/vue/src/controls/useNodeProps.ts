@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
-import type { Effect, Fill, SceneNode, Stroke } from '@open-pencil/core'
+import type { Effect, Fill, SceneNode, Stroke } from '@beresta/core'
 
 /** Sentinel value returned when a property differs across multiple selected nodes. */
 export const MIXED = Symbol('mixed')

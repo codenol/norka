@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useCanvas, type UseCanvasOptions } from '@open-pencil/vue'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useCanvas, type UseCanvasOptions } from '@beresta/vue'
 import { provideCanvas } from './context'
 
 const props = withDefaults(defineProps<UseCanvasOptions>(), {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import AppMenu from './AppMenu.vue'
 import LayerTree from './LayerTree.vue'

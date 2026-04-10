@@ -1,4 +1,4 @@
-import { DEFAULT_SHAPE_FILL } from '@open-pencil/core'
+import { DEFAULT_SHAPE_FILL } from '@beresta/core'
 
 import { useColorVariableBinding } from './useColorVariableBinding'
 

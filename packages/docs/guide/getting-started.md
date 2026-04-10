@@ -2,13 +2,13 @@
 
 ## Try Online
 
-OpenPencil runs in the browser — no installation required. Open [app.openpencil.dev](https://app.openpencil.dev) to start designing.
+Beresta runs in the browser — no installation required. Open [app.beresta.dev](https://app.beresta.dev) to start designing.
 
 If you want to build on top of it instead of only using the default app, see the [Programmable](/programmable/) section and the [Vue SDK](/programmable/sdk/).
 
 ## Download Desktop App
 
-Pre-built binaries for macOS, Windows, and Linux are available on the [releases page](https://github.com/open-pencil/open-pencil/releases/latest).
+Pre-built binaries for macOS, Windows, and Linux are available on the [releases page](https://github.com/beresta/beresta/releases/latest).
 
 | Platform | Download |
 |----------|----------|
@@ -22,7 +22,7 @@ Pre-built binaries for macOS, Windows, and Linux are available on the [releases 
 ## macOS via Homebrew
 
 ```sh
-brew install open-pencil/tap/open-pencil
+brew install beresta/tap/beresta
 ```
 
 This installs the latest signed release for macOS (Apple Silicon and Intel). The tap is auto-updated on each release.
@@ -37,8 +37,8 @@ This installs the latest signed release for macOS (Apple Silicon and Intel). The
 ## Installation
 
 ```sh
-git clone https://github.com/open-pencil/open-pencil.git
-cd open-pencil
+git clone https://github.com/beresta/open-pencil.git
+cd beresta
 bun install
 ```
 

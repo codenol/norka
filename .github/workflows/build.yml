@@ -118,7 +118,7 @@ jobs:
           tauriScript: bunx tauri
           args: --target ${{ matrix.target }}
           tagName: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
-          releaseName: ${{ startsWith(github.ref, 'refs/tags/v') && format('OpenPencil {0}', github.ref_name) || '' }}
+          releaseName: ${{ startsWith(github.ref, 'refs/tags/v') && format('Beresta {0}', github.ref_name) || '' }}
           releaseBody: ${{ steps.release_body.outputs.body || steps.changelog.outputs.release_notes }}
           releaseDraft: false
 

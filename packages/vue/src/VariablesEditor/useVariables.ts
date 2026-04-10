@@ -1,10 +1,10 @@
 import { ref, computed, watch } from 'vue'
 
-import { colorToHexRaw, parseColor, randomHex } from '@open-pencil/core'
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { colorToHexRaw, parseColor, randomHex } from '@beresta/core'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
-import type { Color, Variable, VariableCollection, VariableValue } from '@open-pencil/core'
+import type { Color, Variable, VariableCollection, VariableValue } from '@beresta/core'
 
 export function useVariables() {
   const editor = useEditor()

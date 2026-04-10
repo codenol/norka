@@ -13,15 +13,15 @@ import type { Color, GUID, Matrix } from '../types'
 import type { NodeChange, Paint, VariableConsumptionEntry } from './codec'
 
 const fontDigestCache = new Map<string, Uint8Array>()
-const OPEN_PENCIL_PLUGIN_ID = 'open-pencil'
+const BERESTA_PLUGIN_ID = 'open-pencil'
 const TEXT_DIRECTION_PLUGIN_KEY = 'textDirection'
 const LAYOUT_DIRECTION_PLUGIN_KEY = 'layoutDirection'
 
 function upsertPluginData(node: SceneNode, key: string, value: string): void {
   const pluginData = node.pluginData.filter(
-    (entry) => !(entry.pluginId === OPEN_PENCIL_PLUGIN_ID && entry.key === key)
+    (entry) => !(entry.pluginId === BERESTA_PLUGIN_ID && entry.key === key)
   )
-  pluginData.push({ pluginId: OPEN_PENCIL_PLUGIN_ID, key, value })
+  pluginData.push({ pluginId: BERESTA_PLUGIN_ID, key, value })
   node.pluginData = pluginData
 }
 

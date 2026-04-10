@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
 
 import { bold, fmtList, kv } from '../format'
 

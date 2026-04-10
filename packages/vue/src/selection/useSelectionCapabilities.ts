@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
-import { useSelectionState } from '@open-pencil/vue/selection/useSelectionState'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useSelectionState } from '@beresta/vue/selection/useSelectionState'
 
 /**
  * Returns reactive booleans describing which selection-dependent actions are

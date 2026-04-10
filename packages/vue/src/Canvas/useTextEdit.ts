@@ -7,10 +7,10 @@ import {
   toggleBoldInRange,
   toggleDecorationInRange,
   toggleItalicInRange
-} from '@open-pencil/core'
+} from '@beresta/core'
 
-import type { SceneNode } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { SceneNode } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 
 const CARET_BLINK_MS = 530
 

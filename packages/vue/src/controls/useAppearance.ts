@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { MIXED, useNodeProps } from '@open-pencil/vue/controls/useNodeProps'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { MIXED, useNodeProps } from '@beresta/vue/controls/useNodeProps'
 
-import type { SceneNode } from '@open-pencil/core'
+import type { SceneNode } from '@beresta/core'
 
 const CORNER_RADIUS_TYPES = new Set([
   'RECTANGLE',

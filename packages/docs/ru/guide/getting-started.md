@@ -2,11 +2,11 @@
 
 ## Попробовать онлайн
 
-OpenPencil работает в браузере — установка не требуется. Откройте [app.openpencil.dev](https://app.openpencil.dev), чтобы начать проектирование.
+Beresta работает в браузере — установка не требуется. Откройте [app.beresta.dev](https://app.beresta.dev), чтобы начать проектирование.
 
 ## Скачать десктоп-приложение
 
-Собранные бинарные файлы для macOS, Windows и Linux доступны на [странице релизов](https://github.com/open-pencil/open-pencil/releases/latest).
+Собранные бинарные файлы для macOS, Windows и Linux доступны на [странице релизов](https://github.com/beresta/beresta/releases/latest).
 
 | Платформа | Загрузка |
 |----------|----------|
@@ -20,7 +20,7 @@ OpenPencil работает в браузере — установка не тр
 ## macOS через Homebrew
 
 ```sh
-brew install open-pencil/tap/open-pencil
+brew install beresta/tap/beresta
 ```
 
 Устанавливает последний подписанный релиз для macOS (Apple Silicon и Intel). Tap автоматически обновляется с каждым релизом.
@@ -35,8 +35,8 @@ brew install open-pencil/tap/open-pencil
 ## Установка
 
 ```sh
-git clone https://github.com/open-pencil/open-pencil.git
-cd open-pencil
+git clone https://github.com/beresta/open-pencil.git
+cd beresta
 bun install
 ```
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { MIXED, useNodeProps } from '@open-pencil/vue/controls/useNodeProps'
+import { MIXED, useNodeProps } from '@beresta/vue/controls/useNodeProps'
 
 const {
   updateProp,

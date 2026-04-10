@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import { useCodeConnectStore } from '@/stores/code-connect'
 import { useLibraryStore } from '@/stores/library'

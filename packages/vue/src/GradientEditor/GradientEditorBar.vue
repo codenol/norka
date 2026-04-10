@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { GradientStop } from '@open-pencil/core'
+import type { GradientStop } from '@beresta/core'
 
 const { stops } = defineProps<{
   stops: GradientStop[]

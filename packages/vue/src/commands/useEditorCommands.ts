@@ -1,11 +1,11 @@
 import { useStore } from '@nanostores/vue'
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { commandMessages } from '@open-pencil/vue/i18n'
-import { usePageList } from '@open-pencil/vue/PageList/usePageList'
-import { useSelectionCapabilities } from '@open-pencil/vue/selection/useSelectionCapabilities'
-import { useSelectionState } from '@open-pencil/vue/selection/useSelectionState'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { commandMessages } from '@beresta/vue/i18n'
+import { usePageList } from '@beresta/vue/PageList/usePageList'
+import { useSelectionCapabilities } from '@beresta/vue/selection/useSelectionCapabilities'
+import { useSelectionState } from '@beresta/vue/selection/useSelectionState'
 
 import type { Component, ComputedRef } from 'vue'
 

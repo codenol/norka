@@ -15,13 +15,13 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@open-pencil/vue": ["./src/index.ts"],
-      "@open-pencil/vue/*": ["./src/*"],
-      "@open-pencil/core": ["../core/src/index.ts"],
-      "@open-pencil/core/*": ["../core/src/*"],
-      "@open-pencil/core/editor": ["../core/src/editor/index.ts"],
-      "@open-pencil/core/render": ["../core/src/render/index.ts"],
-      "@open-pencil/core/color": ["../core/src/color.ts"]
+      "@beresta/vue": ["./src/index.ts"],
+      "@beresta/vue/*": ["./src/*"],
+      "@beresta/core": ["../core/src/index.ts"],
+      "@beresta/core/*": ["../core/src/*"],
+      "@beresta/core/editor": ["../core/src/editor/index.ts"],
+      "@beresta/core/render": ["../core/src/render/index.ts"],
+      "@beresta/core/color": ["../core/src/color.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "../core/src/global.d.ts"],

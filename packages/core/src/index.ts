@@ -352,12 +352,12 @@ export {
   parseFigmaClipboard,
   importClipboardNodes,
   figmaNodesBounds,
-  parseOpenPencilClipboard,
+  parseBerestaClipboard,
   buildFigmaClipboardHTML,
-  buildOpenPencilClipboardHTML,
+  buildBerestaClipboardHTML,
   prefetchFigmaSchema,
   type TextPictureBuilder,
-  type OpenPencilClipboardData
+  type BerestaClipboardData
 } from './clipboard'
 export { probeGlyphOutlineCommands, type GlyphOutlineProbe } from './text/opentype'
 

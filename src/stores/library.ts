@@ -11,9 +11,9 @@
  */
 
 import { shallowRef, computed, type ComputedRef } from 'vue'
-import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@open-pencil/core'
+import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@beresta/core'
 
-import type { LibraryManifest, SceneGraph } from '@open-pencil/core'
+import type { LibraryManifest, SceneGraph } from '@beresta/core'
 
 import { useCodeConnectStore } from './code-connect'
 

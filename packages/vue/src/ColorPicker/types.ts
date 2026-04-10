@@ -1,4 +1,4 @@
-import type { OkHCLColor, RenderColorSpace } from '@open-pencil/core'
+import type { OkHCLColor, RenderColorSpace } from '@beresta/core'
 
 export type ColorFieldFormat = 'rgb' | 'hsl' | 'hsb' | 'okhcl'
 

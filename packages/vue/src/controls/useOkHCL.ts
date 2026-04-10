@@ -7,11 +7,11 @@ import {
   rgbaToOkHCL,
   setNodeFillOkHCL,
   setNodeStrokeOkHCL
-} from '@open-pencil/core'
-import { useEditor } from '@open-pencil/vue/context/editorContext'
+} from '@beresta/core'
+import { useEditor } from '@beresta/vue/context/editorContext'
 
-import type { OkHCLColor, SceneNode } from '@open-pencil/core'
-import type { ColorFieldFormat } from '@open-pencil/vue/ColorPicker/types'
+import type { OkHCLColor, SceneNode } from '@beresta/core'
+import type { ColorFieldFormat } from '@beresta/vue/ColorPicker/types'
 
 export function useOkHCL() {
   const editor = useEditor()

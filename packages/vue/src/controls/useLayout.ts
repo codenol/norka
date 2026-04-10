@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useI18n } from '@open-pencil/vue/i18n'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useI18n } from '@beresta/vue/i18n'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
 import type {
   SceneNode,
@@ -10,7 +10,7 @@ import type {
   LayoutAlign,
   LayoutCounterAlign,
   GridTrack
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 type AlignCell = { primary: LayoutAlign; counter: LayoutCounterAlign }
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { colorToCSS, colorToHexRaw } from '@open-pencil/core'
+import { colorToCSS, colorToHexRaw } from '@beresta/core'
 
-import type { GradientStop } from '@open-pencil/core'
+import type { GradientStop } from '@beresta/core'
 
 const props = defineProps<{
   stop: GradientStop

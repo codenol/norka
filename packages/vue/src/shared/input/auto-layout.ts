@@ -1,8 +1,8 @@
-import { resolveNodeLayoutDirection } from '@open-pencil/core'
+import { resolveNodeLayoutDirection } from '@beresta/core'
 
 import type { DragMove } from './types'
-import type { SceneNode, Vector } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { SceneNode, Vector } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 
 function resolveLayoutDirection(parent: SceneNode, editor: Editor): 'LTR' | 'RTL' {
   const ancestor = parent.parentId ? editor.graph.getNode(parent.parentId) : null

@@ -6,13 +6,13 @@ import {
   importClipboardNodes,
   figmaNodesBounds,
   buildFigmaClipboardHTML,
-  buildOpenPencilClipboardHTML,
-  parseOpenPencilClipboard,
+  buildBerestaClipboardHTML,
+  parseBerestaClipboard,
   readFigFile,
   initCodec,
   SceneGraph,
   type SceneNode,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 function makeClipboardHtml(nodeChanges: unknown[], meta = { fileKey: 'test', pasteID: 1, dataType: 'scene' }) {
   // Minimal fig-kiwi clipboard: just meta + empty figma buffer
@@ -735,9 +735,9 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     topLevelNodes = graph.getChildren(pageId)
   })
 
-  it('OpenPencil format: zero property differences', () => {
-    const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
-    const parsed = parseOpenPencilClipboard(html)
+  it('Beresta format: zero property differences', () => {
+    const html = buildBerestaClipboardHTML(topLevelNodes, graph)
+    const parsed = parseBerestaClipboard(html)
     expect(parsed).not.toBeNull()
 
     const origAll = flatten(graph, pageId)
@@ -767,8 +767,8 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     expect(diffs).toBe(0)
   })
 
-  it('OpenPencil format: compressed data is under 1MB', () => {
-    const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
+  it('Beresta format: compressed data is under 1MB', () => {
+    const html = buildBerestaClipboardHTML(topLevelNodes, graph)
     expect(html.length).toBeLessThan(1024 * 1024)
   })
 

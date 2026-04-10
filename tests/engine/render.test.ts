@@ -18,7 +18,7 @@ import {
   Section,
   isTreeNode,
   node
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 function createGraph(): SceneGraph {
   const g = new SceneGraph()

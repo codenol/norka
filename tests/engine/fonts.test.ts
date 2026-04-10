@@ -11,7 +11,7 @@ import {
   styleToWeight,
   weightToStyle,
   SceneGraph,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id

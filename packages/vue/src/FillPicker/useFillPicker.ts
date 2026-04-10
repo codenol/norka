@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 
-import { colorToCSS } from '@open-pencil/core'
+import { colorToCSS } from '@beresta/core'
 
-import type { Fill, GradientStop } from '@open-pencil/core'
+import type { Fill, GradientStop } from '@beresta/core'
 
 type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE'
 

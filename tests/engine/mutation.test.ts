@@ -7,15 +7,15 @@ import {
   removeStyleFromRange,
   getStyleAt,
   type StyleRun,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 import {
   encodeVectorNetworkBlob,
   decodeVectorNetworkBlob,
   type VectorNetwork,
-} from '@open-pencil/core'
+} from '@beresta/core'
 
-import { SceneGraph, UndoManager } from '@open-pencil/core'
+import { SceneGraph, UndoManager } from '@beresta/core'
 
 // ---------------------------------------------------------------------------
 // toggleBoldInRange — mutation coverage

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 
-import { TypographyControlsRoot, useI18n } from '@open-pencil/vue'
+import { TypographyControlsRoot, useI18n } from '@beresta/vue'
 
 import FontPicker from '@/components/FontPicker.vue'
 import ScrubInput from '@/components/ScrubInput.vue'

@@ -8,9 +8,9 @@
 
 import { computed, shallowRef } from 'vue'
 
-import { exportFigFile, parseFigFile } from '@open-pencil/core'
+import { exportFigFile, parseFigFile } from '@beresta/core'
 
-import type { SceneGraph } from '@open-pencil/core'
+import type { SceneGraph } from '@beresta/core'
 
 // ---------------------------------------------------------------------------
 // Types

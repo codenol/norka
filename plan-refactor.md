@@ -29,7 +29,7 @@
 - Deduplicated FillSection, StrokeSection, EffectsSection (each lost 4 lines of boilerplate)
 
 ## 5. Test imports cleanup ✓
-- All tests now use `@open-pencil/core` instead of relative paths into packages/core/src/
+- All tests now use `@beresta/core` instead of relative paths into packages/core/src/
 - Merged duplicate import statements across all test files
 - Fixed 3 broken test imports (stale paths to src/engine/ and src/kiwi/)
 - Exported profiler internals and style-run helpers from core index.ts

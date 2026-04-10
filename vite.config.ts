@@ -22,8 +22,8 @@ export default defineConfig(async ({ command }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@open-pencil/vue': resolve(__dirname, 'packages/vue/src'),
-      '@open-pencil/core': resolve(__dirname, 'packages/core/src'),
+      '@beresta/vue': resolve(__dirname, 'packages/vue/src'),
+      '@beresta/core': resolve(__dirname, 'packages/core/src'),
       'opentype.js': resolve(__dirname, 'node_modules/opentype.js/dist/opentype.module.js'),
       // vue-stream-markdown eagerly loads mermaid/beautiful-mermaid as optional peer deps.
       // Alias to empty shims to avoid runtime errors and reduce bundle size.
@@ -32,7 +32,7 @@ export default defineConfig(async ({ command }) => ({
     }
   },
   define: {
-    __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__: JSON.stringify(
+    __BERESTA_LOCAL_AUTOMATION_TOKEN__: JSON.stringify(
       command === 'serve' ? devAutomationAuthToken : null
     )
   },
@@ -76,8 +76,8 @@ export default defineConfig(async ({ command }) => ({
         navigateFallback: '/index.html'
       },
       manifest: {
-        name: 'OpenPencil',
-        short_name: 'OpenPencil',
+        name: 'Beresta',
+        short_name: 'Beresta',
         description: 'Open-source design editor',
         display: 'standalone',
         orientation: 'any',

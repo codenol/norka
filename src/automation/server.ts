@@ -14,10 +14,10 @@ import {
   selectionToJSX,
   sceneNodeToJSX,
   randomHex
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 import type { EditorStore } from '@/stores/editor'
-import type { RasterExportFormat } from '@open-pencil/core'
+import type { RasterExportFormat } from '@beresta/core'
 
 export function connectAutomation(getStore: () => EditorStore, authToken: string | null = null) {
   const token = authToken ?? randomHex(32)
@@ -110,7 +110,7 @@ export function connectAutomation(getStore: () => EditorStore, authToken: string
 
   async function handleExportJsx(store: EditorStore, args: unknown): Promise<unknown> {
     const jsxArgs = args as { nodeIds?: string[]; style?: string } | undefined
-    const style = (jsxArgs?.style ?? 'openpencil') as 'openpencil' | 'tailwind'
+    const style = (jsxArgs?.style ?? 'beresta') as 'beresta' | 'tailwind'
     const currentPage = store.graph.getNode(store.state.currentPageId)
     const nodeIds = jsxArgs?.nodeIds ?? currentPage?.childIds ?? []
     const jsx =

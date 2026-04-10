@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand, calcClusterConfidence } from '@open-pencil/core'
+import { executeRpcCommand, calcClusterConfidence } from '@beresta/core'
 
 import { isAppMode, requireFile, rpc } from '../../app-client'
 import { bold, fmtList, fmtSummary } from '../../format'
 import { loadDocument } from '../../headless'
 
-import type { AnalyzeClustersResult } from '@open-pencil/core'
+import type { AnalyzeClustersResult } from '@beresta/core'
 
 function formatSignature(sig: string): string {
   const [typeSize, children] = sig.split('|')

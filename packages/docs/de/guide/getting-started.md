@@ -2,11 +2,11 @@
 
 ## Online testen
 
-OpenPencil läuft im Browser — keine Installation nötig. Öffne [app.openpencil.dev](https://app.openpencil.dev) um loszulegen.
+Beresta läuft im Browser — keine Installation nötig. Öffne [app.beresta.dev](https://app.beresta.dev) um loszulegen.
 
 ## Desktop-App herunterladen
 
-Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases-Seite](https://github.com/open-pencil/open-pencil/releases/latest) verfügbar.
+Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases-Seite](https://github.com/beresta/beresta/releases/latest) verfügbar.
 
 | Plattform | Download |
 |-----------|----------|
@@ -26,8 +26,8 @@ Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases
 ## Installation
 
 ```sh
-git clone https://github.com/open-pencil/open-pencil.git
-cd open-pencil
+git clone https://github.com/beresta/open-pencil.git
+cd beresta
 bun install
 ```
 

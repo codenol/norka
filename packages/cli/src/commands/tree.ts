@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@open-pencil/core'
+import { executeRpcCommand } from '@beresta/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { fmtTree, printError, entity, formatType } from '../format'
 import { loadDocument } from '../headless'
 
-import type { TreeResult, TreeNodeResult } from '@open-pencil/core'
+import type { TreeResult, TreeNodeResult } from '@beresta/core'
 import type { TreeNode } from 'agentfmt'
 
 function toAgentfmtTree(node: TreeNodeResult, maxDepth: number, depth = 0): TreeNode {

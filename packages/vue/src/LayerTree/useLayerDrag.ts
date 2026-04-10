@@ -12,7 +12,7 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { onScopeDispose, ref, watchEffect, type Ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@beresta/core/editor'
 
 interface DragItem {
   id: string

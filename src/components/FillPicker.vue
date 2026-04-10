@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { twMerge } from 'tailwind-merge'
 
-import { applySolidFillColor, FillPickerRoot, useI18n } from '@open-pencil/vue'
+import { applySolidFillColor, FillPickerRoot, useI18n } from '@beresta/vue'
 
 import GradientEditor from './GradientEditor.vue'
 import ColorPickerPanel from './ColorPickerPanel.vue'
@@ -9,8 +9,8 @@ import ImageFillPicker from './ImageFillPicker.vue'
 import Tip from './ui/Tip.vue'
 import { usePopoverUI } from './ui/popover'
 
-import type { Fill } from '@open-pencil/core'
-import type { OkHCLControls } from '@open-pencil/vue/ColorPicker/types'
+import type { Fill } from '@beresta/core'
+import type { OkHCLControls } from '@beresta/vue/ColorPicker/types'
 
 const TAB_BASE =
   'flex size-6 cursor-pointer items-center justify-center rounded border-none p-0 transition-colors'

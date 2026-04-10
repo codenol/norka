@@ -1,5 +1,5 @@
 import { decodeTauriStderr } from '@/utils/tauri'
-import { AUTOMATION_HTTP_PORT, IS_TAURI, randomHex } from '@open-pencil/core'
+import { AUTOMATION_HTTP_PORT, IS_TAURI, randomHex } from '@beresta/core'
 
 interface AutomationHealth {
   status: 'ok' | 'no_app'
@@ -12,7 +12,7 @@ export interface AutomationServerHandle {
   authToken: string | null
 }
 
-const DEV_AUTOMATION_AUTH_TOKEN = import.meta.env.DEV ? __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__ : null
+const DEV_AUTOMATION_AUTH_TOKEN = import.meta.env.DEV ? __BERESTA_LOCAL_AUTOMATION_TOKEN__ : null
 const noop = () => undefined
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN
@@ -65,7 +65,7 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
   runtimeAutomationAuthToken = authToken
 
   const { Command } = await import('@tauri-apps/plugin-shell')
-  const command = Command.create('openpencil-mcp', [], {
+  const command = Command.create('beresta-mcp', [], {
     env: {
       OPENPENCIL_MCP_AUTH_TOKEN: authToken,
       OPENPENCIL_MCP_CORS_ORIGIN: window.location.origin
@@ -95,6 +95,6 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
 
   await child.kill()
   throw new Error(
-    'Failed to start MCP server. Is openpencil-mcp installed? Run: npm i -g @open-pencil/mcp'
+    'Failed to start MCP server. Is beresta-mcp installed? Run: npm i -g @beresta/mcp'
   )
 }

@@ -12,7 +12,7 @@ import type {
   RequestPermissionRequest,
   RequestPermissionResponse
 } from '@agentclientprotocol/sdk'
-import type { ACPAgentDef } from '@open-pencil/core'
+import type { ACPAgentDef } from '@beresta/core'
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai'
 
 type TauriChild = {
@@ -36,7 +36,7 @@ function isMissingCommandError(message: string): boolean {
 function missingCommandMessage(agentDef?: ACPAgentDef): string {
   if (!agentDef) return 'ACP agent CLI is not installed.'
   if (!agentDef.installCommand) {
-    return `"${agentDef.command}" is not installed. Install it and restart OpenPencil.`
+    return `"${agentDef.command}" is not installed. Install it and restart Beresta.`
   }
   return `"${agentDef.command}" is not installed. Install it with: ${agentDef.installCommand}`
 }
@@ -323,7 +323,7 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
         mcpServers: [
           {
             type: 'http' as const,
-            name: 'open-pencil',
+            name: 'beresta',
             url: 'http://127.0.0.1:7600/mcp',
             headers: automationAuthToken
               ? [{ name: 'Authorization', value: `Bearer ${automationAuthToken}` }]

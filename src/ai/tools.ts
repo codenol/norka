@@ -12,10 +12,10 @@ import {
   isFontLoaded,
   loadFont,
   toolsToAI
-} from '@open-pencil/core'
+} from '@beresta/core'
 
 import type { EditorStore } from '@/stores/editor'
-import type { SceneNode, StepBudget, ToolLogEntry } from '@open-pencil/core'
+import type { SceneNode, StepBudget, ToolLogEntry } from '@beresta/core'
 
 export const MAX_AGENT_STEPS = 50
 

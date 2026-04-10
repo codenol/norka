@@ -16,7 +16,7 @@
 import { shallowRef, computed } from 'vue'
 import type { ShallowRef, ComputedRef } from 'vue'
 
-import { libraryRegistry } from '@open-pencil/core'
+import { libraryRegistry } from '@beresta/core'
 
 // ---------------------------------------------------------------------------
 // Types

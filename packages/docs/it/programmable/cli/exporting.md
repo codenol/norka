@@ -10,10 +10,10 @@ Esporta i design dal terminale — immagini raster, vettoriali o codice JSX.
 ## Esportazione Immagini
 
 ```sh
-open-pencil export design.fig                          # PNG (predefinito)
-open-pencil export design.fig -f jpg -s 2 -q 90       # JPG a 2×, qualità 90
-open-pencil export design.fig -f webp -s 3             # WEBP a 3×
-open-pencil export design.fig -f svg                   # SVG vettoriale
+beresta export design.fig                          # PNG (predefinito)
+beresta export design.fig -f jpg -s 2 -q 90       # JPG a 2×, qualità 90
+beresta export design.fig -f webp -s 3             # WEBP a 3×
+beresta export design.fig -f svg                   # SVG vettoriale
 ```
 
 Opzioni:
@@ -30,7 +30,7 @@ Opzioni:
 Esporta come JSX con classi utility Tailwind:
 
 ```sh
-open-pencil export design.fig -f jsx --style tailwind
+beresta export design.fig -f jsx --style tailwind
 ```
 
 Output:
@@ -42,12 +42,12 @@ Output:
 </div>
 ```
 
-Supporta anche `--style openpencil` per il formato JSX nativo (vedi [Renderer JSX](../jsx-renderer)).
+Supporta anche `--style beresta` per il formato JSX nativo (vedi [Renderer JSX](../jsx-renderer)).
 
 ## Miniature
 
 ```sh
-open-pencil export design.fig --thumbnail --width 1920 --height 1080
+beresta export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Modalità App in Esecuzione
@@ -55,5 +55,5 @@ open-pencil export design.fig --thumbnail --width 1920 --height 1080
 Ometti il file per esportare dall'app in esecuzione:
 
 ```sh
-open-pencil export -f png    # screenshot del canvas corrente
+beresta export -f png    # screenshot del canvas corrente
 ```

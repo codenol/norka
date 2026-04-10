@@ -10,12 +10,12 @@ Export designs from the terminal — raster images, vectors, `.fig` subsets, or 
 ## Image Export
 
 ```sh
-open-pencil export design.fig                           # PNG (default)
-open-pencil export design.fig -f jpg -s 2 -q 90        # JPG at 2×, quality 90
-open-pencil export design.fig -f webp -s 3             # WEBP at 3×
-open-pencil export design.fig -f svg                   # SVG vector
-open-pencil export design.fig -f fig --page "Page 1"   # export one page as .fig
-open-pencil export design.fig -f fig --node 1:23        # export one node as .fig
+beresta export design.fig                           # PNG (default)
+beresta export design.fig -f jpg -s 2 -q 90        # JPG at 2×, quality 90
+beresta export design.fig -f webp -s 3             # WEBP at 3×
+beresta export design.fig -f svg                   # SVG vector
+beresta export design.fig -f fig --page "Page 1"   # export one page as .fig
+beresta export design.fig -f fig --node 1:23        # export one node as .fig
 ```
 
 Options:
@@ -32,7 +32,7 @@ Options:
 Export as JSX with Tailwind utility classes:
 
 ```sh
-open-pencil export design.fig -f jsx --style tailwind
+beresta export design.fig -f jsx --style tailwind
 ```
 
 Output:
@@ -44,12 +44,12 @@ Output:
 </div>
 ```
 
-Also supports `--style openpencil` for the native JSX format (see [JSX Renderer](../jsx-renderer)).
+Also supports `--style beresta` for the native JSX format (see [JSX Renderer](../jsx-renderer)).
 
 ## Thumbnails
 
 ```sh
-open-pencil export design.fig --thumbnail --width 1920 --height 1080
+beresta export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Live App Mode
@@ -57,5 +57,5 @@ open-pencil export design.fig --thumbnail --width 1920 --height 1080
 Omit the file to export from the running app:
 
 ```sh
-open-pencil export -f png    # screenshot the current canvas
+beresta export -f png    # screenshot the current canvas
 ```

@@ -7,12 +7,12 @@ import {
   DEFAULT_TEXT_WIDTH,
   DEFAULT_TEXT_HEIGHT,
   degToRad
-} from '@open-pencil/core'
-import { handleDrawMove, handleDrawUp } from '@open-pencil/vue/shared/input/draw'
-import { hitTestCornerRotation } from '@open-pencil/vue/shared/input/geometry'
-import { handleMoveMove, handleMoveUp } from '@open-pencil/vue/shared/input/move'
-import { setupPanZoom } from '@open-pencil/vue/shared/input/pan-zoom'
-import { applyResize } from '@open-pencil/vue/shared/input/resize'
+} from '@beresta/core'
+import { handleDrawMove, handleDrawUp } from '@beresta/vue/shared/input/draw'
+import { hitTestCornerRotation } from '@beresta/vue/shared/input/geometry'
+import { handleMoveMove, handleMoveUp } from '@beresta/vue/shared/input/move'
+import { setupPanZoom } from '@beresta/vue/shared/input/pan-zoom'
+import { applyResize } from '@beresta/vue/shared/input/resize'
 import {
   handlePenNodeEditDown,
   handleNodeEditMove,
@@ -22,17 +22,17 @@ import {
   isEndpoint,
   NODE_HIT_THRESHOLD,
   type HitTestFns
-} from '@open-pencil/vue/shared/input/select'
-import { TOOL_TO_NODE } from '@open-pencil/vue/shared/input/types'
+} from '@beresta/vue/shared/input/select'
+import { TOOL_TO_NODE } from '@beresta/vue/shared/input/types'
 
-import type { SceneNode, Vector, VectorSegment } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { SceneNode, Vector, VectorSegment } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 import type {
   DragMarquee,
   DragPan,
   DragRotate,
   DragState
-} from '@open-pencil/vue/shared/input/types'
+} from '@beresta/vue/shared/input/types'
 
 type NodeEditState = {
   segments: VectorSegment[]
@@ -58,7 +58,7 @@ type NodeEditMethods = Partial<{
 }>
 
 /**
- * Wires pointer and mouse interaction to an OpenPencil canvas.
+ * Wires pointer and mouse interaction to an Beresta canvas.
  *
  * This composable coordinates selection, dragging, resizing, rotation,
  * panning, drawing tools, scoped hit testing, and text-edit interaction.

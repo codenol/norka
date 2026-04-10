@@ -1,8 +1,8 @@
 import { computed, ref, type Ref } from 'vue'
 
-import { colorToCSS, parseColor } from '@open-pencil/core'
+import { colorToCSS, parseColor } from '@beresta/core'
 
-import type { Color, Fill, GradientStop, GradientTransform } from '@open-pencil/core'
+import type { Color, Fill, GradientStop, GradientTransform } from '@beresta/core'
 
 type GradientSubtype =
   | 'GRADIENT_LINEAR'

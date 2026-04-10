@@ -1,7 +1,7 @@
 import { type InjectionKey, inject, provide } from 'vue'
 
-import type { SceneNode } from '@open-pencil/core'
-import type { Editor } from '@open-pencil/core/editor'
+import type { SceneNode } from '@beresta/core'
+import type { Editor } from '@beresta/core/editor'
 import type { ComputedRef } from 'vue'
 
 type ArrayPropKey = 'fills' | 'strokes' | 'effects'
@@ -28,6 +28,6 @@ export function providePropertyList<T>(ctx: PropertyListContext<T>) {
 
 export function usePropertyList<T = unknown>(): PropertyListContext<T> {
   const ctx = inject(PROPERTY_LIST_KEY)
-  if (!ctx) throw new Error('[open-pencil] usePropertyList() called outside <PropertyListRoot>')
+  if (!ctx) throw new Error('[beresta] usePropertyList() called outside <PropertyListRoot>')
   return ctx as PropertyListContext<T>
 }

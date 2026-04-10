@@ -4,8 +4,8 @@ import { computed, ref } from 'vue'
 import ProviderSelectField from '@/components/chat/ProviderSelectField.vue'
 import { useInputUI } from '@/components/ui/input'
 import { useAIChat } from '@/composables/use-chat'
-import { ACP_AGENTS } from '@open-pencil/core'
-import { useI18n } from '@open-pencil/vue'
+import { ACP_AGENTS } from '@beresta/core'
+import { useI18n } from '@beresta/vue'
 
 const { providerID, providerDef, setAPIKey, customBaseURL, customModelID } = useAIChat()
 const { dialogs } = useI18n()

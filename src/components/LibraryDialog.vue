@@ -13,7 +13,7 @@ import {
   TabsTrigger,
 } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import { useLibraryStore } from '@/stores/library'
 import { useLibraryUrlStore } from '@/stores/library-url'

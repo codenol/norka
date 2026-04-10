@@ -346,7 +346,7 @@ export async function buildFigmaClipboardHTML(
     sessionID: 0,
     ackID: 0,
     pasteID: randomInt(),
-    pasteFileKey: 'openpencil',
+    pasteFileKey: 'beresta',
     nodeChanges
   }
 
@@ -359,7 +359,7 @@ export async function buildFigmaClipboardHTML(
   const bufferB64 = figKiwiBinary.toBase64()
 
   const meta: FigmaClipboardMeta = {
-    fileKey: 'openpencil',
+    fileKey: 'beresta',
     pasteID: msg.pasteID as number,
     dataType: 'scene'
   }
@@ -372,15 +372,15 @@ export async function buildFigmaClipboardHTML(
   )
 }
 
-// --- Internal copy/paste (OpenPencil ↔ OpenPencil) ---
+// --- Internal copy/paste (Beresta ↔ Beresta) ---
 
-export interface OpenPencilClipboardData {
+export interface BerestaClipboardData {
   nodes: Array<SceneNode & { children?: SceneNode[] }>
   images: Map<string, Uint8Array>
 }
 
-export function parseOpenPencilClipboard(html: string): OpenPencilClipboardData | null {
-  const match = html.match(/<!--\(openpencil\)(.*?)\(\/openpencil\)-->/s)
+export function parseBerestaClipboard(html: string): BerestaClipboardData | null {
+  const match = html.match(/<!--\(beresta\)(.*?)\(\/beresta\)-->/s)
   if (!match) return null
 
   try {
@@ -392,7 +392,7 @@ export function parseOpenPencilClipboard(html: string): OpenPencilClipboardData 
       bytes = raw
     }
     const decoded = JSON.parse(new TextDecoder().decode(bytes))
-    if (decoded.format === 'openpencil/v1' && Array.isArray(decoded.nodes)) {
+    if (decoded.format === 'beresta/v1' && Array.isArray(decoded.nodes)) {
       restoreTextPictures(decoded.nodes)
       const images = new Map<string, Uint8Array>()
       if (decoded.images && typeof decoded.images === 'object') {
@@ -405,7 +405,7 @@ export function parseOpenPencilClipboard(html: string): OpenPencilClipboardData 
       return { nodes: decoded.nodes, images }
     }
   } catch (e) {
-    console.warn('Failed to parse OpenPencil clipboard data:', e)
+    console.warn('Failed to parse Beresta clipboard data:', e)
   }
   return null
 }
@@ -437,7 +437,7 @@ function collectImageHashes(nodes: SceneNode[], graph: SceneGraph): Set<string> 
   return hashes
 }
 
-export function buildOpenPencilClipboardHTML(
+export function buildBerestaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph,
   textPictureBuilder?: TextPictureBuilder
@@ -450,12 +450,12 @@ export function buildOpenPencilClipboardHTML(
     if (bytes) images[hash] = bytes.toBase64()
   }
   const data = {
-    format: 'openpencil/v1',
+    format: 'beresta/v1',
     nodes: nodeTree,
     images
   }
   const compressed = deflateSync(new TextEncoder().encode(JSON.stringify(data)))
-  return `<!--(openpencil)${compressed.toBase64()}(/openpencil)-->`
+  return `<!--(beresta)${compressed.toBase64()}(/beresta)-->`
 }
 
 function collectNodeTree(

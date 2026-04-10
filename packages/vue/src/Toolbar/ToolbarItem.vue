@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import { useToolbar } from './context'
 
-import type { Tool } from '@open-pencil/core/editor'
+import type { Tool } from '@beresta/core/editor'
 
 const { tool } = defineProps<{
   tool: Tool

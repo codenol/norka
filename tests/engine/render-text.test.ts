@@ -3,14 +3,14 @@ import { renderText } from '../../packages/core/src/canvas/scene'
 import type { SceneNode } from '../../packages/core/src/scene-graph'
 import type { SkiaRenderer } from '../../packages/core/src/canvas/renderer'
 import { initCanvasKit } from '../../packages/cli/src/headless'
-import { SceneGraph, SkiaRenderer as SkiaRendererClass } from '@open-pencil/core'
+import { SceneGraph, SkiaRenderer as SkiaRendererClass } from '@beresta/core'
 import {
   initFontService,
   setArabicFallbackFamily,
   setCJKFallbackFamily,
   markFontLoaded
 } from '../../packages/core/src/text/fonts'
-import { detectTextDirection, resolveTextDirection } from '@open-pencil/core'
+import { detectTextDirection, resolveTextDirection } from '@beresta/core'
 
 function createMockCanvas() {
   return {

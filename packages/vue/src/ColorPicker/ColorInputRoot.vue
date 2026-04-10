@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { colorToHexRaw, parseColor } from '@open-pencil/core'
+import { colorToHexRaw, parseColor } from '@beresta/core'
 
-import type { Color } from '@open-pencil/core'
+import type { Color } from '@beresta/core'
 import type { OkHCLControls } from './types'
 
 const props = defineProps<{

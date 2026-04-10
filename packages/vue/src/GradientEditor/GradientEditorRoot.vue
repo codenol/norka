@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { colorToCSS, parseColor } from '@open-pencil/core'
+import { colorToCSS, parseColor } from '@beresta/core'
 
-import type { Fill, GradientStop, GradientTransform } from '@open-pencil/core'
+import type { Fill, GradientStop, GradientTransform } from '@beresta/core'
 
 type GradientSubtype =
   | 'GRADIENT_LINEAR'

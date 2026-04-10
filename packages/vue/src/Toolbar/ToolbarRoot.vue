@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { EDITOR_TOOLS } from '@open-pencil/core/editor'
+import { EDITOR_TOOLS } from '@beresta/core/editor'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
+import { useEditor } from '@beresta/vue/context/editorContext'
 import { provideToolbar } from './context'
 
-import type { EditorToolDef, Tool } from '@open-pencil/core/editor'
+import type { EditorToolDef, Tool } from '@beresta/core/editor'
 
 const { tools = EDITOR_TOOLS } = defineProps<{
   tools?: EditorToolDef[]

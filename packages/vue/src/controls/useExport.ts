@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core'
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 
 export type ExportFormatId = 'png' | 'jpg' | 'webp' | 'svg' | 'fig'
 export type ExportPanelTarget = 'selection' | 'page'

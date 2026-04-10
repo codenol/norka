@@ -8,7 +8,7 @@ import {
   extractImageFilesFromClipboard,
   useEditorCommands,
   useViewportKind
-} from '@open-pencil/vue'
+} from '@beresta/vue'
 
 import { openFileDialog } from './use-menu'
 

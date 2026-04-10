@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useEditor } from '@open-pencil/vue/context/editorContext'
-import { useNodeProps } from '@open-pencil/vue/controls/useNodeProps'
-import { useSceneComputed } from '@open-pencil/vue/internal/useSceneComputed'
+import { useEditor } from '@beresta/vue/context/editorContext'
+import { useNodeProps } from '@beresta/vue/controls/useNodeProps'
+import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
 import { providePropertyList } from './context'
 
-import type { Fill, Stroke, Effect, SceneNode } from '@open-pencil/core'
+import type { Fill, Stroke, Effect, SceneNode } from '@beresta/core'
 
 type ArrayPropKey = 'fills' | 'strokes' | 'effects'
 type ArrayItemType = Fill | Stroke | Effect

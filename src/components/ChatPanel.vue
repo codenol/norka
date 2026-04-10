@@ -13,7 +13,7 @@ import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 import { useAIChat } from '@/composables/use-chat'
 import { toast } from '@/utils/toast'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@beresta/vue'
 
 import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'

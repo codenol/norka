@@ -2,11 +2,11 @@
 
 ## Wypróbuj online
 
-OpenPencil działa w przeglądarce — bez instalacji. Otwórz [app.openpencil.dev](https://app.openpencil.dev).
+Beresta działa w przeglądarce — bez instalacji. Otwórz [app.beresta.dev](https://app.beresta.dev).
 
 ## Pobierz aplikację desktopową
 
-Binaria dla macOS, Windows i Linux na [stronie wydań](https://github.com/open-pencil/open-pencil/releases/latest).
+Binaria dla macOS, Windows i Linux na [stronie wydań](https://github.com/beresta/beresta/releases/latest).
 
 | Platforma | Pobieranie |
 |-----------|-----------|
@@ -19,8 +19,8 @@ Binaria dla macOS, Windows i Linux na [stronie wydań](https://github.com/open-p
 ## Kompilacja ze źródeł
 
 ```sh
-git clone https://github.com/open-pencil/open-pencil.git
-cd open-pencil
+git clone https://github.com/beresta/open-pencil.git
+cd beresta
 bun install
 bun run dev
 ```
