@@ -184,7 +184,23 @@ export const panelMessages = i18n('panels', {
   sizingHugShort: 'Hug',
   sizingFillShort: 'Fill',
   sizingFillFr: 'Fill (fr)',
-  sizingFixedPx: 'Fixed (px)'
+  sizingFixedPx: 'Fixed (px)',
+
+  lint: 'Lint',
+  lintRun: 'Run',
+  lintRunning: 'Running…',
+  lintNoIssues: 'No issues found',
+  lintErrors: 'Errors',
+  lintWarnings: 'Warnings',
+  lintInfos: 'Info',
+  lintAllPages: 'All pages',
+  lintCurrentPage: 'Current page',
+  lintPresetRecommended: 'Recommended',
+  lintPresetStrict: 'Strict',
+  lintPresetAccessibility: 'Accessibility',
+  lintNotRun: 'Not run yet',
+  lintOpenPanel: 'Open lint panel',
+  lintIssueCount: 'issues'
 })
 
 export const pageMessages = i18n('pages', {

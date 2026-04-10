@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 
 import { useI18n, useSelectionState, useEditorCommands } from '@open-pencil/vue'
+import { useAIChat } from '@/composables/use-chat'
 
 import VariablesDialog from './VariablesDialog.vue'
 import StylesDialog from './StylesDialog.vue'
@@ -20,7 +21,9 @@ import VariablesSection from './properties/VariablesSection.vue'
 import StylesSection from './properties/StylesSection.vue'
 import StyleBadge from './properties/StyleBadge.vue'
 import LibrarySection from './properties/LibrarySection.vue'
+import LintSection from './properties/LintSection.vue'
 
+const { activeTab } = useAIChat()
 const variablesOpen = ref(false)
 const stylesOpen = ref(false)
 const libraryDialogOpen = ref(false)
@@ -119,6 +122,7 @@ const { panels } = useI18n()
     <VariablesSection @open-dialog="variablesOpen = true" />
     <StylesSection @open-dialog="stylesOpen = true" />
     <LibrarySection @open-panel="libraryPanelOpen = true" @open-dialog="libraryDialogOpen = true" />
+    <LintSection @open-panel="activeTab = 'lint'" />
     <ExportSection />
   </div>
 
