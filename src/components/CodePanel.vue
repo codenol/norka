@@ -193,7 +193,7 @@ function copyFull() {
       @click="codeConnectOpen = true"
     >
       <icon-lucide-alert-triangle class="size-3 shrink-0" />
-      <span>{{ unmappedCount }} {{ dialogs.unmappedInstances.replace('{count}', String(unmappedCount)) }} →</span>
+      <span>{{ dialogs.unmappedInstances({ count: String(unmappedCount) }) }} →</span>
     </div>
 
     <!-- Code viewer -->
