@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ update: [color: Color] }>()
 
-const swatchBg = computed(() => colorToCSS(props.color))
+const swatchBg = computed(() => props.color ? colorToCSS(props.color) : 'transparent')
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const swatchBg = computed(() => colorToCSS(props.color))
         :side-offset="4"
         side="left"
       >
-        <slot :color="color" :update="(nextColor: Color) => emit('update', nextColor)" />
+        <slot :color="props.color" :update="(nextColor: Color) => emit('update', nextColor)" />
       </PopoverContent>
     </PopoverPortal>
   </PopoverRoot>

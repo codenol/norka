@@ -26,10 +26,10 @@ const emit = defineEmits<{ update: [color: Color] }>()
     @update="emit('update', $event)"
   >
     <template
-      #default="{ editable: isEditable, hex, updateFromHex, updateColor, okhcl: okhclControls }"
+      #default="{ color: slotColor, editable: isEditable, hex, updateFromHex, updateColor, okhcl: okhclControls }"
     >
       <div class="flex items-center gap-1.5">
-        <ColorPicker :color="color" :okhcl="okhclControls" @update="updateColor($event)" />
+        <ColorPicker :color="slotColor" :okhcl="okhclControls" @update="updateColor($event)" />
         <input
           v-if="isEditable"
           data-test-id="color-hex-input"
