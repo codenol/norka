@@ -10,6 +10,7 @@ import ChatPanel from './ChatPanel.vue'
 import CodePanel from './CodePanel.vue'
 import DesignPanel from './DesignPanel.vue'
 import LintPanel from './LintPanel.vue'
+import SnapshotsPanel from './SnapshotsPanel.vue'
 import ZoomDropdown from './ZoomDropdown.vue'
 
 const { activeTab } = useAIChat()
@@ -68,6 +69,14 @@ const lintBadgeCount = computed(() => lintErrorCount.value || lintWarningCount.v
             {{ lintBadgeCount > 9 ? '9+' : lintBadgeCount }}
           </span>
         </TabsTrigger>
+        <TabsTrigger
+          value="snapshots"
+          data-test-id="properties-tab-snapshots"
+          class="flex items-center gap-1 rounded px-2.5 py-1 text-xs text-muted hover:text-surface data-[state=active]:font-semibold data-[state=active]:text-surface"
+        >
+          <icon-lucide-history class="size-3" />
+          {{ panels.snapshots }}
+        </TabsTrigger>
         <ZoomDropdown v-if="activeTab === 'design'" />
       </TabsList>
 
@@ -106,6 +115,16 @@ const lintBadgeCount = computed(() => lintErrorCount.value || lintWarningCount.v
         :hidden="activeTab !== 'lint'"
       >
         <LintPanel v-if="activeTab === 'lint'" />
+      </TabsContent>
+
+      <TabsContent
+        value="snapshots"
+        data-test-id="properties-tab-snapshots-content"
+        class="flex min-h-0 flex-1 flex-col"
+        :force-mount="true"
+        :hidden="activeTab !== 'snapshots'"
+      >
+        <SnapshotsPanel v-if="activeTab === 'snapshots'" />
       </TabsContent>
     </TabsRoot>
   </aside>

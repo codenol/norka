@@ -210,7 +210,22 @@ export const panelMessages = i18n('panels', {
   lintPresetAccessibility: 'Accessibility',
   lintNotRun: 'Not run yet',
   lintOpenPanel: 'Open lint panel',
-  lintIssueCount: 'issues'
+  lintIssueCount: 'issues',
+
+  snapshots: 'Snapshots',
+  snapshotCreate: 'Save',
+  snapshotSaving: 'Saving…',
+  snapshotRestoring: 'Restoring…',
+  snapshotNamePlaceholder: 'Snapshot name…',
+  snapshotEmpty: 'No snapshots yet. Save one to record the current state.',
+  snapshotRestore: 'Restore',
+  snapshotRestoreConfirm: 'Restore',
+  snapshotRestoreWarning: 'This will replace the current document and clear undo history.',
+  snapshotCancel: 'Cancel',
+  snapshotDelete: 'Delete',
+  snapshotRenameHint: 'Double-click to rename',
+  snapshotPagesLabel: 'pages',
+  snapshotNodesLabel: 'nodes'
 })
 
 export const pageMessages = i18n('pages', {
