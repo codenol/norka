@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import type { GradientStop } from '@beresta/core'
 
-const { stops } = defineProps<{
+const props = defineProps<{
   stops: GradientStop[]
   activeStopIndex: number
   barBackground: string
@@ -44,9 +44,9 @@ defineExpose({ barRef })
 
 <template>
   <slot
-    :stops="stops"
-    :active-stop-index="activeStopIndex"
-    :bar-background="barBackground"
+    :stops="props.stops"
+    :active-stop-index="props.activeStopIndex"
+    :bar-background="props.barBackground"
     :bar-ref="setBarRef"
     :on-stop-pointer-down="onStopPointerDown"
     :on-pointer-move="onPointerMove"

@@ -24,16 +24,16 @@ const DEFAULT_TRANSFORMS: Record<GradientSubtype, GradientTransform> = {
   GRADIENT_DIAMOND: { m00: 0.5, m01: 0, m02: 0.5, m10: 0, m11: 0.5, m12: 0.5 }
 }
 
-const { fill } = defineProps<{ fill: Fill }>()
+const props = defineProps<{ fill: Fill }>()
 const emit = defineEmits<{ update: [fill: Fill] }>()
 
 const activeStopIndex = ref(0)
-const stops = computed(() => fill.gradientStops ?? [])
-const subtype = computed(() => fill.type as GradientSubtype)
+const stops = computed(() => props.fill.gradientStops ?? [])
+const subtype = computed(() => props.fill.type as GradientSubtype)
 
 const activeColor = computed(() => {
   const s = stops.value
-  if (!s.length) return fill.color
+  if (!s.length) return props.fill.color
   return s[Math.min(activeStopIndex.value, s.length - 1)].color
 })
 
@@ -44,12 +44,12 @@ const barBackground = computed(() =>
 )
 
 function emitStops(newStops: GradientStop[]) {
-  emit('update', { ...fill, gradientStops: newStops })
+  emit('update', { ...props.fill, gradientStops: newStops })
 }
 
 function setSubtype(type: GradientSubtype) {
-  if (type === fill.type) return
-  emit('update', { ...fill, type, gradientTransform: DEFAULT_TRANSFORMS[type] })
+  if (type === props.fill.type) return
+  emit('update', { ...props.fill, type, gradientTransform: DEFAULT_TRANSFORMS[type] })
 }
 
 function selectStop(index: number) {

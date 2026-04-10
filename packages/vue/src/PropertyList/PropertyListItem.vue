@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePropertyList } from './context'
 
-const { index } = defineProps<{
+const props = defineProps<{
   index: number
 }>()
 
@@ -17,29 +17,29 @@ const { update, patch, remove, toggleVisibility } = usePropertyList()
 
 <template>
   <slot
-    :index="index"
+    :index="props.index"
     :update="
       (item: unknown) => {
-        emit('update', index, item)
-        update(index, item)
+        emit('update', props.index, item)
+        update(props.index, item)
       }
     "
     :patch="
       (changes: Record<string, unknown>) => {
-        emit('patch', index, changes)
-        patch(index, changes)
+        emit('patch', props.index, changes)
+        patch(props.index, changes)
       }
     "
     :remove="
       () => {
-        emit('remove', index)
-        remove(index)
+        emit('remove', props.index)
+        remove(props.index)
       }
     "
     :toggle-visibility="
       () => {
-        emit('toggleVisibility', index)
-        toggleVisibility(index)
+        emit('toggleVisibility', props.index)
+        toggleVisibility(props.index)
       }
     "
   />

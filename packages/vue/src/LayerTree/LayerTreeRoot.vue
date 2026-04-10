@@ -6,9 +6,11 @@ import { provideLayerTree } from './context'
 
 import type { LayerNode } from './context'
 
-const { indentPerLevel = 16 } = defineProps<{
+const props = defineProps<{
   indentPerLevel?: number
 }>()
+
+const indentPerLevel = computed(() => props.indentPerLevel ?? 16)
 
 const emit = defineEmits<{
   select: [id: string, additive: boolean]
@@ -111,7 +113,7 @@ provideLayerTree({
   expanded,
   treeKey,
   selectedIds,
-  indentPerLevel,
+  indentPerLevel: indentPerLevel.value,
   select,
   toggleExpand,
   toggleVisibility: (id: string) => {

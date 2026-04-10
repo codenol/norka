@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { TooltipContent, TooltipPortal, TooltipRoot, TooltipTrigger } from 'reka-ui'
 
 import { useTooltipUI } from '@/components/ui/tooltip'
 
 const cls = useTooltipUI({ content: 'animate-in zoom-in-95 fade-in' })
 
-const { side = 'top' } = defineProps<{
+const props = defineProps<{
   label: string
   side?: 'top' | 'bottom' | 'left' | 'right'
 }>()
+
+const side = computed(() => props.side ?? 'top')
 </script>
 
 <template>

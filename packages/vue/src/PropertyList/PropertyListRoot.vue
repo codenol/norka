@@ -11,7 +11,7 @@ import type { Fill, Stroke, Effect, SceneNode } from '@beresta/core'
 type ArrayPropKey = 'fills' | 'strokes' | 'effects'
 type ArrayItemType = Fill | Stroke | Effect
 
-const { propKey } = defineProps<{
+const props = defineProps<{
   propKey: ArrayPropKey
   label?: string
 }>()
@@ -38,12 +38,12 @@ const activeNode = useSceneComputed<SceneNode | null>(() => {
 const isMulti = computed(() => selectedNodes.value.length > 1)
 const active = computed(() => selectedNodes.value.length > 0)
 
-const isMixed = computed(() => isArrayMixed(propKey))
+const isMixed = computed(() => isArrayMixed(props.propKey))
 
 const items = useSceneComputed(() => {
   void editor.state.sceneVersion
   if (isMixed.value) return []
-  return (activeNode.value?.[propKey] ?? []) as ArrayItemType[]
+  return (activeNode.value?.[props.propKey] ?? []) as ArrayItemType[]
 })
 
 function targetNodes(): SceneNode[] {
@@ -54,11 +54,11 @@ function targetNodes(): SceneNode[] {
 function add(defaults: ArrayItemType) {
   emit('add', defaults)
   for (const n of targetNodes()) {
-    const arr = isMulti.value ? [defaults] : [...n[propKey], defaults]
+    const arr = isMulti.value ? [defaults] : [...n[props.propKey], defaults]
     editor.updateNodeWithUndo(
       n.id,
-      { [propKey]: arr } as Partial<SceneNode>,
-      isMulti.value ? `Set ${propKey}` : `Add ${propKey}`
+      { [props.propKey]: arr } as Partial<SceneNode>,
+      isMulti.value ? `Set ${props.propKey}` : `Add ${props.propKey}`
     )
   }
 }
@@ -69,9 +69,9 @@ function remove(index: number) {
     editor.updateNodeWithUndo(
       n.id,
       {
-        [propKey]: (n[propKey] as ArrayItemType[]).filter((_, i) => i !== index)
+        [props.propKey]: (n[props.propKey] as ArrayItemType[]).filter((_, i) => i !== index)
       } as Partial<SceneNode>,
-      `Remove ${propKey}`
+      `Remove ${props.propKey}`
     )
   }
 }
@@ -79,18 +79,18 @@ function remove(index: number) {
 function update(index: number, item: ArrayItemType) {
   emit('update', index, item)
   for (const n of targetNodes()) {
-    const arr = [...n[propKey]] as ArrayItemType[]
+    const arr = [...n[props.propKey]] as ArrayItemType[]
     arr[index] = item
-    editor.updateNodeWithUndo(n.id, { [propKey]: arr } as Partial<SceneNode>, `Change ${propKey}`)
+    editor.updateNodeWithUndo(n.id, { [props.propKey]: arr } as Partial<SceneNode>, `Change ${props.propKey}`)
   }
 }
 
 function patch(index: number, changes: Record<string, unknown>) {
   emit('patch', index, changes)
   for (const n of targetNodes()) {
-    const arr = [...n[propKey]] as ArrayItemType[]
+    const arr = [...n[props.propKey]] as ArrayItemType[]
     arr[index] = { ...arr[index], ...changes } as ArrayItemType
-    editor.updateNodeWithUndo(n.id, { [propKey]: arr } as Partial<SceneNode>, `Change ${propKey}`)
+    editor.updateNodeWithUndo(n.id, { [props.propKey]: arr } as Partial<SceneNode>, `Change ${props.propKey}`)
   }
 }
 
@@ -99,19 +99,19 @@ function toggleVisibility(index: number) {
   const nodes = targetNodes()
   if (nodes.length === 0) return
   if (nodes.length > 1) {
-    editor.undo.beginBatch(`Toggle ${propKey} visibility`)
+    editor.undo.beginBatch(`Toggle ${props.propKey} visibility`)
   }
   for (const n of nodes) {
     const liveNode = editor.getNode(n.id)
     if (!liveNode) continue
-    const arr = liveNode[propKey] as Array<{ visible: boolean }>
+    const arr = liveNode[props.propKey] as Array<{ visible: boolean }>
     if (!arr[index]) continue
-    const newArr = [...liveNode[propKey]] as Array<{ visible: boolean }>
+    const newArr = [...liveNode[props.propKey]] as Array<{ visible: boolean }>
     newArr[index] = { ...newArr[index], visible: !arr[index].visible }
     editor.updateNodeWithUndo(
       n.id,
-      { [propKey]: newArr } as Partial<SceneNode>,
-      `Toggle ${propKey} visibility`
+      { [props.propKey]: newArr } as Partial<SceneNode>,
+      `Toggle ${props.propKey} visibility`
     )
   }
   if (nodes.length > 1) {
@@ -121,7 +121,7 @@ function toggleVisibility(index: number) {
 
 providePropertyList({
   editor,
-  propKey,
+  propKey: props.propKey,
   items,
   isMixed,
   activeNode,
