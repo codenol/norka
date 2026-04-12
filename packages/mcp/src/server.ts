@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { createRequire } from 'node:module'
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
@@ -18,8 +17,9 @@ import {
 
 import type { ParamDef, ParamType } from '@beresta/core'
 
-const require = createRequire(import.meta.url)
-const MCP_VERSION: string = (require('../package.json') as { version: string }).version
+// Version is read via static import so bun --compile can bundle it correctly.
+import mcpPkg from '../package.json' with { type: 'json' }
+const MCP_VERSION: string = mcpPkg.version
 
 type MCPContent = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
 type MCPResult = { content: MCPContent[]; isError?: boolean }

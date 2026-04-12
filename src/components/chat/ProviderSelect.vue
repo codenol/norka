@@ -1,37 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 
 import AppGroupedSelect from '@/components/ui/AppGroupedSelect.vue'
-import { ACP_AGENTS, AI_PROVIDERS, AUTOMATION_HTTP_PORT, IS_TAURI } from '@beresta/core'
+import { ACP_AGENTS, AI_PROVIDERS, IS_TAURI } from '@beresta/core'
 import { useAIChat } from '@/composables/use-chat'
 
 const { providerID, providerDef } = useAIChat()
 
-const mcpAvailable = ref(false)
-
-async function checkMCPHealth(retries = 3, delayMs = 1000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(`http://127.0.0.1:${AUTOMATION_HTTP_PORT}/health`, {
-        signal: AbortSignal.timeout(2000)
-      })
-      if (res.ok) {
-        mcpAvailable.value = true
-        return
-      }
-    } catch {
-      if (i < retries - 1) await new Promise((r) => setTimeout(r, delayMs))
-    }
-  }
-}
-
-if (IS_TAURI) {
-  onMounted(() => {
-    void checkMCPHealth()
-  })
-}
-
-const acpAgents = computed(() => (IS_TAURI && mcpAvailable.value ? ACP_AGENTS : []))
+// Show ACP agents whenever running in the Tauri desktop app
+const acpAgents = computed(() => (IS_TAURI ? ACP_AGENTS : []))
 
 const displayName = computed(() => {
   if (providerID.value.startsWith('acp:')) {

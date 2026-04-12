@@ -16,6 +16,8 @@ const devAutomationAuthToken = randomUUID()
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST
+// @ts-expect-error process is a nodejs global
+const isTauriBuild = !!process.env.TAURI_ENV_PLATFORM
 const devAutomationCorsOrigin = host ? `http://${host}:1420` : 'http://localhost:1420'
 
 export default defineConfig(async ({ command }) => ({
@@ -70,11 +72,15 @@ export default defineConfig(async ({ command }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: { enabled: false },
-      workbox: {
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,wasm,png,ico,ttf,webmanifest}'],
-        navigateFallback: '/index.html'
-      },
+      ...(isTauriBuild
+        ? { selfDestroying: true }
+        : {
+            workbox: {
+              maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+              globPatterns: ['**/*.{js,css,html,wasm,png,ico,ttf,webmanifest}'],
+              navigateFallback: '/index.html'
+            }
+          }),
       manifest: {
         name: 'Beresta',
         short_name: 'Beresta',

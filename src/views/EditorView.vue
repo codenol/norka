@@ -21,6 +21,7 @@ import EditorCanvas from '@/components/EditorCanvas.vue'
 import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud.vue'
+import PreviewPanel from '@/components/PreviewPanel.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import SafariBanner from '@/components/SafariBanner.vue'
 import TabBar from '@/components/TabBar.vue'
@@ -97,11 +98,12 @@ onUnmounted(() => {
       >
         <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />
       </SplitterResizeHandle>
-      <SplitterPanel :default-size="64" :min-size="30" class="flex">
+      <SplitterPanel :default-size="64" :min-size="30" class="flex flex-col">
         <div class="relative flex min-w-0 flex-1">
           <EditorCanvas />
           <Toolbar />
         </div>
+        <PreviewPanel />
       </SplitterPanel>
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
         <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />

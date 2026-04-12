@@ -131,6 +131,7 @@ export type AIProviderID =
   | 'openai'
   | 'google'
   | 'openai-compatible'
+  | 'lm-studio'
   | 'zai'
   | 'minimax'
   | 'anthropic-compatible'
@@ -151,6 +152,7 @@ export interface AIProviderDef {
   defaultModel: string
   supportsCustomBaseURL?: boolean
   supportsCustomModel?: boolean
+  localBaseURL?: string
 }
 
 export const AI_PROVIDERS: AIProviderDef[] = [
@@ -249,6 +251,17 @@ export const AI_PROVIDERS: AIProviderDef[] = [
       { id: 'MiniMax-M2.1-highspeed', name: 'MiniMax-M2.1 Highspeed', tag: 'Fast' },
       { id: 'MiniMax-M2', name: 'MiniMax-M2' }
     ]
+  },
+  {
+    id: 'lm-studio',
+    name: 'LM Studio',
+    keyPlaceholder: '',
+    keyURL: 'https://lmstudio.ai',
+    defaultModel: '',
+    models: [],
+    supportsCustomBaseURL: false,
+    supportsCustomModel: true,
+    localBaseURL: 'http://localhost:1234/v1'
   },
   {
     id: 'openai-compatible',

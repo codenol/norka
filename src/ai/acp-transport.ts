@@ -217,9 +217,16 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
   private async spawnAgent(): Promise<ACPSession> {
     const { Command } = await import('@tauri-apps/plugin-shell')
 
-    const command = Command.create(this.agentDef.command, this.agentDef.args, {
-      encoding: 'raw'
-    })
+    // Agents that are bundled as Tauri sidecars (compiled into the .app).
+    // Key = ACPAgentID, value = sidecar path relative to the app binary.
+    const BUNDLED_SIDECARS: Record<string, string> = {
+      'claude-code': 'binaries/claude-agent-acp'
+    }
+
+    const sidecarPath = BUNDLED_SIDECARS[this.agentDef.id]
+    const command = sidecarPath
+      ? Command.sidecar(sidecarPath, this.agentDef.args, { encoding: 'raw' })
+      : Command.create(this.agentDef.command, this.agentDef.args, { encoding: 'raw' })
 
     const stdoutChunks: Uint8Array[] = []
     let stdoutResolver: ((chunk: Uint8Array | null) => void) | null = null

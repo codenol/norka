@@ -45,7 +45,7 @@ provideToolbar({
 <template>
   <slot
     :tools="tools"
-    :active-tool="activeTool.value"
+    :active-tool="activeTool"
     :expanded-flyout="expandedFlyout"
     :set-tool="setTool"
     :toggle-flyout="toggleFlyout"

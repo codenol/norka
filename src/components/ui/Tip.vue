@@ -6,12 +6,12 @@ import { useTooltipUI } from '@/components/ui/tooltip'
 
 const cls = useTooltipUI({ content: 'animate-in zoom-in-95 fade-in' })
 
-const props = defineProps<{
+const { label, side: sideProp } = defineProps<{
   label: string
   side?: 'top' | 'bottom' | 'left' | 'right'
 }>()
 
-const side = computed(() => props.side ?? 'top')
+const side = computed(() => sideProp ?? 'top')
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const side = computed(() => props.side ?? 'top')
     <TooltipPortal>
       <TooltipContent :side="side" :side-offset="4" :class="cls.content">
         {{ label }}
-      </TooltipContent>
+</TooltipContent>
     </TooltipPortal>
   </TooltipRoot>
 </template>

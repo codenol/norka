@@ -7,16 +7,19 @@ import { useAIChat } from '@/composables/use-chat'
 import { ACP_AGENTS } from '@beresta/core'
 import { useI18n } from '@beresta/vue'
 
-const { providerID, providerDef, setAPIKey, customBaseURL, customModelID } = useAIChat()
+const { providerID, providerDef, setAPIKey, customBaseURL, customModelID, markACPReady } =
+  useAIChat()
 const { dialogs } = useI18n()
 
 const isACP = computed(() => providerID.value.startsWith('acp:'))
+const isLMStudio = computed(() => providerID.value === 'lm-studio')
 const acpAgent = computed(() => {
   if (!isACP.value) return null
   const id = providerID.value.replace('acp:', '')
   return ACP_AGENTS.find((a) => a.id === id) ?? null
 })
 
+// ─── API key form ────────────────────────────────────────────────────────────
 const keyInput = ref('')
 const baseURLInput = ref(customBaseURL.value)
 const customModelInput = ref(customModelID.value)
@@ -33,6 +36,57 @@ function save() {
   setAPIKey(key)
   keyInput.value = ''
 }
+
+// ─── LM Studio ───────────────────────────────────────────────────────────────
+const lmModelInput = ref(customModelID.value)
+const detectedModels = ref<string[]>([])
+const lmStatus = ref<'idle' | 'detecting' | 'found' | 'not-found'>('idle')
+
+async function detectLMStudioModels() {
+  lmStatus.value = 'detecting'
+  detectedModels.value = []
+  try {
+    const res = await fetch('http://localhost:1234/v1/models')
+    if (!res.ok) throw new Error('not ok')
+    const data = await res.json()
+    const ids: string[] = (data.data ?? []).map((m: { id: string }) => m.id)
+    detectedModels.value = ids
+    if (ids.length > 0 && !lmModelInput.value) lmModelInput.value = ids[0]
+    lmStatus.value = 'found'
+  } catch {
+    lmStatus.value = 'not-found'
+  }
+}
+
+function saveLMStudio() {
+  const model = lmModelInput.value.trim()
+  if (!model) return
+  customModelID.value = model
+}
+
+// ─── ACP setup (beresta-mcp + claude-agent-acp both bundled as sidecars) ─────
+const isRunning = ref(false)
+const setupError = ref<string | null>(null)
+const connectSuccess = ref(false)
+
+async function runSetup() {
+  isRunning.value = true
+  setupError.value = null
+  connectSuccess.value = false
+
+  try {
+    // beresta-mcp and claude-agent-acp are bundled inside the .app as sidecars.
+    // Just start the MCP server — no npm install needed.
+    const { spawnMCPIfNeeded } = await import('@/automation/spawn-mcp')
+    await spawnMCPIfNeeded()
+    markACPReady(providerID.value)
+    connectSuccess.value = true
+  } catch (e) {
+    setupError.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    isRunning.value = false
+  }
+}
 </script>
 
 <template>
@@ -40,10 +94,61 @@ function save() {
     <icon-lucide-sparkles class="mb-3 size-7 text-muted" />
     <p class="mb-5 text-center text-xs text-muted">{{ dialogs.connectAIProvider }}</p>
 
-    <form v-if="!isACP" class="flex w-full flex-col gap-2" @submit.prevent="save">
+    <!-- LM Studio — no API key needed -->
+    <div v-if="isLMStudio" class="flex w-full flex-col gap-2">
       <ProviderSelectField test-id="provider-selector" />
 
-      <!-- Base URL (OpenAI-compatible only) -->
+      <div class="flex gap-2">
+        <input
+          v-model="lmModelInput"
+          type="text"
+          data-test-id="lm-model-input"
+          :placeholder="dialogs.modelIDPlaceholder"
+          :class="[useInputUI().base, 'flex-1']"
+          :list="detectedModels.length ? 'lm-models-list' : undefined"
+        />
+        <datalist v-if="detectedModels.length" id="lm-models-list">
+          <option v-for="m in detectedModels" :key="m" :value="m" />
+        </datalist>
+        <button
+          type="button"
+          data-test-id="lm-detect-btn"
+          class="shrink-0 rounded bg-input px-2.5 text-xs text-surface hover:bg-input/80"
+          :disabled="lmStatus === 'detecting'"
+          @click="detectLMStudioModels"
+        >
+          {{ lmStatus === 'detecting' ? '…' : dialogs.detectModels }}
+        </button>
+      </div>
+
+      <p class="text-[10px] text-muted">
+        <template v-if="lmStatus === 'found'">
+          <span class="text-green-500">LM Studio запущен ✓</span>
+          <span v-if="detectedModels.length"> — {{ detectedModels.length }} {{ dialogs.modelsLoaded }}</span>
+        </template>
+        <template v-else-if="lmStatus === 'not-found'">
+          <span class="text-amber-500">{{ dialogs.lmStudioNotFound }}</span>
+        </template>
+        <template v-else>
+          {{ dialogs.lmStudioHint }}
+        </template>
+      </p>
+
+      <button
+        type="button"
+        data-test-id="lm-save-btn"
+        class="mt-1 w-full rounded bg-accent py-1.5 text-xs font-medium text-white hover:bg-accent/90 disabled:opacity-40"
+        :disabled="!lmModelInput.trim()"
+        @click="saveLMStudio"
+      >
+        {{ dialogs.connect }}
+      </button>
+    </div>
+
+    <!-- Regular API key form -->
+    <form v-else-if="!isACP" class="flex w-full flex-col gap-2" @submit.prevent="save">
+      <ProviderSelectField test-id="provider-selector" />
+
       <input
         v-if="providerDef.supportsCustomBaseURL"
         v-model="baseURLInput"
@@ -53,7 +158,6 @@ function save() {
         :class="useInputUI().base"
       />
 
-      <!-- Custom model ID (OpenAI-compatible only) -->
       <input
         v-if="providerDef.supportsCustomModel"
         v-model="customModelInput"
@@ -81,31 +185,44 @@ function save() {
       </button>
     </form>
 
-    <!-- ACP agent — no API key needed -->
+    <!-- ACP agent setup (all binaries bundled as sidecars in the .app) -->
     <div v-else class="flex w-full flex-col gap-2">
       <ProviderSelectField test-id="provider-selector" />
 
       <p class="text-center text-[10px] leading-relaxed text-muted">
-        Uses your existing {{ acpAgent?.name }} subscription.
-        <template v-if="acpAgent?.installCommand">
-          Install it with
-          <code class="rounded bg-input px-1 py-0.5 font-mono text-[9px]">{{
-            acpAgent.installCommand
-          }}</code>
-          and sign in before sending your first message.
-        </template>
-        <template v-else>
-          Make sure
-          <code class="rounded bg-input px-1 py-0.5 font-mono text-[9px]">{{
-            acpAgent?.command
-          }}</code>
-          is installed and authenticated.
-        </template>
+        Использует вашу подписку {{ acpAgent?.name }}.<br />
+        Убедитесь, что Claude Code установлен и авторизован в системе.
       </p>
+
+      <!-- Error message -->
+      <p v-if="setupError" class="whitespace-pre-wrap text-[10px] leading-relaxed text-red-400">
+        {{ setupError }}
+      </p>
+
+      <!-- Success -->
+      <p v-if="connectSuccess" class="text-center text-[10px] text-green-400">
+        Подключено ✓ Можете начинать чат.
+      </p>
+
+      <!-- Connect button -->
+      <button
+        type="button"
+        data-test-id="acp-connect-btn"
+        class="mt-1 w-full rounded bg-accent py-1.5 text-xs font-medium text-white hover:bg-accent/90 disabled:opacity-40"
+        :disabled="isRunning || connectSuccess"
+        @click="runSetup"
+      >
+        <span v-if="isRunning" class="flex items-center justify-center gap-1.5">
+          <icon-lucide-loader-2 class="size-3 animate-spin" />
+          Подключение…
+        </span>
+        <span v-else-if="connectSuccess">Подключено ✓</span>
+        <span v-else>Подключить</span>
+      </button>
     </div>
 
     <a
-      v-if="!isACP && providerDef.keyURL"
+      v-if="!isACP && !isLMStudio && providerDef.keyURL"
       :href="providerDef.keyURL"
       target="_blank"
       data-test-id="api-key-get-link"

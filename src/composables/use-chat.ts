@@ -9,6 +9,7 @@ import { computed, ref, watch } from 'vue'
 
 import SYSTEM_PROMPT from '@/ai/system-prompt.md?raw'
 import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/ai/tools'
+import { useChatSessions } from '@/composables/use-chat-sessions'
 import { getActiveEditorStore } from '@/stores/editor'
 import {
   ACP_AGENTS,
@@ -68,8 +69,12 @@ const providerDef = computed(
 
 const isACPProvider = computed(() => providerID.value.startsWith('acp:'))
 
+// Tracks which ACP provider IDs have been successfully set up
+const acpReadyIds = useLocalStorage<string[]>(`${STORAGE_PREFIX}acp-ready`, [])
+
 const isConfigured = computed(() => {
-  if (isACPProvider.value) return IS_TAURI
+  if (isACPProvider.value) return IS_TAURI && acpReadyIds.value.includes(providerID.value)
+  if (providerID.value === 'lm-studio') return !!customModelID.value
   if (!apiKey.value) return false
   const needsBaseURL =
     providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
@@ -77,14 +82,21 @@ const isConfigured = computed(() => {
   return true
 })
 
+function markACPReady(id: string) {
+  if (!acpReadyIds.value.includes(id)) {
+    acpReadyIds.value = [...acpReadyIds.value, id]
+  }
+}
+
 let transportDirty = false
 let currentChatStore: ReturnType<typeof getActiveEditorStore> | null = null
-let currentChatMessages = new WeakMap<ReturnType<typeof getActiveEditorStore>, UIMessage[]>()
+let stopMessageWatcher: (() => void) | null = null
+
+const chatSessions = useChatSessions()
 
 function markTransportDirty() {
   transportDirty = true
   currentChatStore = null
-  currentChatMessages = new WeakMap()
 }
 
 watch(
@@ -116,6 +128,7 @@ watch(customModelID, markTransportDirty)
 watch(customAPIType, markTransportDirty)
 watch(apiKey, markTransportDirty)
 watch(customBaseURL, markTransportDirty)
+watch(chatSessions.activeSessionId, markTransportDirty)
 
 function setAPIKey(key: string) {
   apiKey.value = key
@@ -124,7 +137,9 @@ function setAPIKey(key: string) {
 function createModel(): LanguageModel {
   const key = apiKey.value
   const needsCustomModel =
-    providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
+    providerID.value === 'openai-compatible' ||
+    providerID.value === 'anthropic-compatible' ||
+    providerID.value === 'lm-studio'
   const effectiveModelID = needsCustomModel ? customModelID.value : modelID.value
 
   switch (providerID.value) {
@@ -180,6 +195,10 @@ function createModel(): LanguageModel {
       })
       return custom(effectiveModelID)
     }
+    case 'lm-studio': {
+      const lmstudio = createOpenAI({ apiKey: 'lm-studio', baseURL: 'http://localhost:1234/v1' })
+      return lmstudio.chat(effectiveModelID)
+    }
     default: {
       if (providerID.value.startsWith('acp:')) {
         throw new Error('ACP providers do not use direct API models')
@@ -227,21 +246,31 @@ function createTransport(store: ReturnType<typeof getActiveEditorStore>) {
   void acpTransportInstance?.destroy()
   acpTransportInstance = null
 
-  const tools = createAITools(store)
   const cacheProviderOptions = supportsAnthropicCaching() ? ANTHROPIC_CACHE_CONTROL : undefined
+
+  const isLMStudio = providerID.value === 'lm-studio'
+
+  // LM Studio (local models): skip tools — they consume huge context and small models can't use them.
+  // Also don't set maxOutputTokens — LM Studio reserves those tokens from context window,
+  // leaving no room for the system prompt.
+  // Also skip the heavy system prompt — local models typically have small context windows
+  // (e.g. 2048–8192 tokens) and the full system prompt alone can overflow them.
+  const tools = isLMStudio ? undefined : createAITools(store)
+  const effectiveMaxOutputTokens = isLMStudio ? undefined : maxOutputTokens.value
+  const effectiveInstructions = isLMStudio ? undefined : SYSTEM_PROMPT
 
   const agent = new ToolLoopAgent({
     model: createModel(),
-    instructions: SYSTEM_PROMPT,
+    instructions: effectiveInstructions,
     tools,
     stopWhen: stepCountIs(MAX_AGENT_STEPS),
-    maxOutputTokens: maxOutputTokens.value,
+    maxOutputTokens: effectiveMaxOutputTokens,
     providerOptions: cacheProviderOptions,
     prepareCall: (options) => {
       resetRunSteps(store)
       return {
         ...options,
-        maxOutputTokens: maxOutputTokens.value,
+        maxOutputTokens: effectiveMaxOutputTokens,
         providerOptions: cacheProviderOptions
       }
     },
@@ -266,24 +295,29 @@ async function ensureChat(): Promise<Chat<UIMessage> | null> {
   if (!isConfigured.value) return null
 
   const store = getActiveEditorStore()
-  if (currentChatStore && chat) {
-    currentChatMessages.set(currentChatStore, chat.messages)
-  }
 
   if (!chat || transportDirty || currentChatStore !== store) {
-    const messages = currentChatMessages.get(store)
+    stopMessageWatcher?.()
+    const messages = chatSessions.getMessages(chatSessions.activeSessionId.value)
     const transport = isACPProvider.value ? await createACPTransport() : createTransport(store)
     chat = new Chat<UIMessage>({ transport, messages })
     currentChatStore = store
     transportDirty = false
+
+    const savedChat = chat
+    stopMessageWatcher = watch(
+      () => savedChat.messages,
+      (msgs) => chatSessions.saveMessages(chatSessions.activeSessionId.value, msgs),
+      { deep: true }
+    )
   }
   return chat
 }
 
 function resetChat() {
-  if (currentChatStore) {
-    currentChatMessages.delete(currentChatStore)
-  }
+  stopMessageWatcher?.()
+  stopMessageWatcher = null
+  chatSessions.saveMessages(chatSessions.activeSessionId.value, [])
   chat = null
   currentChatStore = null
   transportDirty = false
@@ -310,7 +344,9 @@ export function useAIChat() {
     unsplashAccessKey,
     activeTab,
     isConfigured,
+    markACPReady,
     ensureChat,
-    resetChat
+    resetChat,
+    chatSessions
   }
 }

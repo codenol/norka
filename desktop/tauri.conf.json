@@ -31,8 +31,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": ["binaries/beresta-mcp", "binaries/claude-agent-acp"],
     "macOS": {
-      "signingIdentity": "Developer ID Application: Danila Poyarkov (N7D7M3Q3CD)"
+      "signingIdentity": null
     }
   }
 }

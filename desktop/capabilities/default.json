@@ -22,10 +22,13 @@
     {
       "identifier": "shell:allow-spawn",
       "allow": [
-        { "name": "claude-agent-acp", "cmd": "claude-agent-acp", "args": true },
+        { "name": "binaries/claude-agent-acp", "sidecar": true, "args": true },
         { "name": "codex-acp", "cmd": "codex-acp", "args": true },
         { "name": "gemini", "cmd": "gemini", "args": true },
-        { "name": "beresta-mcp", "cmd": "beresta-mcp", "args": true }
+        { "name": "binaries/beresta-mcp", "sidecar": true, "args": true },
+        { "name": "npm", "cmd": "npm", "args": true },
+        { "name": "lsof", "cmd": "lsof", "args": true },
+        { "name": "kill", "cmd": "kill", "args": true }
       ]
     },
     "shell:allow-stdin-write",

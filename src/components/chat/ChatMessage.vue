@@ -4,9 +4,12 @@ import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui
 import { Markdown } from 'vue-stream-markdown'
 import 'vue-stream-markdown/index.css'
 
+import type { PropType } from 'vue'
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
-const { message } = defineProps<{ message: UIMessage }>()
+const props = defineProps({
+  message: { type: Object as PropType<UIMessage>, required: true }
+})
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
 
@@ -40,12 +43,13 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
 <template>
   <div
-    :data-test-id="`chat-message-${message.role}`"
-    :class="message.role === 'user' ? 'flex justify-end' : ''"
+    v-if="props.message?.role"
+    :data-test-id="`chat-message-${props.message.role}`"
+    :class="props.message.role === 'user' ? 'flex justify-end' : ''"
   >
-    <div class="min-w-0 space-y-1.5" :class="message.role === 'user' ? 'max-w-[85%]' : ''">
-      <template v-if="message.role === 'assistant'">
-        <template v-for="(part, i) in message.parts" :key="partKey(part, i)">
+    <div class="min-w-0 space-y-1.5" :class="props.message.role === 'user' ? 'max-w-[85%]' : ''">
+      <template v-if="props.message.role === 'assistant'">
+        <template v-for="(part, i) in props.message.parts" :key="partKey(part, i)">
           <!-- Tool call -->
           <div v-if="isToolUIPart(part)" class="rounded-lg border border-border bg-canvas p-2">
             <CollapsibleRoot>
@@ -112,12 +116,12 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
       <!-- User message -->
       <div
-        v-else-if="message.role === 'user'"
+        v-else-if="props.message.role === 'user'"
         data-test-id="chat-text-bubble"
         class="rounded-xl rounded-br-md bg-accent px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-white"
       >
         {{
-          message.parts
+          props.message.parts
             .filter(isTextUIPart)
             .map((p) => p.text)
             .join('')

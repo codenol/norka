@@ -20,9 +20,43 @@ import type { UIMessage } from 'ai'
 
 const IS_DEV = import.meta.env.DEV
 
-const { isConfigured, ensureChat, resetChat } = useAIChat()
+const { isConfigured, ensureChat, resetChat, chatSessions, providerID } = useAIChat()
 const { dialogs } = useI18n()
 const codeConnect = useCodeConnectStore()
+
+// ── Sessions ──────────────────────────────────────────────────────────────────
+const { sessions, activeSessionId, createSession, renameSession, deleteSession, setActiveSession } =
+  chatSessions
+
+const renamingId = ref<string | null>(null)
+const renameValue = ref('')
+
+function startRename(id: string, currentName: string) {
+  renamingId.value = id
+  renameValue.value = currentName
+  nextTick(() => {
+    const el = document.querySelector<HTMLInputElement>(`[data-session-rename="${id}"]`)
+    el?.focus()
+    el?.select()
+  })
+}
+
+function commitRename(id: string) {
+  if (renameValue.value.trim()) renameSession(id, renameValue.value.trim())
+  renamingId.value = null
+}
+
+function handleDeleteSession(id: string) {
+  const session = sessions.value.find((s) => s.id === id)
+  if (session && session.messages.length > 0) {
+    if (!confirm(`Удалить «${session.name}»?`)) return
+  }
+  deleteSession(id)
+}
+
+function handleNewSession() {
+  createSession(providerID.value)
+}
 
 // ── Draw from code ────────────────────────────────────────────────────────────
 
@@ -112,6 +146,11 @@ watch(
   }
 )
 
+watch(activeSessionId, async () => {
+  const nextChat = await ensureChat()
+  chat.value = nextChat ? markRaw(nextChat) : null
+})
+
 async function handleSubmit(text: string) {
   if (status.value === 'streaming' || status.value === 'submitted') return
   try {
@@ -155,11 +194,60 @@ function handleClearChat() {
   resetChat()
   clearToolLogEntries()
   clearAcpDebugLog()
+  ensureChat().then((c) => {
+    if (c) chat.value = markRaw(c)
+  })
 }
 </script>
 
 <template>
   <div data-test-id="chat-panel" class="flex min-w-0 flex-1 flex-col overflow-hidden select-text">
+    <!-- Session tabs — всегда видны -->
+    <div
+      class="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-2 py-1 scrollbar-none"
+      data-test-id="session-tabs"
+    >
+      <button
+        class="flex shrink-0 items-center justify-center rounded px-1.5 py-0.5 text-[10px] text-muted hover:bg-hover hover:text-surface"
+        title="Новая сессия"
+        @click="handleNewSession"
+      >
+        <icon-lucide-plus class="size-3" />
+      </button>
+      <div
+        v-for="s in sessions"
+        :key="s.id"
+        class="flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px]"
+        :class="s.id === activeSessionId ? 'bg-accent/15 text-accent' : 'text-muted hover:bg-hover hover:text-surface'"
+        :data-test-id="`session-tab-${s.id}`"
+      >
+        <input
+          v-if="renamingId === s.id"
+          :data-session-rename="s.id"
+          v-model="renameValue"
+          class="w-20 bg-transparent outline-none"
+          @blur="commitRename(s.id)"
+          @keydown.enter.prevent="commitRename(s.id)"
+          @keydown.escape.prevent="renamingId = null"
+          @click.stop
+        />
+        <span
+          v-else
+          class="cursor-pointer"
+          @click="setActiveSession(s.id)"
+          @dblclick="startRename(s.id, s.name)"
+          >{{ s.name }}</span
+        >
+        <button
+          class="ml-0.5 rounded p-px opacity-50 hover:opacity-100"
+          @click.stop="handleDeleteSession(s.id)"
+        >
+          <icon-lucide-x class="size-2.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Provider setup -->
     <ProviderSetup v-if="!isConfigured" />
 
     <template v-else>
