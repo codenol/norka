@@ -113,7 +113,7 @@ const MOCK_HTML = `<!DOCTYPE html>
     </svg>
   </div>
   <h1>Создайте свой первый проект</h1>
-  <p>Береста — инструмент для совместного проектирования. Начните с создания проекта и пригласите команду.</p>
+  <p>Nork — инструмент для совместного проектирования. Начните с создания проекта и пригласите команду.</p>
   <button class="btn-primary">Начать →</button>
   <button class="btn-text">Пропустить</button>
   <div class="progress">
@@ -135,7 +135,7 @@ const theme = ref<Theme>('light')
 const isRendering = ref(false)
 const activeInspectorTab = ref('interactions')
 const activeComponentId = ref<string | null>(null)
-const mockDataText = ref('{\n  "user": {\n    "name": "Алексей К.",\n    "role": "designer"\n  },\n  "product": {\n    "id": "abc123",\n    "name": "Береста"\n  }\n}')
+const mockDataText = ref('{\n  "user": {\n    "name": "Алексей К.",\n    "role": "designer"\n  },\n  "product": {\n    "id": "abc123",\n    "name": "Nork"\n  }\n}')
 const interactionLog = ref<LogEntry[]>([
   { id: 'l0', time: nowTime(), text: 'Component mounted: OnboardingScreen', type: 'load' },
 ])

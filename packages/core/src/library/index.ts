@@ -263,3 +263,7 @@ function copyNodeTree(
 
 // Singleton
 export const libraryRegistry = new LibraryRegistry()
+
+export { buildPrimeReactGraph } from './primereact-graph'
+export { PRIMEREACT_CONNECT_DEFS } from './primereact-connect'
+export type { PrimeReactConnectDef } from './primereact-connect'

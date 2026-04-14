@@ -39,7 +39,7 @@ function pluralProjects(n: number): string {
     <!-- Header -->
     <header class="flex h-12 shrink-0 items-center gap-3 border-b border-border px-5">
       <icon-lucide-pencil class="size-4 text-accent" />
-      <span class="text-sm font-semibold text-surface">Береста</span>
+      <span class="text-sm font-semibold text-surface">Nork</span>
 
       <div v-if="workspacePath" class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted">
         <icon-lucide-folder-open class="size-3 text-accent" />

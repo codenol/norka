@@ -8,7 +8,7 @@ import AppToast from '@/components/AppToast.vue'
 import { useEditorStore } from '@/stores/editor'
 import { toast } from '@/utils/toast'
 
-useHead({ titleTemplate: (title) => (title ? `${title} — Береста` : 'Береста') })
+useHead({ titleTemplate: (title) => (title ? `${title} — Nork` : 'Nork') })
 
 const store = useEditorStore()
 provideEditor(store)

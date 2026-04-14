@@ -16,6 +16,7 @@ import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry,
 import type { LibraryManifest, SceneGraph } from '@beresta/core'
 
 import { useCodeConnectStore } from './code-connect'
+import { isBuiltinLibrary, injectBuiltinComponentsToGraph } from './builtin-library'
 
 // Code Connect store — seeded/pruned alongside library registration
 const _codeConnect = useCodeConnectStore()
@@ -143,6 +144,7 @@ async function addLibraryFromFile(file: File): Promise<void> {
  * Remove a library.
  */
 function removeLibrary(id: string): void {
+  if (isBuiltinLibrary(id)) return  // built-in libraries cannot be removed
   libraryRegistry.unregister(id)
   _codeConnect.pruneLibrary(id)
   removeLibraryData(id)
@@ -153,9 +155,14 @@ function removeLibrary(id: string): void {
 
 /**
  * Inject all registered libraries' variables + styles into the given graph.
- * Called when a document is loaded/replaced.
+ * Also copies built-in PrimeReact components to __library_components__ page
+ * so the AI's get_components tool can find them.
+ * Called when a document is loaded/replaced or created.
  */
 function enableForGraph(graph: SceneGraph): void {
+  // Copy built-in PrimeReact components into the document
+  injectBuiltinComponentsToGraph(graph)
+
   for (const manifest of _manifests.value) {
     if (libraryRegistry.has(manifest.id)) {
       libraryRegistry.injectIntoGraph(manifest.id, graph)

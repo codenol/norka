@@ -15,6 +15,31 @@ let lastNodeKey = ''
 function buildSrcdoc(componentCode: string): string {
   // Use string concatenation to avoid linter complaints about escape sequences
   const closeScript = '<' + '/script>'
+  const hasPrimeReact = componentCode.includes('primereact/')
+
+  // PrimeReact CDN — pinned to v10 for stability
+  const primeReactHead = hasPrimeReact
+    ? `  <link rel="stylesheet" href="https://unpkg.com/primereact@10/resources/themes/lara-light-blue/theme.css" />\n` +
+      `  <link rel="stylesheet" href="https://unpkg.com/primereact@10/resources/primereact.min.css" />\n` +
+      `  <link rel="stylesheet" href="https://unpkg.com/primeicons@7/primeicons.css" />\n` +
+      `  <script src="https://unpkg.com/primereact@10/umd/primereact.min.js">${closeScript}\n`
+    : ''
+
+  // UMD shim: destructures window.primereact into globals so Babel's import
+  // statements become no-ops (Babel standalone cannot resolve real ES imports).
+  const primeReactShim = hasPrimeReact
+    ? `  <script>` +
+      `var _pr=window.primereact||{};` +
+      `var Button=_pr.Button,InputText=_pr.InputText,Dropdown=_pr.Dropdown,` +
+      `DataTable=_pr.DataTable,Column=_pr.Column,Card=_pr.Card,Dialog=_pr.Dialog,` +
+      `Panel=_pr.Panel,Tag=_pr.Tag,Badge=_pr.Badge,ProgressBar=_pr.ProgressBar,` +
+      `Toolbar=_pr.Toolbar,Breadcrumb=_pr.Breadcrumb,InputNumber=_pr.InputNumber,` +
+      `Calendar=_pr.Calendar,Checkbox=_pr.Checkbox,RadioButton=_pr.RadioButton,` +
+      `Slider=_pr.Slider,TabView=_pr.TabView,TabPanel=_pr.TabPanel,` +
+      `Message=_pr.Message,Divider=_pr.Divider,PrimeReactProvider=_pr.PrimeReactProvider;` +
+      `${closeScript}\n`
+    : ''
+
   return (
     `<!DOCTYPE html>\n<html>\n<head>\n` +
     `  <meta charset="utf-8" />\n` +
@@ -23,7 +48,9 @@ function buildSrcdoc(componentCode: string): string {
     `  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js">${closeScript}\n` +
     `  <script src="https://unpkg.com/@babel/standalone/babel.min.js">${closeScript}\n` +
     `  <script src="https://cdn.tailwindcss.com">${closeScript}\n` +
+    primeReactHead +
     `</head>\n<body>\n  <div id="root"></div>\n` +
+    primeReactShim +
     `  <script type="text/babel">\n${componentCode}\n` +
     `    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Component));\n` +
     `  ${closeScript}\n</body>\n</html>`

@@ -83,7 +83,7 @@ function buildDrawFromCodePrompt(code: string): string {
     '',
     'Инструкция:',
     '- Для каждого JSX-тега из map: найди компонент через get_components по libraryRef.itemId, создай экземпляр через create_instance.',
-    '- Для тегов не из map: используй render с Береста JSX.',
+    '- Для тегов не из map: используй render с Nork JSX.',
     '- Сохрани иерархию layout (flex, gap, padding, цвета).',
     '- В конце: viewport_zoom_to_fit.',
   ].join('\n')

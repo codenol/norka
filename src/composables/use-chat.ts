@@ -147,7 +147,7 @@ function createModel(): LanguageModel {
       const openrouter = createOpenRouter({
         apiKey: key,
         headers: {
-          'X-OpenRouter-Title': 'Береста',
+          'X-OpenRouter-Title': 'Nork',
           'HTTP-Referer': 'https://github.com/beresta/open-pencil'
         }
       })

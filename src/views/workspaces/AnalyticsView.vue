@@ -17,6 +17,7 @@ import { createModel, useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
 import { workspacePath, readProjectMd, readScreenMd, writeFeatureFile } from '@/composables/use-workspace-fs'
+import { useAnalyticsDesign, ANALYTICS_DESIGN_INSTRUCTIONS } from '@/composables/use-analytics-design'
 
 import type { UIMessage } from 'ai'
 
@@ -75,6 +76,7 @@ const MOCK_SESSIONS: MockSession[] = [
 const { isConfigured, providerID, maxOutputTokens } = useAIChat()
 const settings = useSettingsDialog()
 const { context: projectContext } = useProjects()
+const { createAnalyticsTools } = useAnalyticsDesign()
 
 /** Build system prompt enriched with project/screen context from disk */
 async function buildSystemPrompt(skill: Skill): Promise<string> {
@@ -119,16 +121,20 @@ function makeGreeting(skill: Skill): UIMessage {
 
 async function createChat(skill: Skill): Promise<Chat<UIMessage>> {
   const isLMStudio = providerID.value === 'lm-studio'
-  const instructions = await buildSystemPrompt(skill)
+  const baseInstructions = await buildSystemPrompt(skill)
+  // Append design tool instructions so AI knows it can assemble mockups
+  const instructions = `${baseInstructions}\n\n${ANALYTICS_DESIGN_INSTRUCTIONS}`
   const agent = new ToolLoopAgent({
     model: createModel(),
     instructions,
-    stopWhen: stepCountIs(4),
-    maxOutputTokens: isLMStudio ? undefined : Math.min(maxOutputTokens.value, 1024),
+    tools: createAnalyticsTools(),
+    stopWhen: stepCountIs(25),  // increased to allow multi-step mockup assembly
+    maxOutputTokens: isLMStudio ? undefined : Math.min(maxOutputTokens.value, 4096),
   })
   const transport = new DirectChatTransport({ agent })
   const inst = new Chat<UIMessage>({
-    transport,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    transport: transport as any,
     messages: [makeGreeting(skill)],
   })
   return inst

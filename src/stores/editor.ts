@@ -49,6 +49,9 @@ export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@beresta/core'
 
 export function createEditorStore(initialGraph?: SceneGraph) {
   const graph = initialGraph ?? new SceneGraph()
+  // Inject built-in PrimeReact components (and user library variables/styles)
+  // into every document — both newly created and opened from file.
+  useLibraryStore().enableForGraph(graph)
 
   const state = shallowReactive<
     Omit<EditorState, 'penState'> & {

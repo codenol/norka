@@ -116,7 +116,7 @@ export const HANDLE_HIT_RADIUS = 6
 
 export const ACP_PERMISSION_TIMEOUT_MS = 60_000
 
-export const ACP_DESIGN_CONTEXT = `You are inside Береста, a design editor (like Figma). \
+export const ACP_DESIGN_CONTEXT = `You are inside Nork, a design editor (like Figma). \
 Use the beresta MCP tools to create and modify designs on the live canvas. \
 Key tools: render (JSX to design), create_shape, set_fill, set_layout, find_nodes, get_page_tree, export_image. \
 The render tool accepts JSX with components: Frame, Text, Rectangle, Ellipse, Icon, Group, Section. \

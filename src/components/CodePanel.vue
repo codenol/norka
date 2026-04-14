@@ -126,7 +126,7 @@ function copyFull() {
           class="rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
           @click="toggleFormat"
         >
-          {{ jsxFormat === 'beresta' ? 'Береста' : 'Tailwind' }}
+          {{ jsxFormat === 'beresta' ? 'Nork' : 'Tailwind' }}
         </button>
 
         <!-- Framework selector (when Code Connect is active) -->

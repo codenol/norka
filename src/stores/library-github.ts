@@ -111,7 +111,7 @@ async function ensureRepo(token: string, owner: string, repo: string): Promise<v
     method: 'POST',
     body: JSON.stringify({
       name: repo,
-      description: 'Береста — shared design libraries',
+      description: 'Nork — shared design libraries',
       private: false,
       auto_init: true,
     }),

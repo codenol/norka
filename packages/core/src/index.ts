@@ -79,7 +79,14 @@ export {
   type NamedStyle
 } from './scene-graph'
 
-export { libraryRegistry, LibraryRegistry, type LibraryManifest } from './library'
+export {
+  libraryRegistry,
+  LibraryRegistry,
+  type LibraryManifest,
+  buildPrimeReactGraph,
+  PRIMEREACT_CONNECT_DEFS,
+  type PrimeReactConnectDef,
+} from './library'
 export {
   exportTokens,
   exportCSSVariables,

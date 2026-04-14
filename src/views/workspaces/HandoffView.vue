@@ -111,7 +111,7 @@ const specRows: SpecRow[] = [
 ]
 
 const resourceLinks: ResourceLink[] = [
-  { id: 'l1', label: 'Дизайн-файл Береста', url: '#', icon: 'pen-tool' },
+  { id: 'l1', label: 'Дизайн-файл Nork', url: '#', icon: 'pen-tool' },
   { id: 'l2', label: 'Storybook компоненты', url: '#', icon: 'book-open' },
   { id: 'l3', label: 'GitHub PR #142', url: '#', icon: 'git-pull-request' },
   { id: 'l4', label: 'Confluence: Онбординг', url: '#', icon: 'file-text' },

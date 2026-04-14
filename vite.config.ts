@@ -82,8 +82,8 @@ export default defineConfig(async ({ command }) => ({
             }
           }),
       manifest: {
-        name: 'Beresta',
-        short_name: 'Beresta',
+        name: 'Nork',
+        short_name: 'Nork',
         description: 'Open-source design editor',
         display: 'standalone',
         orientation: 'any',
