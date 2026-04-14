@@ -34,6 +34,7 @@ watch(
 
       <!-- Breadcrumb strip -->
       <div class="flex h-8 shrink-0 items-center gap-1 border-b border-border/60 bg-canvas px-3 text-[11px]">
+        <!-- Проекты -->
         <button
           class="flex items-center gap-1 text-muted transition-colors hover:text-surface"
           @click="$router.push('/projects')"
@@ -42,33 +43,34 @@ watch(
           <span>Проекты</span>
         </button>
 
-        <template v-if="currentProduct">
-          <icon-lucide-chevron-right class="size-3 text-muted/40" />
-          <span class="text-muted">{{ currentProduct.title }}</span>
-        </template>
-        <template v-else>
-          <icon-lucide-chevron-right class="size-3 text-muted/30" />
-          <span class="text-muted/40">Продукт</span>
-        </template>
+        <!-- Product -->
+        <icon-lucide-chevron-right class="size-3 text-muted/40" />
+        <button
+          v-if="currentProduct"
+          class="text-muted transition-colors hover:text-surface"
+          @click="$router.push('/projects')"
+        >{{ currentProduct.title }}</button>
+        <span v-else class="text-muted/40">Продукт</span>
 
-        <template v-if="currentScreen">
-          <icon-lucide-chevron-right class="size-3 text-muted/40" />
-          <span class="text-muted">{{ currentScreen.title }}</span>
-        </template>
-        <template v-else>
-          <icon-lucide-chevron-right class="size-3 text-muted/30" />
-          <span class="text-muted/40">Экран</span>
-        </template>
+        <!-- Screen -->
+        <icon-lucide-chevron-right class="size-3 text-muted/40" />
+        <button
+          v-if="currentScreen"
+          class="text-muted transition-colors hover:text-surface"
+          @click="$router.push('/projects')"
+        >{{ currentScreen.title }}</button>
+        <span v-else class="text-muted/40">Экран</span>
 
-        <template v-if="currentFeature">
-          <icon-lucide-chevron-right class="size-3 text-muted/40" />
-          <span class="font-medium text-surface">{{ currentFeature.title }}</span>
-        </template>
-        <template v-else>
-          <icon-lucide-chevron-right class="size-3 text-muted/30" />
-          <span class="text-muted/40">Фича</span>
-        </template>
+        <!-- Feature -->
+        <icon-lucide-chevron-right class="size-3 text-muted/40" />
+        <button
+          v-if="currentFeature"
+          class="font-medium text-surface transition-colors hover:text-accent"
+          @click="$router.push('/projects')"
+        >{{ currentFeature.title }}</button>
+        <span v-else class="text-muted/40">Фича</span>
 
+        <!-- Current step (non-clickable) -->
         <template v-if="currentStep">
           <div class="mx-1.5 h-3 w-px bg-border" />
           <span class="text-accent">{{ currentStep.label }}</span>

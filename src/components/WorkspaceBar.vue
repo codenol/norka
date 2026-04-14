@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
 import Tip from '@/components/ui/Tip.vue'
-import IconArrowLeft from '~icons/lucide/arrow-left'
 import IconBrainCircuit from '~icons/lucide/brain-circuit'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconMessageCircle from '~icons/lucide/message-circle'
@@ -15,7 +14,6 @@ import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
 
 const route   = useRoute()
-const router  = useRouter()
 const { isConfigured } = useAIChat()
 const settings = useSettingsDialog()
 const { currentFeature } = useProjects()
@@ -45,19 +43,6 @@ function isDone(key: string): boolean {
 
 <template>
   <nav class="flex h-full w-12 shrink-0 flex-col items-center border-r border-border bg-canvas py-2">
-    <!-- Back to Home -->
-    <Tip label="Главная" side="right">
-      <button
-        class="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-surface"
-        @click="router.push('/home')"
-      >
-        <IconArrowLeft class="size-4" />
-      </button>
-    </Tip>
-
-    <!-- Divider -->
-    <div class="my-1.5 w-5 border-t border-border" />
-
     <!-- Pipeline steps -->
     <div class="flex flex-col items-center gap-0.5">
       <Tip
