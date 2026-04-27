@@ -331,3 +331,7 @@ export function useProtoStore(): ProtoStore {
   }
   return _singleton
 }
+
+export function injectProtoStore(): ProtoStore | null {
+  return inject<ProtoStore | null>(PROTO_STORE_KEY, null)
+}

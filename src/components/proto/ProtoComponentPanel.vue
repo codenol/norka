@@ -7,10 +7,13 @@ import ComponentPreviewItem from '@/components/ComponentPreviewItem.vue'
 import { useProtoStore } from '@/composables/use-proto-store'
 import type { PrimePreviewDef } from '@/composables/use-primereact-preview'
 
+const props = withDefaults(defineProps<{ embedded?: boolean }>(), {
+  embedded: false,
+})
+
 const store = useProtoStore()
 
 const searchQuery = ref('')
-const collapsed = ref(false)
 
 const filteredDefs = computed<PrimePreviewDef[]>(() => {
   const q = searchQuery.value.toLowerCase().trim()
@@ -35,96 +38,70 @@ function handleDragStart(def: PrimePreviewDef, event: DragEvent) {
 
 <template>
   <div
-    class="flex h-full flex-col border-r border-border/60 bg-panel/80"
-    :class="collapsed ? 'w-8 min-w-8' : 'w-56 shrink-0'"
+    class="flex h-full min-h-0 flex-col bg-panel/80"
+    :class="props.embedded ? 'w-full' : 'w-56 shrink-0 border-r border-border/60'"
     style="contain: paint layout style"
   >
-    <!-- Header -->
-    <div class="flex shrink-0 items-center gap-1.5 border-b border-border/60 px-2 py-2">
-      <button
-        class="flex size-5 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
-        :title="collapsed ? 'Раскрыть' : 'Свернуть'"
-        @click="collapsed = !collapsed"
-      >
-        <icon-lucide-panel-left-close v-if="!collapsed" class="size-3.5" />
-        <icon-lucide-panel-left-open v-else class="size-3.5" />
-      </button>
-      <span v-if="!collapsed" class="text-[11px] font-medium text-surface">Компоненты</span>
+    <!-- Search -->
+    <div class="shrink-0 border-b border-border/60 px-2 py-1.5">
+      <div class="flex items-center gap-1.5 rounded border border-border bg-canvas px-2 py-1">
+        <icon-lucide-search class="size-3 shrink-0 text-muted" />
+        <input
+          v-model="searchQuery"
+          placeholder="Поиск..."
+          class="min-w-0 flex-1 border-none bg-transparent text-[11px] text-surface outline-none placeholder:text-muted"
+        />
+        <button
+          v-if="searchQuery"
+          class="text-muted hover:text-surface"
+          @click="searchQuery = ''"
+        >
+          <icon-lucide-x class="size-3" />
+        </button>
+      </div>
     </div>
 
-    <template v-if="!collapsed">
-      <!-- Search -->
-      <div class="shrink-0 border-b border-border/60 px-2 py-1.5">
-        <div class="flex items-center gap-1.5 rounded border border-border bg-canvas px-2 py-1">
-          <icon-lucide-search class="size-3 shrink-0 text-muted" />
-          <input
-            v-model="searchQuery"
-            placeholder="Поиск..."
-            class="min-w-0 flex-1 border-none bg-transparent text-[11px] text-surface outline-none placeholder:text-muted"
-          />
-          <button
-            v-if="searchQuery"
-            class="text-muted hover:text-surface"
-            @click="searchQuery = ''"
-          >
-            <icon-lucide-x class="size-3" />
-          </button>
+    <!-- Component grid -->
+    <div class="flex-1 overflow-y-auto py-1">
+      <div
+        v-if="filteredDefs.length === 0"
+        class="flex items-center justify-center py-8"
+      >
+        <p class="text-[11px] text-muted">Ничего не найдено</p>
+      </div>
+
+      <TooltipProvider :delay-duration="600" :skip-delay-duration="100">
+        <div class="grid grid-cols-2 gap-1.5 px-2 py-1">
+          <TooltipRoot v-for="def in filteredDefs" :key="def.name">
+            <TooltipTrigger as-child>
+              <ComponentPreviewItem
+                :archetype-name="def.name"
+                :module-path="def.importPath"
+                :export-name="def.exportName"
+                :preview-props="def.previewProps"
+                :is-container="def.acceptsChildren === true"
+                :is-disabled="false"
+                @insert="handleInsert(def)"
+                @drag-start="handleDragStart(def, $event)"
+              />
+            </TooltipTrigger>
+            <TooltipPortal>
+              <TooltipContent
+                side="right"
+                :side-offset="6"
+                class="z-50 max-w-44 rounded-md border border-border bg-panel px-2.5 py-1.5 text-[11px] text-surface shadow-md"
+              >
+                <p class="font-medium">{{ def.name }}</p>
+                <p class="mt-0.5 text-muted">{{ def.importPath }}</p>
+              </TooltipContent>
+            </TooltipPortal>
+          </TooltipRoot>
         </div>
-      </div>
+      </TooltipProvider>
+    </div>
 
-      <!-- Component grid -->
-      <div class="flex-1 overflow-y-auto py-1">
-        <div
-          v-if="filteredDefs.length === 0"
-          class="flex items-center justify-center py-8"
-        >
-          <p class="text-[11px] text-muted">Ничего не найдено</p>
-        </div>
-
-        <TooltipProvider :delay-duration="600" :skip-delay-duration="100">
-          <div class="grid grid-cols-2 gap-1.5 px-2 py-1">
-            <TooltipRoot v-for="def in filteredDefs" :key="def.name">
-              <TooltipTrigger as-child>
-                <ComponentPreviewItem
-                  :archetype-name="def.name"
-                  :module-path="def.importPath"
-                  :export-name="def.exportName"
-                  :preview-props="def.previewProps"
-                  :is-container="def.acceptsChildren === true"
-                  :is-disabled="false"
-                  @insert="handleInsert(def)"
-                  @drag-start="handleDragStart(def, $event)"
-                />
-              </TooltipTrigger>
-              <TooltipPortal>
-                <TooltipContent
-                  side="right"
-                  :side-offset="6"
-                  class="z-50 max-w-44 rounded-md border border-border bg-panel px-2.5 py-1.5 text-[11px] text-surface shadow-md"
-                >
-                  <p class="font-medium">{{ def.name }}</p>
-                  <p class="mt-0.5 text-muted">{{ def.importPath }}</p>
-                </TooltipContent>
-              </TooltipPortal>
-            </TooltipRoot>
-          </div>
-        </TooltipProvider>
-      </div>
-
-      <div class="shrink-0 border-t border-border/60 px-3 py-2">
-        <p class="text-[10px] text-muted">Нажмите, чтобы добавить</p>
-      </div>
-    </template>
-
-    <template v-else>
-      <div class="flex flex-1 items-center justify-center">
-        <span
-          class="whitespace-nowrap text-[10px] text-muted"
-          style="writing-mode: vertical-rl; transform: rotate(180deg)"
-        >
-          Компоненты
-        </span>
-      </div>
-    </template>
+    <div class="shrink-0 border-t border-border/60 px-3 py-2">
+      <p class="text-[10px] text-muted">Нажмите, чтобы добавить</p>
+    </div>
   </div>
 </template>

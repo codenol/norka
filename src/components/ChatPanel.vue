@@ -2,27 +2,29 @@
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui'
 import { computed, markRaw, nextTick, ref, watch } from 'vue'
 
-import { getAcpDebugText, clearAcpDebugLog, hasAcpDebugEntries } from '@/ai/acp-transport'
-import { copyChatLog } from '@/ai/chat-debug'
-import { clearToolLogEntries, didHitStepLimit } from '@/ai/tools'
+import { didHitStepLimit } from '@/ai/tools'
+import { injectProtoStore } from '@/composables/use-proto-store'
 import { activeTab } from '@/stores/tabs'
-import { useCodeConnectStore } from '@/stores/code-connect'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 import { useAIChat } from '@/composables/use-chat'
 import { toast } from '@/utils/toast'
-import { useI18n } from '@beresta/vue'
 
 import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
 
-const IS_DEV = import.meta.env.DEV
+type CanvasTarget = 'editor' | 'proto'
+const props = defineProps<{ canvasTarget?: CanvasTarget }>()
+const injectedProtoStore = injectProtoStore()
+const effectiveTarget = computed<CanvasTarget>(() => {
+  if (props.canvasTarget) return props.canvasTarget
+  return injectedProtoStore ? 'proto' : 'editor'
+})
+const protoStore = computed(() => (effectiveTarget.value === 'proto' ? injectedProtoStore ?? undefined : undefined))
 
-const { isConfigured, ensureChat, resetChat, chatSessions, providerID } = useAIChat()
-const { dialogs } = useI18n()
-const codeConnect = useCodeConnectStore()
+const { isConfigured, ensureChat, chatSessions, providerID } = useAIChat()
 
 // ── Sessions ──────────────────────────────────────────────────────────────────
 const { sessions, activeSessionId, createSession, renameSession, deleteSession, setActiveSession } =
@@ -58,54 +60,12 @@ function handleNewSession() {
   createSession(providerID.value)
 }
 
-// ── Draw from code ────────────────────────────────────────────────────────────
-
-const drawFromCodeOpen = ref(false)
-const pastedCode = ref('')
-
-function buildDrawFromCodePrompt(code: string): string {
-  const reverseEntries = [...codeConnect.reverseMap.value.entries()]
-  const mapJson = JSON.stringify(
-    reverseEntries.map(([name, ref]) => ({ name, libraryId: ref.libraryId, itemId: ref.itemId })),
-    null,
-    2
-  )
-  return [
-    'Нарисуй этот компонент на холсте, используя компоненты библиотеки там, где возможно.',
-    '',
-    '## Код',
-    '```tsx',
-    code.trim(),
-    '```',
-    '',
-    '## Code Connect (codeComponent → libraryRef)',
-    mapJson,
-    '',
-    'Инструкция:',
-    '- Для каждого JSX-тега из map: найди компонент через get_components по libraryRef.itemId, создай экземпляр через create_instance.',
-    '- Для тегов не из map: используй render с Nork JSX.',
-    '- Сохрани иерархию layout (flex, gap, padding, цвета).',
-    '- В конце: viewport_zoom_to_fit.',
-  ].join('\n')
-}
-
-async function handleDrawFromCode() {
-  const code = pastedCode.value.trim()
-  if (!code) return
-  const prompt = buildDrawFromCodePrompt(code)
-  drawFromCodeOpen.value = false
-  pastedCode.value = ''
-  await handleSubmit(prompt)
-}
-
 const chat = ref<Chat<UIMessage> | null>(null)
 
-ensureChat().then((c) => {
+ensureChat(effectiveTarget.value, { protoStore: protoStore.value }).then((c) => {
   if (c) chat.value = markRaw(c)
 })
 const messagesEnd = ref<HTMLDivElement>()
-const debugCopied = ref(false)
-const acpLogCopied = ref(false)
 
 const messages = computed(() => chat.value?.messages ?? [])
 const status = computed(() => chat.value?.status ?? 'ready')
@@ -141,20 +101,20 @@ watch(messages, scrollToBottom, { deep: true })
 watch(
   () => activeTab.value?.id,
   async () => {
-    const nextChat = await ensureChat()
+    const nextChat = await ensureChat(effectiveTarget.value, { protoStore: protoStore.value })
     chat.value = nextChat ? markRaw(nextChat) : null
   }
 )
 
 watch(activeSessionId, async () => {
-  const nextChat = await ensureChat()
+  const nextChat = await ensureChat(effectiveTarget.value, { protoStore: protoStore.value })
   chat.value = nextChat ? markRaw(nextChat) : null
 })
 
 async function handleSubmit(text: string) {
   if (status.value === 'streaming' || status.value === 'submitted') return
   try {
-    const c = await ensureChat()
+    const c = await ensureChat(effectiveTarget.value, { protoStore: protoStore.value })
     if (c) chat.value = markRaw(c)
   } catch (e) {
     console.error('Failed to initialize chat:', e)
@@ -169,34 +129,6 @@ async function handleSubmit(text: string) {
 
 function handleStop() {
   chat.value?.stop()
-}
-
-async function handleCopyDebug() {
-  await copyChatLog(messages.value)
-  debugCopied.value = true
-  setTimeout(() => {
-    debugCopied.value = false
-  }, 1500)
-}
-
-async function handleCopyAcpLog() {
-  const text = getAcpDebugText()
-  if (!text) return
-  await navigator.clipboard.writeText(text)
-  acpLogCopied.value = true
-  setTimeout(() => {
-    acpLogCopied.value = false
-  }, 1500)
-}
-
-function handleClearChat() {
-  chat.value = null
-  resetChat()
-  clearToolLogEntries()
-  clearAcpDebugLog()
-  ensureChat().then((c) => {
-    if (c) chat.value = markRaw(c)
-  })
 }
 </script>
 
@@ -260,7 +192,7 @@ function handleClearChat() {
             class="flex h-full flex-col items-center justify-center gap-3 text-muted"
           >
             <icon-lucide-message-circle class="size-8 opacity-50" />
-            <p class="text-center text-xs">{{ dialogs.describeCreateOrChange }}</p>
+            <p class="text-center text-xs">Опишите, что нужно создать или изменить на канвасе</p>
           </div>
 
           <!-- Messages -->
@@ -308,77 +240,6 @@ function handleClearChat() {
           <ScrollAreaThumb class="relative flex-1 rounded-full bg-muted/30" />
         </ScrollAreaScrollbar>
       </ScrollAreaRoot>
-
-      <!-- Chat toolbar -->
-      <div
-        v-if="messages.length > 0"
-        class="flex shrink-0 items-center gap-1 border-t border-border px-3 py-1"
-      >
-        <button
-          v-if="IS_DEV"
-          class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted hover:bg-hover hover:text-surface"
-          @click="handleCopyDebug"
-        >
-          <icon-lucide-clipboard-copy v-if="!debugCopied" class="size-3" />
-          <icon-lucide-check v-else class="size-3 text-green-400" />
-          {{ debugCopied ? 'Copied' : 'Copy log' }}
-        </button>
-        <button
-          v-if="IS_DEV && hasAcpDebugEntries()"
-          class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted hover:bg-hover hover:text-surface"
-          @click="handleCopyAcpLog"
-        >
-          <icon-lucide-bug v-if="!acpLogCopied" class="size-3" />
-          <icon-lucide-check v-else class="size-3 text-green-400" />
-          {{ acpLogCopied ? 'Copied' : 'ACP log' }}
-        </button>
-        <button
-          class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted hover:bg-hover hover:text-surface"
-          @click="handleClearChat"
-        >
-          <icon-lucide-trash-2 class="size-3" />
-          Clear
-        </button>
-      </div>
-
-      <!-- Draw from code panel -->
-      <div v-if="drawFromCodeOpen" class="shrink-0 border-t border-border bg-panel px-3 py-2.5">
-        <div class="mb-2 flex items-center justify-between">
-          <span class="text-[11px] font-medium text-surface">{{ dialogs.drawFromCode }}</span>
-          <button
-            class="text-muted hover:text-surface"
-            @click="drawFromCodeOpen = false"
-          >
-            <icon-lucide-x class="size-3.5" />
-          </button>
-        </div>
-        <textarea
-          v-model="pastedCode"
-          rows="6"
-          :placeholder="'Вставьте код компонента (TSX / Vue)…'"
-          class="w-full resize-none rounded border border-border bg-hover/30 px-2.5 py-2 font-mono text-[11px] text-surface placeholder-muted outline-none focus:border-accent"
-        />
-        <button
-          :disabled="!pastedCode.trim() || status === 'streaming' || status === 'submitted'"
-          class="mt-2 w-full rounded bg-surface py-1.5 text-xs font-medium text-panel disabled:opacity-40"
-          @click="handleDrawFromCode"
-        >
-          {{ dialogs.drawFromCode }}
-        </button>
-      </div>
-
-      <!-- Draw-from-code trigger in toolbar -->
-      <div class="flex shrink-0 items-center border-t border-border px-3 py-1">
-        <button
-          :title="dialogs.drawFromCode"
-          class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px]"
-          :class="drawFromCodeOpen ? 'text-accent' : 'text-muted hover:bg-hover hover:text-surface'"
-          @click="drawFromCodeOpen = !drawFromCodeOpen"
-        >
-          <icon-lucide-terminal class="size-3" />
-          {{ dialogs.drawFromCode }}
-        </button>
-      </div>
 
       <ChatInput :status="status" @submit="handleSubmit" @stop="handleStop" />
 

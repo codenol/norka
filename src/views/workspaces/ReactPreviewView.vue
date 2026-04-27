@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePrimeTheme } from '@/composables/use-prime-theme'
 import { provideProtoStore } from '@/composables/use-proto-store'
+import ChatPanel from '@/components/ChatPanel.vue'
 import ProtoComponentPanel from '@/components/proto/ProtoComponentPanel.vue'
 import ProtoCanvas from '@/components/proto/ProtoCanvas.vue'
 import ProtoPropsPanel from '@/components/proto/ProtoPropsPanel.vue'
@@ -69,8 +70,16 @@ const { theme, themes } = usePrimeTheme()
 
     <!-- Main layout -->
     <div class="flex flex-1 overflow-hidden">
-      <!-- Left: component panel (editor only) -->
-      <ProtoComponentPanel v-if="mode === 'editor'" />
+      <!-- Left: component panel + AI chat (editor only) -->
+      <div v-if="mode === 'editor'" class="flex h-full w-[360px] min-w-[320px] shrink-0 flex-col border-r border-border/60 bg-panel">
+        <div class="h-1/2 min-h-0">
+          <ProtoComponentPanel :embedded="true" class="h-full w-full" />
+        </div>
+        <div class="h-px shrink-0 bg-border/60" />
+        <div class="h-1/2 min-h-0">
+          <ChatPanel canvas-target="proto" class="h-full w-full" />
+        </div>
+      </div>
 
       <!-- Center: canvas -->
       <div class="flex flex-1 flex-col overflow-hidden bg-canvas">

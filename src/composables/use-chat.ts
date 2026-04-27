@@ -8,6 +8,7 @@ import { DirectChatTransport, stepCountIs, ToolLoopAgent } from 'ai'
 import { computed, ref, watch } from 'vue'
 
 import SYSTEM_PROMPT from '@/ai/system-prompt.md?raw'
+import { createProtoAITools } from '@/ai/proto-tools'
 import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/ai/tools'
 import { useChatSessions } from '@/composables/use-chat-sessions'
 import { getActiveEditorStore } from '@/stores/editor'
@@ -20,12 +21,13 @@ import {
   IS_TAURI,
   setPexelsApiKey,
   setUnsplashAccessKey
-} from '@beresta/core'
+} from '@norka/core'
 
-import type { ACPAgentID, AIProviderID } from '@beresta/core'
+import type { ACPAgentID, AIProviderID } from '@norka/core'
 import type { LanguageModel, UIMessage } from 'ai'
+import type { ProtoStore } from '@/composables/use-proto-store'
 
-const STORAGE_PREFIX = 'beresta:'
+const STORAGE_PREFIX = 'norka:'
 const LEGACY_KEY_STORAGE = `${STORAGE_PREFIX}openrouter-api-key`
 
 function keyStorageKey(id: string) {
@@ -62,6 +64,7 @@ const maxOutputTokens = useLocalStorage(`${STORAGE_PREFIX}ai-max-output-tokens`,
 const pexelsApiKey = useLocalStorage(`${STORAGE_PREFIX}pexels-api-key`, '')
 const unsplashAccessKey = useLocalStorage(`${STORAGE_PREFIX}unsplash-access-key`, '')
 const activeTab = ref<'design' | 'code' | 'ai' | 'lint' | 'snapshots'>('design')
+type ChatTarget = 'editor' | 'proto'
 
 const providerDef = computed(
   () => AI_PROVIDERS.find((p) => p.id === providerID.value) ?? AI_PROVIDERS[0]
@@ -89,14 +92,15 @@ function markACPReady(id: string) {
 }
 
 let transportDirty = false
-let currentChatStore: ReturnType<typeof getActiveEditorStore> | null = null
-let stopMessageWatcher: (() => void) | null = null
+let editorChatStore: ReturnType<typeof getActiveEditorStore> | null = null
+let stopMessageWatcherEditor: (() => void) | null = null
+let stopMessageWatcherProto: (() => void) | null = null
 
 const chatSessions = useChatSessions()
 
 function markTransportDirty() {
   transportDirty = true
-  currentChatStore = null
+  editorChatStore = null
 }
 
 watch(
@@ -148,7 +152,7 @@ function createModel(): LanguageModel {
         apiKey: key,
         headers: {
           'X-OpenRouter-Title': 'Nork',
-          'HTTP-Referer': 'https://github.com/beresta/open-pencil'
+          'HTTP-Referer': 'https://github.com/norka/norka'
         }
       })
       return openrouter(effectiveModelID)
@@ -212,12 +216,36 @@ export { createModel }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test-only mock transports don't implement full generics
 let overrideTransport: (() => any) | null = null
-
-let chat: Chat<UIMessage> | null = null
+let editorChat: Chat<UIMessage> | null = null
+let protoChat: Chat<UIMessage> | null = null
 
 const ANTHROPIC_CACHE_CONTROL = {
   anthropic: { cacheControl: { type: 'ephemeral' } }
 } as const
+
+const LM_STUDIO_CANVAS_PROMPT = `
+You are a design assistant inside a live design canvas.
+You MUST build layouts by calling tools, not by describing steps only.
+
+Canvas protocol:
+1) Call get_components() to discover available library components
+2) Create a frame with render(...)
+3) Place PrimeReact components with create_instance({ component_id, x, y })
+4) Refine spacing/alignment with set_layout / batch_update
+5) Call describe(...) to verify result and fix issues
+
+Rules:
+- If user asks to create a mockup, immediately execute tool calls.
+- Keep explanations short and prioritize concrete canvas changes.
+- If a tool fails, retry with corrected arguments and continue.
+`.trim()
+
+const EXECUTION_FIRST_CANVAS_PREFIX = `
+Execution-first rule:
+- If the user asks to build/create/assemble/draw a mockup, start tool execution immediately.
+- Do not ask discovery questions first unless the user explicitly asks for analysis.
+- Produce at least one concrete canvas mutation in the first tool step.
+`.trim()
 
 function supportsAnthropicCaching(): boolean {
   return (
@@ -251,15 +279,13 @@ function createTransport(store: ReturnType<typeof getActiveEditorStore>) {
   const cacheProviderOptions = supportsAnthropicCaching() ? ANTHROPIC_CACHE_CONTROL : undefined
 
   const isLMStudio = providerID.value === 'lm-studio'
-
-  // LM Studio (local models): skip tools — they consume huge context and small models can't use them.
-  // Also don't set maxOutputTokens — LM Studio reserves those tokens from context window,
-  // leaving no room for the system prompt.
-  // Also skip the heavy system prompt — local models typically have small context windows
-  // (e.g. 2048–8192 tokens) and the full system prompt alone can overflow them.
-  const tools = isLMStudio ? undefined : createAITools(store)
+  // LM Studio must keep tool access enabled, otherwise it cannot control canvas.
+  // Use a compact system prompt to fit smaller local context windows.
+  const tools = createAITools(store)
   const effectiveMaxOutputTokens = isLMStudio ? undefined : maxOutputTokens.value
-  const effectiveInstructions = isLMStudio ? undefined : SYSTEM_PROMPT
+  const effectiveInstructions = isLMStudio
+    ? `${EXECUTION_FIRST_CANVAS_PREFIX}\n\n${LM_STUDIO_CANVAS_PROMPT}`
+    : `${EXECUTION_FIRST_CANVAS_PREFIX}\n\n${SYSTEM_PROMPT}`
 
   const agent = new ToolLoopAgent({
     model: createModel(),
@@ -293,40 +319,109 @@ function createTransport(store: ReturnType<typeof getActiveEditorStore>) {
   return new DirectChatTransport({ agent })
 }
 
-async function ensureChat(): Promise<Chat<UIMessage> | null> {
+function createProtoTransport(protoStore: ProtoStore) {
+  const cacheProviderOptions = supportsAnthropicCaching() ? ANTHROPIC_CACHE_CONTROL : undefined
+  const isLMStudio = providerID.value === 'lm-studio'
+  const effectiveMaxOutputTokens = isLMStudio ? undefined : maxOutputTokens.value
+  const protoInstructions = [
+    EXECUTION_FIRST_CANVAS_PREFIX,
+    'You are editing the PrimeReact proto canvas.',
+    'Always execute tools to make concrete changes.',
+    'You and the user are co-editing the same canvas state in real time.',
+    'Call get_components first, then create_instance / set_props / remove_node / move_node / move_before / move_after / move_inside as needed.',
+    'When user asks to modify selected element, call get_selection first and operate on that node.',
+    'After each mutation, call describe to verify the result exists on canvas.',
+  ].join('\n\n')
+
+  const agent = new ToolLoopAgent({
+    model: createModel(),
+    instructions: protoInstructions,
+    tools: createProtoAITools(protoStore),
+    stopWhen: stepCountIs(MAX_AGENT_STEPS),
+    maxOutputTokens: effectiveMaxOutputTokens,
+    providerOptions: cacheProviderOptions,
+    prepareCall: (options) => ({
+      ...options,
+      maxOutputTokens: effectiveMaxOutputTokens,
+      providerOptions: cacheProviderOptions,
+    }),
+  })
+
+  return new DirectChatTransport({ agent })
+}
+
+async function ensureChat(
+  target: ChatTarget = 'editor',
+  options?: { protoStore?: ProtoStore }
+): Promise<Chat<UIMessage> | null> {
   if (!isConfigured.value) return null
 
-  const store = getActiveEditorStore()
+  const isEditorTarget = target === 'editor'
+  const store = isEditorTarget ? getActiveEditorStore() : null
+  const current = isEditorTarget ? editorChat : protoChat
+  const needsRecreate = isEditorTarget
+    ? !current || transportDirty || editorChatStore !== store
+    : !current || transportDirty
 
-  if (!chat || transportDirty || currentChatStore !== store) {
-    stopMessageWatcher?.()
+  if (needsRecreate) {
+    if (isEditorTarget) {
+      stopMessageWatcherEditor?.()
+      stopMessageWatcherEditor = null
+    } else {
+      stopMessageWatcherProto?.()
+      stopMessageWatcherProto = null
+    }
     const messages = chatSessions.getMessages(chatSessions.activeSessionId.value)
-    const transport = isACPProvider.value ? await createACPTransport() : createTransport(store)
-    chat = new Chat<UIMessage>({ transport, messages })
-    currentChatStore = store
+    let transport: DirectChatTransport | Awaited<ReturnType<typeof createACPTransport>>
+    if (isACPProvider.value) {
+      transport = await createACPTransport()
+    } else if (!isEditorTarget) {
+      if (!options?.protoStore) {
+        throw new Error('Proto chat requires proto store')
+      }
+      transport = createProtoTransport(options.protoStore)
+    } else {
+      const activeStore = getActiveEditorStore()
+      transport = createTransport(activeStore)
+      editorChatStore = activeStore
+    }
+    const nextChat = new Chat<UIMessage>({ transport, messages })
+    if (isEditorTarget) {
+      editorChat = nextChat
+    } else {
+      protoChat = nextChat
+    }
     transportDirty = false
 
-    const savedChat = chat
-    stopMessageWatcher = watch(
+    const savedChat = nextChat
+    const stop = watch(
       () => savedChat.messages,
       (msgs) => chatSessions.saveMessages(chatSessions.activeSessionId.value, msgs),
       { deep: true }
     )
+    if (isEditorTarget) {
+      stopMessageWatcherEditor = stop
+    } else {
+      stopMessageWatcherProto = stop
+    }
   }
-  return chat
+  return isEditorTarget ? editorChat : protoChat
 }
 
 function resetChat() {
-  stopMessageWatcher?.()
-  stopMessageWatcher = null
+  stopMessageWatcherEditor?.()
+  stopMessageWatcherEditor = null
+  stopMessageWatcherProto?.()
+  stopMessageWatcherProto = null
   chatSessions.saveMessages(chatSessions.activeSessionId.value, [])
-  chat = null
-  currentChatStore = null
+  editorChat = null
+  protoChat = null
+  editorChatStore = null
   transportDirty = false
 }
 
 if (IS_BROWSER) {
-  window.__OPEN_PENCIL_SET_TRANSPORT__ = (factory) => {
+  window.__NORKA_SET_TRANSPORT__ = (factory) => {
     overrideTransport = factory
   }
 }
