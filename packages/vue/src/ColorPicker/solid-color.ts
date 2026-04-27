@@ -1,4 +1,4 @@
-import type { Color, Fill, Stroke } from '@beresta/core'
+import type { Color, Fill, Stroke } from '@norka/core'
 
 export function applySolidFillColor(fill: Fill, color: Color): Fill {
   return {

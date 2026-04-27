@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { allRules, createLinter, presets, type LintMessage } from '@beresta/core'
+import { allRules, createLinter, presets, type LintMessage } from '@norka/core'
 
 import { bold, dim, fail, fmtList, ok } from '../format'
 import { loadDocument } from '../headless'

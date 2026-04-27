@@ -1,4 +1,4 @@
-import type { OkHCLColor, RenderColorSpace } from '@beresta/core'
+import type { OkHCLColor, RenderColorSpace } from '@norka/core'
 
 export type ColorFieldFormat = 'rgb' | 'hsl' | 'hsb' | 'okhcl'
 

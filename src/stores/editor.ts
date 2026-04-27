@@ -24,7 +24,7 @@ import {
   SceneGraph,
   splitSegmentAt,
   prefetchFigmaSchema
-} from '@beresta/core'
+} from '@norka/core'
 import { useLibraryStore } from '@/stores/library'
 
 import type {
@@ -41,11 +41,11 @@ import type {
   VectorSegment,
   VectorVertex,
   Tool
-} from '@beresta/core'
+} from '@norka/core'
 
-export type { Tool } from '@beresta/core'
-export type { EditorToolDef as ToolDef } from '@beresta/core'
-export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@beresta/core'
+export type { Tool } from '@norka/core'
+export type { EditorToolDef as ToolDef } from '@norka/core'
+export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@norka/core'
 
 export function createEditorStore(initialGraph?: SceneGraph) {
   const graph = initialGraph ?? new SceneGraph()
@@ -1108,7 +1108,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
   async function exportTarget(
     target: ExportRequest['target'],
     formatId: string,
-    options?: { scale?: number; quality?: number; jsxFormat?: 'beresta' | 'tailwind' }
+    options?: { scale?: number; quality?: number; jsxFormat?: 'norka' | 'tailwind' }
   ) {
     const format = io.getFormat(formatId)
     if (!format) throw new Error(`Unknown export format: ${formatId}`)
@@ -1121,7 +1121,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
         quality: options?.quality
       }
     } else if (formatId === 'jsx') {
-      exportOptions = { format: options?.jsxFormat ?? 'beresta' }
+      exportOptions = { format: options?.jsxFormat ?? 'norka' }
     }
 
     const result = await io.exportContent(
@@ -1293,7 +1293,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
 
 export type EditorStore = ReturnType<typeof createEditorStore>
 
-const storeRef = shallowRef<EditorStore>()
+const storeRef = shallowRef<EditorStore>(createEditorStore())
 
 export function setActiveEditorStore(store: EditorStore) {
   storeRef.value = store
@@ -1301,7 +1301,6 @@ export function setActiveEditorStore(store: EditorStore) {
 }
 
 export function getActiveEditorStore(): EditorStore {
-  if (!storeRef.value) throw new Error('Editor store not provided')
   return storeRef.value
 }
 

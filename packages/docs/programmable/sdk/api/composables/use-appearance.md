@@ -17,7 +17,7 @@ It exposes selection-derived UI state for:
 ## Usage
 
 ```ts
-import { useAppearance } from '@beresta/vue'
+import { useAppearance } from '@norka/vue'
 
 const appearance = useAppearance()
 ```

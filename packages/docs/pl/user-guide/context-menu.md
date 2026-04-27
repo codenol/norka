@@ -1,6 +1,6 @@
 ---
 title: Menu kontekstowe
-description: Akcje menu kontekstowego (prawy przycisk) w Beresta.
+description: Akcje menu kontekstowego (prawy przycisk) w Norka.
 ---
 # Menu kontekstowe
 

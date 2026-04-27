@@ -22,8 +22,8 @@ export default defineConfig({
   external: [
     'vue',
     /^vue\//,
-    '@beresta/core',
-    /^@beresta\/core\//,
+    '@norka/core',
+    /^@norka\/core\//,
     'canvaskit-wasm',
     '@vueuse/core',
     '@nanostores/vue',

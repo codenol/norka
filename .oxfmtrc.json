@@ -10,7 +10,7 @@
     "order": "asc",
     "ignoreCase": true,
     "newlinesBetween": true,
-    "internalPattern": ["@beresta/", "@/"],
+    "internalPattern": ["@norka/", "@/"],
     "groups": [
       "builtin",
       "external",

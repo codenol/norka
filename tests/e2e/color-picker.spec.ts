@@ -20,14 +20,14 @@ test.afterAll(async () => {
 
 async function getSelectedId() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return [...store.state.selectedIds][0] ?? null
   })
 }
 
 async function getSelectedFill() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const node = store.graph.getNode(id)

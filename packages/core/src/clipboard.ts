@@ -346,7 +346,7 @@ export async function buildFigmaClipboardHTML(
     sessionID: 0,
     ackID: 0,
     pasteID: randomInt(),
-    pasteFileKey: 'beresta',
+    pasteFileKey: 'norka',
     nodeChanges
   }
 
@@ -359,7 +359,7 @@ export async function buildFigmaClipboardHTML(
   const bufferB64 = figKiwiBinary.toBase64()
 
   const meta: FigmaClipboardMeta = {
-    fileKey: 'beresta',
+    fileKey: 'norka',
     pasteID: msg.pasteID as number,
     dataType: 'scene'
   }
@@ -372,15 +372,15 @@ export async function buildFigmaClipboardHTML(
   )
 }
 
-// --- Internal copy/paste (Beresta ↔ Beresta) ---
+// --- Internal copy/paste (Norka ↔ Norka) ---
 
-export interface BerestaClipboardData {
+export interface NorkaClipboardData {
   nodes: Array<SceneNode & { children?: SceneNode[] }>
   images: Map<string, Uint8Array>
 }
 
-export function parseBerestaClipboard(html: string): BerestaClipboardData | null {
-  const match = html.match(/<!--\(beresta\)(.*?)\(\/beresta\)-->/s)
+export function parseNorkaClipboard(html: string): NorkaClipboardData | null {
+  const match = html.match(/<!--\(norka\)(.*?)\(\/norka\)-->/s)
   if (!match) return null
 
   try {
@@ -392,7 +392,7 @@ export function parseBerestaClipboard(html: string): BerestaClipboardData | null
       bytes = raw
     }
     const decoded = JSON.parse(new TextDecoder().decode(bytes))
-    if (decoded.format === 'beresta/v1' && Array.isArray(decoded.nodes)) {
+    if (decoded.format === 'norka/v1' && Array.isArray(decoded.nodes)) {
       restoreTextPictures(decoded.nodes)
       const images = new Map<string, Uint8Array>()
       if (decoded.images && typeof decoded.images === 'object') {
@@ -405,7 +405,7 @@ export function parseBerestaClipboard(html: string): BerestaClipboardData | null
       return { nodes: decoded.nodes, images }
     }
   } catch (e) {
-    console.warn('Failed to parse Beresta clipboard data:', e)
+    console.warn('Failed to parse Norka clipboard data:', e)
   }
   return null
 }
@@ -437,7 +437,7 @@ function collectImageHashes(nodes: SceneNode[], graph: SceneGraph): Set<string> 
   return hashes
 }
 
-export function buildBerestaClipboardHTML(
+export function buildNorkaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph,
   textPictureBuilder?: TextPictureBuilder
@@ -450,12 +450,12 @@ export function buildBerestaClipboardHTML(
     if (bytes) images[hash] = bytes.toBase64()
   }
   const data = {
-    format: 'beresta/v1',
+    format: 'norka/v1',
     nodes: nodeTree,
     images
   }
   const compressed = deflateSync(new TextEncoder().encode(JSON.stringify(data)))
-  return `<!--(beresta)${compressed.toBase64()}(/beresta)-->`
+  return `<!--(norka)${compressed.toBase64()}(/norka)-->`
 }
 
 function collectNodeTree(

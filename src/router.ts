@@ -6,7 +6,8 @@ import WorkspaceLayout from './layouts/WorkspaceLayout.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: EditorView },
+    { path: '/', redirect: '/home' },
+    { path: '/editor', component: EditorView },
     { path: '/demo', component: EditorView, meta: { demo: true } },
     { path: '/share/:roomId', component: EditorView },
 

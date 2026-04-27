@@ -2,18 +2,18 @@ import { basename, extname, resolve } from 'node:path'
 
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { ok, printError } from '../format'
 import { loadDocument } from '../headless'
 
-import type { RasterExportFormat } from '@beresta/core'
+import type { RasterExportFormat } from '@norka/core'
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
 const RASTER_FORMATS = ['PNG', 'JPG', 'WEBP']
 const ALL_FORMATS = [...RASTER_FORMATS, 'SVG', 'JSX', 'FIG']
-const JSX_STYLES = ['beresta', 'tailwind']
+const JSX_STYLES = ['norka', 'tailwind']
 
 interface ExportArgs {
   file?: string
@@ -169,8 +169,8 @@ export default defineCommand({
     },
     style: {
       type: 'string',
-      description: 'JSX style: beresta, tailwind (default: beresta)',
-      default: 'beresta'
+      description: 'JSX style: norka, tailwind (default: norka)',
+      default: 'norka'
     },
     thumbnail: { type: 'boolean', description: 'Export page thumbnail instead of full render' },
     width: { type: 'string', description: 'Thumbnail width (default: 1920)', default: '1920' },
@@ -184,7 +184,7 @@ export default defineCommand({
     }
 
     if (format === 'JSX' && !JSX_STYLES.includes(args.style)) {
-      printError(`Invalid JSX style "${args.style}". Use beresta or tailwind.`)
+      printError(`Invalid JSX style "${args.style}". Use norka or tailwind.`)
       process.exit(1)
     }
 

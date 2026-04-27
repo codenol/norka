@@ -23,6 +23,6 @@ export function provideScrubInput(ctx: ScrubInputContext) {
 
 export function useScrubInput(): ScrubInputContext {
   const ctx = inject(SCRUB_INPUT_KEY)
-  if (!ctx) throw new Error('[beresta] useScrubInput() called outside <ScrubInputRoot>')
+  if (!ctx) throw new Error('[norka] useScrubInput() called outside <ScrubInputRoot>')
   return ctx
 }

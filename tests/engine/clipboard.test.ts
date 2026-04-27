@@ -6,13 +6,13 @@ import {
   importClipboardNodes,
   figmaNodesBounds,
   buildFigmaClipboardHTML,
-  buildBerestaClipboardHTML,
-  parseBerestaClipboard,
+  buildNorkaClipboardHTML,
+  parseNorkaClipboard,
   readFigFile,
   initCodec,
   SceneGraph,
   type SceneNode,
-} from '@beresta/core'
+} from '@norka/core'
 
 function makeClipboardHtml(nodeChanges: unknown[], meta = { fileKey: 'test', pasteID: 1, dataType: 'scene' }) {
   // Minimal fig-kiwi clipboard: just meta + empty figma buffer
@@ -735,9 +735,9 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     topLevelNodes = graph.getChildren(pageId)
   })
 
-  it('Beresta format: zero property differences', () => {
-    const html = buildBerestaClipboardHTML(topLevelNodes, graph)
-    const parsed = parseBerestaClipboard(html)
+  it('Norka format: zero property differences', () => {
+    const html = buildNorkaClipboardHTML(topLevelNodes, graph)
+    const parsed = parseNorkaClipboard(html)
     expect(parsed).not.toBeNull()
 
     const origAll = flatten(graph, pageId)
@@ -767,8 +767,8 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     expect(diffs).toBe(0)
   })
 
-  it('Beresta format: compressed data is under 1MB', () => {
-    const html = buildBerestaClipboardHTML(topLevelNodes, graph)
+  it('Norka format: compressed data is under 1MB', () => {
+    const html = buildNorkaClipboardHTML(topLevelNodes, graph)
     expect(html.length).toBeLessThan(1024 * 1024)
   })
 

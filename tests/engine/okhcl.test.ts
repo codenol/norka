@@ -11,7 +11,7 @@ import {
   parseFigFile,
   rgbaToOkHCL,
   SceneGraph
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('OkHCL metadata', () => {
   test('applies rgba rendering color while preserving fill metadata', () => {

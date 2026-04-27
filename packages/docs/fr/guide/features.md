@@ -4,7 +4,7 @@
 
 Ouvrez et enregistrez les fichiers natifs Figma directement. Le pipeline d'import/export utilise le même codec binaire Kiwi que Figma — 194 définitions de schéma, ~390 champs par nœud. Enregistrer avec <kbd>⌘</kbd><kbd>S</kbd>, Enregistrer sous avec <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd>.
 
-**Copier-coller avec Figma** — sélectionnez des nœuds dans Figma, <kbd>⌘</kbd><kbd>C</kbd>, passez à Beresta, <kbd>⌘</kbd><kbd>V</kbd>. Les remplissages, contours, auto-layout, texte, effets, rayons de coins et réseaux vectoriels sont préservés. Fonctionne dans les deux sens.
+**Copier-coller avec Figma** — sélectionnez des nœuds dans Figma, <kbd>⌘</kbd><kbd>C</kbd>, passez à Norka, <kbd>⌘</kbd><kbd>V</kbd>. Les remplissages, contours, auto-layout, texte, effets, rayons de coins et réseaux vectoriels sont préservés. Fonctionne dans les deux sens.
 
 ## Dessin et édition
 
@@ -61,7 +61,7 @@ Ouvrez plusieurs documents en onglets. <kbd>⌘</kbd><kbd>T</kbd> nouvel onglet,
 - **Tailwind JSX** — HTML avec classes utilitaires Tailwind v4, prêt pour React ou Vue
 - **Copier en tant que** — texte, SVG, PNG (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd>), ou JSX via le menu contextuel
 
-CLI : `beresta export design.fig -f jsx --style tailwind`
+CLI : `norka export design.fig -f jsx --style tailwind`
 
 ## Chat IA
 
@@ -76,14 +76,14 @@ Voir [Chat IA](/programmable/ai-chat) pour la configuration et les détails des 
 Connectez Claude Code, Cursor, Windsurf ou tout client MCP pour lire et écrire des fichiers `.fig` en mode headless. 90+ outils. Deux transports : stdio et HTTP.
 
 ```sh
-bun add -g @beresta/mcp
+bun add -g @norka/mcp
 ```
 
 ```json
 {
   "mcpServers": {
-    "beresta": {
-      "command": "beresta-mcp"
+    "norka": {
+      "command": "norka-mcp"
     }
   }
 }
@@ -96,22 +96,22 @@ Voir la [référence des outils MCP](/programmable/mcp-server) pour la liste com
 Inspectez, exportez et analysez les fichiers `.fig` depuis le terminal :
 
 ```sh
-beresta tree design.fig          # Arbre de nœuds
-beresta find design.fig --type TEXT  # Recherche
-beresta export design.fig -f png     # Rendu
-beresta analyze colors design.fig    # Audit des couleurs
-beresta analyze clusters design.fig  # Motifs répétés
-beresta eval design.fig -c "..."     # API Plugin Figma
+norka tree design.fig          # Arbre de nœuds
+norka find design.fig --type TEXT  # Recherche
+norka export design.fig -f png     # Rendu
+norka analyze colors design.fig    # Audit des couleurs
+norka analyze clusters design.fig  # Motifs répétés
+norka eval design.fig -c "..."     # API Plugin Figma
 ```
 
 Lorsque l'application de bureau est lancée, omettez le fichier pour contrôler l'éditeur en direct via RPC :
 
 ```sh
-beresta tree                     # Document en direct
-beresta export -f png            # Capture du canevas
+norka tree                     # Document en direct
+norka export -f png            # Capture du canevas
 ```
 
-Toutes les commandes supportent `--json`. Installation : `bun add -g @beresta/cli`
+Toutes les commandes supportent `--json`. Installation : `bun add -g @norka/cli`
 
 ## Collaboration en temps réel
 
@@ -127,14 +127,14 @@ P2P via WebRTC — aucun serveur requis. Partagez un lien et éditez ensemble.
 
 **Bureau** — Tauri v2, ~7 Mo. macOS (signé et notarisé), Windows, Linux. Menus natifs, hors ligne, sauvegarde automatique.
 
-**Web** — disponible sur [app.beresta.dev](https://app.beresta.dev), installable en PWA sur mobile avec interface tactile optimisée.
+**Web** — disponible sur [app.norka.dev](https://app.norka.dev), installable en PWA sur mobile avec interface tactile optimisée.
 
 **Homebrew :**
 
 ```sh
-brew install beresta/tap/beresta
+brew install norka/tap/norka
 ```
 
 ## Polices Google Fonts en secours
 
-Lorsqu'une police n'est pas disponible localement, Beresta la récupère automatiquement depuis Google Fonts. Aucune installation manuelle nécessaire lors de l'ouverture de fichiers .fig avec des polices inconnues.
+Lorsqu'une police n'est pas disponible localement, Norka la récupère automatiquement depuis Google Fonts. Aucune installation manuelle nécessaire lors de l'ouverture de fichiers .fig avec des polices inconnues.

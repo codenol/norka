@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useI18n } from '@beresta/vue/i18n'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useI18n } from '@norka/vue/i18n'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
 import type {
   SceneNode,
@@ -10,7 +10,7 @@ import type {
   LayoutAlign,
   LayoutCounterAlign,
   GridTrack
-} from '@beresta/core'
+} from '@norka/core'
 
 type AlignCell = { primary: LayoutAlign; counter: LayoutCounterAlign }
 

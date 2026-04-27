@@ -1,9 +1,9 @@
 import { useFilter } from 'reka-ui'
 import { computed, ref } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
+import { useEditor } from '@norka/vue/context/editorContext'
 
-import type { Variable } from '@beresta/core'
+import type { Variable } from '@norka/core'
 
 type ColorBindingKind = 'fills' | 'strokes'
 

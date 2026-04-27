@@ -7,11 +7,11 @@ import {
   rgbaToOkHCL,
   setNodeFillOkHCL,
   setNodeStrokeOkHCL
-} from '@beresta/core'
-import { useEditor } from '@beresta/vue/context/editorContext'
+} from '@norka/core'
+import { useEditor } from '@norka/vue/context/editorContext'
 
-import type { OkHCLColor, SceneNode } from '@beresta/core'
-import type { ColorFieldFormat } from '@beresta/vue/ColorPicker/types'
+import type { OkHCLColor, SceneNode } from '@norka/core'
+import type { ColorFieldFormat } from '@norka/vue/ColorPicker/types'
 
 export function useOkHCL() {
   const editor = useEditor()

@@ -1,6 +1,6 @@
 ---
 title: Auto-Layout
-description: Flex- und Grid-Layout in Beresta — Richtung, Abstand, Polsterung, Ausrichtung, Kindgröße und CSS-Grid-Tracks.
+description: Flex- und Grid-Layout in Norka — Richtung, Abstand, Polsterung, Ausrichtung, Kindgröße und CSS-Grid-Tracks.
 ---
 
 # Auto-Layout

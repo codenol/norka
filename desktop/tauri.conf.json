@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Береста",
   "version": "0.12.0",
-  "identifier": "io.beresta.app",
+  "identifier": "io.norka.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Nork",
+        "title": "Norka",
         "width": 1280,
         "height": 800
       }
@@ -31,7 +31,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["binaries/beresta-mcp", "binaries/claude-agent-acp"],
+    "externalBin": ["binaries/norka-mcp", "binaries/claude-agent-acp"],
     "macOS": {
       "signingIdentity": null
     }

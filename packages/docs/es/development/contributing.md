@@ -4,19 +4,19 @@
 
 ```
 packages/
-  core/              @beresta/core — motor (sin deps DOM)
+  core/              @norka/core — motor (sin deps DOM)
     src/             Grafo de escena, renderer, layout, codec, kiwi, tipos
-  cli/               @beresta/cli — CLI headless para operaciones .fig
+  cli/               @norka/cli — CLI headless para operaciones .fig
     src/commands/    info, tree, find, export, eval, analyze
-  mcp/               @beresta/mcp — servidor MCP para herramientas IA
+  mcp/               @norka/mcp — servidor MCP para herramientas IA
     src/             Transportes stdio + HTTP (Hono), 87 herramientas
 src/
   components/        Vue SFCs (canvas, paneles, barra de herramientas, selector de color)
     properties/      Secciones del panel de propiedades (Apariencia, Relleno, Trazo, etc.)
   composables/       Entrada de canvas, atajos de teclado, hooks de renderizado
   stores/            Estado del editor (reactividad Vue)
-  engine/            Shims de re-exportación desde @beresta/core
-  kiwi/              Shims de re-exportación desde @beresta/core
+  engine/            Shims de re-exportación desde @norka/core
+  kiwi/              Shims de re-exportación desde @norka/core
   types.ts           Tipos compartidos (re-exportados desde core)
   constants.ts       Colores UI, valores por defecto, umbrales
 desktop/             Tauri v2 (Rust + config)
@@ -62,7 +62,7 @@ bun run check
 
 ### Convenciones para agentes IA
 
-Desarrolladores y agentes IA deben leer `AGENTS.md` en la raíz del repo ([ver en GitHub](https://github.com/beresta/beresta/blob/master/AGENTS.md)). Cubre renderizado, grafo de escena, componentes e instancias, layout, UI, formato de archivo, convenciones Tauri y problemas conocidos.
+Desarrolladores y agentes IA deben leer `AGENTS.md` en la raíz del repo ([ver en GitHub](https://github.com/norka/norka/blob/master/AGENTS.md)). Cubre renderizado, grafo de escena, componentes e instancias, layout, UI, formato de archivo, convenciones Tauri y problemas conocidos.
 
 ## Realizar cambios
 

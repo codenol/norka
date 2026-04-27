@@ -1,6 +1,6 @@
 ---
 title: Variablen
-description: Design-Variablen, Sammlungen, Modi und Füllbindungen in Beresta.
+description: Design-Variablen, Sammlungen, Modi und Füllbindungen in Norka.
 ---
 
 # Variablen

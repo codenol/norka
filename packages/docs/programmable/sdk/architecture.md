@@ -1,11 +1,11 @@
 ---
 title: SDK Architecture
-description: Folder structure, public API boundaries, and composition patterns in @beresta/vue.
+description: Folder structure, public API boundaries, and composition patterns in @norka/vue.
 ---
 
 # SDK Architecture
 
-`@beresta/vue` is the Vue-facing layer over `@beresta/core`.
+`@norka/vue` is the Vue-facing layer over `@norka/core`.
 
 It does not own the editor model itself. It adapts the core editor into:
 
@@ -107,7 +107,7 @@ Prefer focused slot props or direct composable usage over giant `v-slot="ctx"` p
 
 ## Practical rule of thumb
 
-If a piece of logic could be reused in a different Beresta-based app without bringing app styling with it, it probably belongs in `@beresta/vue`.
+If a piece of logic could be reused in a different Norka-based app without bringing app styling with it, it probably belongs in `@norka/vue`.
 
 ## Related pages
 

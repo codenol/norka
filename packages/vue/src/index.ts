@@ -4,8 +4,8 @@ export type {
   EditorOptions,
   Tool,
   EditorToolDef
-} from '@beresta/core/editor'
-export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@beresta/core/editor'
+} from '@norka/core/editor'
+export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@norka/core/editor'
 
 /**
  * Public editor-context API for the Vue SDK.

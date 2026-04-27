@@ -6,14 +6,14 @@
  * variables/styles are injected into the active graph.
  *
  * Persistence strategy:
- *   - `localStorage['beresta:libraries']`   → JSON array of LibraryManifest
- *   - `localStorage['beresta:lib:{id}']`    → base64-encoded .fig bytes
+ *   - `localStorage['norka:libraries']`   → JSON array of LibraryManifest
+ *   - `localStorage['norka:lib:{id}']`    → base64-encoded .fig bytes
  */
 
 import { shallowRef, computed, type ComputedRef } from 'vue'
-import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@beresta/core'
+import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@norka/core'
 
-import type { LibraryManifest, SceneGraph } from '@beresta/core'
+import type { LibraryManifest, SceneGraph } from '@norka/core'
 
 import { useCodeConnectStore } from './code-connect'
 import { isBuiltinLibrary, injectBuiltinComponentsToGraph } from './builtin-library'
@@ -21,8 +21,8 @@ import { isBuiltinLibrary, injectBuiltinComponentsToGraph } from './builtin-libr
 // Code Connect store — seeded/pruned alongside library registration
 const _codeConnect = useCodeConnectStore()
 
-const MANIFEST_KEY = 'beresta:libraries'
-const DATA_KEY_PREFIX = 'beresta:lib:'
+const MANIFEST_KEY = 'norka:libraries'
+const DATA_KEY_PREFIX = 'norka:lib:'
 
 // ---------------------------------------------------------------------------
 // Internal helpers

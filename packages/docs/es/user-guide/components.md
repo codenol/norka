@@ -1,6 +1,6 @@
 ---
 title: Componentes
-description: Componentes reutilizables, instancias, overrides y sincronización en Beresta.
+description: Componentes reutilizables, instancias, overrides y sincronización en Norka.
 ---
 # Componentes
 

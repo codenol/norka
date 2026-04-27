@@ -1,5 +1,8 @@
 import { onMounted, ref, watch } from 'vue'
 import { IS_BROWSER } from '@/constants'
+import { getActiveEditorStore } from '@/stores/editor'
+
+import type { Color } from '@norka/core'
 
 export const PRIME_THEMES = [
   { id: 'lara-dark-blue', label: 'Lara Dark' },
@@ -8,6 +11,10 @@ export const PRIME_THEMES = [
 
 const PRIME_THEME_LINK_ID = 'norka-prime-theme-link'
 const PRIME_THEME_STORAGE_KEY = 'norka:prime-theme'
+const PRIME_THEME_CANVAS_COLORS: Record<string, Color> = {
+  'lara-dark-blue': { r: 0.1176, g: 0.1176, b: 0.1176, a: 1 },
+  'lara-light-blue': { r: 0.9608, g: 0.9647, b: 0.9725, a: 1 },
+}
 
 export function usePrimeTheme() {
   const theme = ref<string>('lara-dark-blue')
@@ -29,6 +36,11 @@ export function usePrimeTheme() {
     if (!link) return
     link.href = `https://unpkg.com/primereact@10/resources/themes/${themeId}/theme.css`
     document.documentElement.dataset.primeTheme = themeId
+
+    const canvasColor = PRIME_THEME_CANVAS_COLORS[themeId]
+    if (canvasColor) {
+      getActiveEditorStore().setPageColor(canvasColor)
+    }
   }
 
   onMounted(() => {

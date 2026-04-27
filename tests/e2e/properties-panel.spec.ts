@@ -92,7 +92,7 @@ test('variable bind badge appears on fill', async () => {
   await canvas.drawRect(200, 200, 80, 80)
 
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const col = store.graph.createCollection('Colors')
     const v = store.graph.createVariable('brand-red', 'COLOR', col.id, { r: 1, g: 0, b: 0, a: 1 })
     const id = [...store.state.selectedIds][0]

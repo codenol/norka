@@ -15,13 +15,13 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@beresta/vue": ["./src/index.ts"],
-      "@beresta/vue/*": ["./src/*"],
-      "@beresta/core": ["../core/src/index.ts"],
-      "@beresta/core/*": ["../core/src/*"],
-      "@beresta/core/editor": ["../core/src/editor/index.ts"],
-      "@beresta/core/render": ["../core/src/render/index.ts"],
-      "@beresta/core/color": ["../core/src/color.ts"]
+      "@norka/vue": ["./src/index.ts"],
+      "@norka/vue/*": ["./src/*"],
+      "@norka/core": ["../core/src/index.ts"],
+      "@norka/core/*": ["../core/src/*"],
+      "@norka/core/editor": ["../core/src/editor/index.ts"],
+      "@norka/core/render": ["../core/src/render/index.ts"],
+      "@norka/core/color": ["../core/src/color.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "../core/src/global.d.ts"],

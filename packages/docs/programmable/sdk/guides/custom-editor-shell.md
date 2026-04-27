@@ -5,15 +5,15 @@ description: Build your own editor shell with provideEditor, CanvasRoot, menus, 
 
 # Custom Editor Shell
 
-A typical Beresta Vue app has three layers:
+A typical Norka Vue app has three layers:
 
-1. `@beresta/core` creates the editor
-2. `@beresta/vue` adapts it into Vue composables and headless primitives
+1. `@norka/core` creates the editor
+2. `@norka/vue` adapts it into Vue composables and headless primitives
 3. your app renders the shell, styling, and product UX
 
 ## Why this matters
 
-The built-in Beresta app is only one possible shell.
+The built-in Norka app is only one possible shell.
 
 You can build a very different one for a focused workflow: an embedded editor inside another product, an internal asset tool, a template editor, an annotation UI, or an AI-assisted editing surface with custom controls.
 
@@ -33,7 +33,7 @@ A practical shell often looks like this:
 
 ```vue
 <script setup lang="ts">
-import { createEditor } from '@beresta/core/editor'
+import { createEditor } from '@norka/core/editor'
 import {
   provideEditor,
   CanvasRoot,
@@ -41,7 +41,7 @@ import {
   ToolbarRoot,
   PageListRoot,
   LayerTreeRoot,
-} from '@beresta/vue'
+} from '@norka/vue'
 
 const editor = createEditor({ width: 1440, height: 900 })
 provideEditor(editor)

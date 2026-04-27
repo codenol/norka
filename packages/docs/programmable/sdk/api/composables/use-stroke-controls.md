@@ -17,7 +17,7 @@ It provides:
 ## Usage
 
 ```ts
-import { useStrokeControls } from '@beresta/vue'
+import { useStrokeControls } from '@norka/vue'
 
 const strokes = useStrokeControls()
 ```

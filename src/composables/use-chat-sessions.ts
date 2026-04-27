@@ -10,8 +10,8 @@ export interface ChatSession {
   messages: UIMessage[]
 }
 
-const STORAGE_KEY = 'beresta:chat-sessions'
-const ACTIVE_KEY = 'beresta:active-session-id'
+const STORAGE_KEY = 'norka:chat-sessions'
+const ACTIVE_KEY = 'norka:active-session-id'
 
 function loadSessions(): ChatSession[] {
   try {

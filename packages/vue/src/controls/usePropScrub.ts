@@ -1,4 +1,4 @@
-import type { Editor, SceneNode } from '@beresta/core'
+import type { Editor, SceneNode } from '@norka/core'
 
 export function usePropScrub(editor: Editor) {
   const previousValues = new Map<string, Record<string, number | string>>()

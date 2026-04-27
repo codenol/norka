@@ -1,6 +1,6 @@
 ---
 title: Livelli e pagine
-description: Gestire livelli, pagine e pannello proprietà in Beresta.
+description: Gestire livelli, pagine e pannello proprietà in Norka.
 ---
 # Livelli e pagine
 

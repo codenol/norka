@@ -1,6 +1,6 @@
 ---
 title: Auswahl & Bearbeitung
-description: Auswählen, Bewegen, Skalieren, Drehen, Duplizieren und Organisieren von Knoten in Beresta.
+description: Auswählen, Bewegen, Skalieren, Drehen, Duplizieren und Organisieren von Knoten in Norka.
 ---
 
 # Auswahl & Bearbeitung

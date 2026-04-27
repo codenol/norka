@@ -1,12 +1,12 @@
 import type { Page } from '@playwright/test'
 
 export function getSelectedIds(page: Page) {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.selectedIds.size)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.selectedIds.size)
 }
 
 export function getPageChildren(page: Page) {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).map((n: any) => ({
       id: n.id,
       type: n.type,
@@ -23,7 +23,7 @@ export function getPageChildren(page: Page) {
 
 export function getSelectedNode(page: Page) {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const n = store.graph.getNode(id)
@@ -53,7 +53,7 @@ export function getSelectedNode(page: Page) {
 
 export function getNodeById(page: Page, id: string) {
   return page.evaluate((nodeId: string) => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const n = store.graph.getNode(nodeId)
     if (!n) return null
     return {
@@ -85,5 +85,5 @@ export function getNodeById(page: Page, id: string) {
 }
 
 export function getEditingTextId(page: Page) {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.editingTextId)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.editingTextId)
 }

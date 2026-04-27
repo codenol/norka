@@ -1,6 +1,6 @@
 ---
 title: Variabili
-description: Variabili di design, collezioni, modalità e binding in Beresta.
+description: Variabili di design, collezioni, modalità e binding in Norka.
 ---
 # Variabili
 

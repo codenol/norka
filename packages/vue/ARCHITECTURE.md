@@ -1,4 +1,4 @@
-# @beresta/vue architecture
+# @norka/vue architecture
 
 ## Folder conventions
 

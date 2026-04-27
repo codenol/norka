@@ -7,15 +7,15 @@ import {
   removeStyleFromRange,
   getStyleAt,
   type StyleRun,
-} from '@beresta/core'
+} from '@norka/core'
 
 import {
   encodeVectorNetworkBlob,
   decodeVectorNetworkBlob,
   type VectorNetwork,
-} from '@beresta/core'
+} from '@norka/core'
 
-import { SceneGraph, UndoManager } from '@beresta/core'
+import { SceneGraph, UndoManager } from '@norka/core'
 
 // ---------------------------------------------------------------------------
 // toggleBoldInRange — mutation coverage

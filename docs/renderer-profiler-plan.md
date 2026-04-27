@@ -1,6 +1,6 @@
 # Renderer Profiler — Design Plan
 
-Production-grade instrumentation for Beresta's CanvasKit/Skia renderer, inspired by game engine profiling tools (Unreal Insights, Unity Frame Timing Manager) and browser render engine internals (Chrome Compositor, WebKit/Skia tracing).
+Production-grade instrumentation for Norka's CanvasKit/Skia renderer, inspired by game engine profiling tools (Unreal Insights, Unity Frame Timing Manager) and browser render engine internals (Chrome Compositor, WebKit/Skia tracing).
 
 ## What Skia gives us
 
@@ -70,8 +70,8 @@ performance.measure("Scene Render", {
   detail: {
     devtools: {
       dataType: "track-entry",
-      track: "Beresta Renderer",
-      trackGroup: "Beresta",
+      track: "Norka Renderer",
+      trackGroup: "Norka",
       color: "primary",
       properties: [["Nodes", "142"], ["Cached", "true"]],
       tooltipText: "Full scene render with SkPicture cache hit"
@@ -80,7 +80,7 @@ performance.measure("Scene Render", {
 })
 ```
 
-This shows up as a dedicated "Beresta Renderer" track in the DevTools Performance panel alongside browser internals. Extremely powerful for production debugging.
+This shows up as a dedicated "Norka Renderer" track in the DevTools Performance panel alongside browser internals. Extremely powerful for production debugging.
 
 ---
 
@@ -121,7 +121,7 @@ The graph draws CPU bars from bottom and GPU bars from top, making CPU/GPU overl
 
 ### 2. Phase instrumentation (User Timing API)
 
-Instrument the `render()` method with `performance.mark`/`performance.measure` using the Chrome DevTools extensibility API to create a custom "Beresta" track group:
+Instrument the `render()` method with `performance.mark`/`performance.measure` using the Chrome DevTools extensibility API to create a custom "Norka" track group:
 
 **Phases to instrument:**
 
@@ -156,7 +156,7 @@ performance.measure('flush', {
     devtools: {
       dataType: 'track-entry',
       track: 'Renderer',
-      trackGroup: 'Beresta',
+      trackGroup: 'Norka',
       color: 'tertiary'
     }
   }

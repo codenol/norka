@@ -5,7 +5,7 @@ import { useToolbar } from './context'
 
 defineOptions({ inheritAttrs: false })
 
-import type { Tool } from '@beresta/core/editor'
+import type { Tool } from '@norka/core/editor'
 
 const props = defineProps<{
   tool: Tool

@@ -1,5 +1,5 @@
 import type { DragDraw } from './types'
-import type { Editor } from '@beresta/core/editor'
+import type { Editor } from '@norka/core/editor'
 
 export function handleDrawMove(
   d: DragDraw,

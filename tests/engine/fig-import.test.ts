@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { importNodeChanges, type NodeChange } from '@beresta/core'
+import { importNodeChanges, type NodeChange } from '@norka/core'
 
 function doc(): NodeChange {
   return {

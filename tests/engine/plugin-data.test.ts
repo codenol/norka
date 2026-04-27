@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, FigmaAPI, SceneGraph, initCodec, parseFigFile } from '@beresta/core'
+import { exportFigFile, FigmaAPI, SceneGraph, initCodec, parseFigFile } from '@norka/core'
 
 describe('plugin data', () => {
   test('figma proxy supports private and shared plugin data methods', () => {
@@ -41,7 +41,7 @@ describe('plugin data', () => {
 
     expect(parsedFrame).toBeDefined()
     expect(parsedFrame?.pluginData).toContainEqual({
-      pluginId: 'open-pencil',
+      pluginId: 'norka',
       key: 'okhcl',
       value: '{"l":0.7,"c":0.12,"h":240}'
     })

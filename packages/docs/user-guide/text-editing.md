@@ -1,6 +1,6 @@
 ---
 title: Text Editing
-description: Creating and editing text with rich formatting, fonts, and inline editing in Beresta.
+description: Creating and editing text with rich formatting, fonts, and inline editing in Norka.
 ---
 
 # Text Editing

@@ -1,6 +1,6 @@
 ---
 title: Édition de texte
-description: Créer et modifier du texte avec formatage riche dans Beresta.
+description: Créer et modifier du texte avec formatage riche dans Norka.
 ---
 # Édition de texte
 

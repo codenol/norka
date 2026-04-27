@@ -309,7 +309,7 @@ export async function exportFigFile(
 
   const metaJson = JSON.stringify({
     version: 1,
-    app: 'Beresta',
+    app: 'Norka',
     createdAt: new Date().toISOString()
   })
 

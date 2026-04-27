@@ -13,9 +13,9 @@ import {
   buildComponent,
   createElement,
   resolveToTree
-} from '@beresta/core'
+} from '@norka/core'
 
-import type { ParamDef, ParamType } from '@beresta/core'
+import type { ParamDef, ParamType } from '@norka/core'
 
 // Version is read via static import so bun --compile can bundle it correctly.
 import mcpPkg from '../package.json' with { type: 'json' }
@@ -91,7 +91,7 @@ export function startServer(options: ServerOptions = {}) {
   function sendToBrowser(body: Record<string, unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
       if (!browserWs || browserWs.readyState !== browserWs.OPEN || !browserRegistered) {
-        reject(new Error('Beresta app is not connected'))
+        reject(new Error('Norka app is not connected'))
         return
       }
       const id = randomUUID()
@@ -227,7 +227,7 @@ export function startServer(options: ServerOptions = {}) {
   app.use('/rpc', async (c, next) => {
     const rpcToken = currentRpcToken()
     if (!browserWs || !browserRegistered || !rpcToken) {
-      return c.json({ error: 'Beresta app is not connected. Is a document open?' }, 503)
+      return c.json({ error: 'Norka app is not connected. Is a document open?' }, 503)
     }
     const auth = c.req.header('authorization')
     const provided = auth?.startsWith('Bearer ') ? auth.slice(7) : null
@@ -273,7 +273,7 @@ export function startServer(options: ServerOptions = {}) {
   }
 
   function createMCPSession(id: string): MCPTransport {
-    const mcpServer = new McpServer({ name: 'beresta', version: MCP_VERSION })
+    const mcpServer = new McpServer({ name: 'norka', version: MCP_VERSION })
     const register = mcpServer.registerTool.bind(mcpServer) as (...a: unknown[]) => void
 
     for (const def of ALL_TOOLS) {

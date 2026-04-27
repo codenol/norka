@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useI18n } from '@beresta/vue'
+import { useI18n } from '@norka/vue'
 import ColorInput from '@/components/ColorInput.vue'
 import { useSectionUI } from '@/components/ui/section'
 

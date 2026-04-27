@@ -1,6 +1,6 @@
 ---
 title: Dessiner des formes
-description: Créer des rectangles, ellipses, lignes, cadres et sections dans Beresta.
+description: Créer des rectangles, ellipses, lignes, cadres et sections dans Norka.
 ---
 # Dessiner des formes
 

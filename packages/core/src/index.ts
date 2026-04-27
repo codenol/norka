@@ -88,6 +88,18 @@ export {
   type PrimeReactConnectDef,
 } from './library'
 export {
+  BUILT_IN_ARCHETYPES,
+  ARCHETYPE_CATEGORIES,
+  buildAliasMap,
+  matchArchetype,
+  normalize as normalizeArchetypeName,
+  type ComponentArchetype,
+  type ArchetypeCategory,
+  type ComponentPropSchema,
+  type ArchetypeDesignBinding,
+  type ArchetypeCodeBinding,
+} from './components/archetypes'
+export {
   exportTokens,
   exportCSSVariables,
   exportTailwindTheme,
@@ -359,12 +371,12 @@ export {
   parseFigmaClipboard,
   importClipboardNodes,
   figmaNodesBounds,
-  parseBerestaClipboard,
+  parseNorkaClipboard,
   buildFigmaClipboardHTML,
-  buildBerestaClipboardHTML,
+  buildNorkaClipboardHTML,
   prefetchFigmaSchema,
   type TextPictureBuilder,
-  type BerestaClipboardData
+  type NorkaClipboardData
 } from './clipboard'
 export { probeGlyphOutlineCommands, type GlyphOutlineProbe } from './text/opentype'
 

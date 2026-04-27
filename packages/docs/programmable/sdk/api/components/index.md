@@ -1,11 +1,11 @@
 ---
 title: Components
-description: Component reference for headless Vue primitives in @beresta/vue.
+description: Component reference for headless Vue primitives in @norka/vue.
 ---
 
 # Components
 
-`@beresta/vue` exposes headless structural primitives for canvas wiring, navigation UI, property panels, and focused input controls.
+`@norka/vue` exposes headless structural primitives for canvas wiring, navigation UI, property panels, and focused input controls.
 
 ## Core editor primitives
 

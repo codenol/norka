@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 
-import type { Tool, EditorToolDef } from '@beresta/core/editor'
+import type { Tool, EditorToolDef } from '@norka/core/editor'
 
 const CATEGORY_COUNT = 3
 

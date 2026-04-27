@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, FigmaAPI, sceneNodeToKiwi, type Stroke } from '@beresta/core'
+import { SceneGraph, FigmaAPI, sceneNodeToKiwi, type Stroke } from '@norka/core'
 
 function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id

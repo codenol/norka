@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
+import { useEditor } from '@norka/vue/context/editorContext'
 import { provideLayerTree } from './context'
 
 defineOptions({ inheritAttrs: false })

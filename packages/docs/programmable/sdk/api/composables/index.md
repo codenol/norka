@@ -1,11 +1,11 @@
 ---
 title: Composables
-description: Core composable APIs in @beresta/vue.
+description: Core composable APIs in @norka/vue.
 ---
 
 # Composables
 
-These are the main composables most `@beresta/vue` consumers will use.
+These are the main composables most `@norka/vue` consumers will use.
 
 ## Context and canvas
 

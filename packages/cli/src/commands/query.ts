@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { printNodeResults, printError } from '../format'
 import { loadDocument } from '../headless'
 
-import type { QueryNodeResult } from '@beresta/core'
+import type { QueryNodeResult } from '@norka/core'
 
 async function getData(
   file: string | undefined,
@@ -27,12 +27,12 @@ export default defineCommand({
     description: `Query nodes using XPath selectors
 
 Examples:
-  beresta query file.fig "//FRAME"                              # All frames
-  beresta query file.fig "//FRAME[@width < 300]"                # Frames narrower than 300px
-  beresta query file.fig "//COMPONENT[starts-with(@name, 'Button')]"  # Components starting with Button
-  beresta query file.fig "//SECTION/FRAME"                      # Direct frame children of sections
-  beresta query file.fig "//SECTION//TEXT"                      # All text inside sections
-  beresta query file.fig "//*[@cornerRadius > 0]"               # Any node with corner radius`
+  norka query file.fig "//FRAME"                              # All frames
+  norka query file.fig "//FRAME[@width < 300]"                # Frames narrower than 300px
+  norka query file.fig "//COMPONENT[starts-with(@name, 'Button')]"  # Components starting with Button
+  norka query file.fig "//SECTION/FRAME"                      # Direct frame children of sections
+  norka query file.fig "//SECTION//TEXT"                      # All text inside sections
+  norka query file.fig "//*[@cornerRadius > 0]"               # Any node with corner radius`
   },
   args: {
     file: {

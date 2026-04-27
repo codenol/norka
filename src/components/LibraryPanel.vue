@@ -13,15 +13,15 @@ import {
   TabsTrigger
 } from 'reka-ui'
 
-import { useI18n } from '@beresta/vue'
-import { libraryRegistry, colorToCSS } from '@beresta/core'
+import { useI18n } from '@norka/vue'
+import { libraryRegistry, colorToCSS } from '@norka/core'
 
 import { useEditorStore } from '@/stores/editor'
 import { useLibraryStore } from '@/stores/library'
 import { useDialogUI } from '@/components/ui/dialog'
 import Tip from './ui/Tip.vue'
 
-import type { FillStyle, NamedStyle } from '@beresta/core'
+import type { FillStyle, NamedStyle } from '@norka/core'
 
 type LibTab = 'COMPONENTS' | 'VARIABLES' | 'STYLES'
 

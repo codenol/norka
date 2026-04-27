@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useI18n } from '@beresta/vue/i18n'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useI18n } from '@norka/vue/i18n'
 
-import type { SceneNode, Stroke } from '@beresta/core'
+import type { SceneNode, Stroke } from '@norka/core'
 
 type StrokeSides = 'ALL' | 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'CUSTOM'
 

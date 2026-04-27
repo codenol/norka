@@ -1,6 +1,6 @@
 ---
 title: Navegación del lienzo
-description: Panorámica, zoom y herramienta mano en Beresta.
+description: Panorámica, zoom y herramienta mano en Norka.
 ---
 
 # Navegación del lienzo

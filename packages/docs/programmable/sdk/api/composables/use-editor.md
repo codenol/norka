@@ -1,11 +1,11 @@
 ---
 title: useEditor
-description: Access the current injected Beresta editor instance.
+description: Access the current injected Norka editor instance.
 ---
 
 # useEditor
 
-`useEditor()` returns the current injected Beresta editor.
+`useEditor()` returns the current injected Norka editor.
 
 It is the main entry point for SDK composables and headless primitives that need editor access.
 
@@ -14,7 +14,7 @@ It is the main entry point for SDK composables and headless primitives that need
 `useEditor()` must be called inside a subtree where `provideEditor(editor)` has already been called.
 
 ```ts
-import { useEditor } from '@beresta/vue'
+import { useEditor } from '@norka/vue'
 
 const editor = useEditor()
 ```
@@ -25,7 +25,7 @@ const editor = useEditor()
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue'
+import { useEditor } from '@norka/vue'
 
 const editor = useEditor()
 const pageId = computed(() => editor.state.currentPageId)

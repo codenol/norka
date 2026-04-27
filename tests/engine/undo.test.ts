@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { UndoManager } from '@beresta/core'
+import { UndoManager } from '@norka/core'
 
 describe('UndoManager', () => {
   test('initial state', () => {

@@ -1,5 +1,5 @@
 {
-  "name": "@beresta/vue",
+  "name": "@norka/vue",
   "version": "0.11.6",
   "license": "MIT",
   "type": "module",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beresta/open-pencil.git",
+    "url": "git+https://github.com/norka/norka.git",
     "directory": "packages/vue"
   },
   "publishConfig": {
@@ -29,7 +29,7 @@
   },
   "peerDependencies": {
     "vue": "^3.4.0",
-    "@beresta/core": "workspace:*",
+    "@norka/core": "workspace:*",
     "canvaskit-wasm": ">=0.39.0"
   },
   "peerDependenciesMeta": {

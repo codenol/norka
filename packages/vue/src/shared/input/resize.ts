@@ -1,10 +1,10 @@
-import { cloneVectorNetwork } from '@beresta/core'
+import { cloneVectorNetwork } from '@norka/core'
 
 import { hitTestHandle } from './geometry'
 
 import type { DragResize, HandlePosition } from './types'
-import type { Rect, SceneNode } from '@beresta/core'
-import type { Editor } from '@beresta/core/editor'
+import type { Rect, SceneNode } from '@norka/core'
+import type { Editor } from '@norka/core/editor'
 
 export function constrainToAspectRatio(
   handle: HandlePosition,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import { useI18n } from '@beresta/vue'
+import { useI18n } from '@norka/vue'
 
 import { useLibraryStore } from '@/stores/library'
 import { useLibraryGitHubStore } from '@/stores/library-github'
@@ -14,7 +14,7 @@ const { dialogs } = useI18n()
 
 const tokenInput = ref('')
 const showToken = ref(false)
-const repoInput = ref('beresta-libraries')
+const repoInput = ref('norka-libraries')
 const editingConfig = ref(false)
 
 function startEditConfig() {
@@ -30,7 +30,7 @@ function cancelEditConfig() {
 async function handleConnect() {
   const token = tokenInput.value.trim()
   if (!token) return
-  await gh.connectGitHub(token, repoInput.value.trim() || 'beresta-libraries')
+  await gh.connectGitHub(token, repoInput.value.trim() || 'norka-libraries')
   if (!gh.error.value) {
     editingConfig.value = false
     tokenInput.value = ''

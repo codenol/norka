@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../../app-client'
 import { bold, fmtHistogram, fmtList, fmtSummary } from '../../format'
 import { loadDocument } from '../../headless'
 
-import type { AnalyzeColorsResult } from '@beresta/core'
+import type { AnalyzeColorsResult } from '@norka/core'
 
 async function getData(
   file: string | undefined,

@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 
-import { useFillPicker } from '@beresta/vue/FillPicker/useFillPicker'
+import { useFillPicker } from '@norka/vue/FillPicker/useFillPicker'
 
-import type { Fill } from '@beresta/core'
+import type { Fill } from '@norka/core'
 
 const props = defineProps<{
   fill: Fill

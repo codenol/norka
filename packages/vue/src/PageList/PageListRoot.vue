@@ -2,7 +2,7 @@
 defineOptions({ inheritAttrs: false })
 import { computed } from 'vue'
 
-import { usePageList } from '@beresta/vue/PageList/usePageList'
+import { usePageList } from '@norka/vue/PageList/usePageList'
 
 const props = defineProps<{
   dividerPattern?: RegExp

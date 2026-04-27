@@ -1,6 +1,6 @@
 ---
 title: Navigation sur le canevas
-description: Panoramique, zoom et outil main dans Beresta.
+description: Panoramique, zoom et outil main dans Norka.
 ---
 
 # Navigation sur le canevas

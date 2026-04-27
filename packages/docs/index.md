@@ -1,33 +1,33 @@
 ---
 layout: home
-title: Beresta — Open-Source Design Editor
+title: Norka — Open-Source Design Editor
 description: Open-source Figma alternative. Opens .fig files, built-in AI, fully programmable.
 
 hero:
-  name: Beresta
+  name: Norka
   text: Open-Source Design Editor
   tagline: Opens Figma files. Built-in AI. Fully programmable. Also a toolkit for building custom editors.
   actions:
     - theme: brand
       text: Try Online
-      link: https://app.beresta.dev/demo
+      link: https://app.norka.dev/demo
     - theme: alt
       text: Download
-      link: https://github.com/beresta/beresta/releases/latest
+      link: https://github.com/norka/norka/releases/latest
     - theme: alt
       text: GitHub
-      link: https://github.com/beresta/open-pencil
+      link: https://github.com/norka/norka
 
 features:
   - icon: 📂
     title: Figma-Compatible
-    details: Opens .fig files natively. Copy & paste between Figma and Beresta. Kiwi binary codec with round-trip fidelity.
+    details: Opens .fig files natively. Copy & paste between Figma and Norka. Kiwi binary codec with round-trip fidelity.
   - icon: ⚡
     title: Programmable
     details: Headless CLI to inspect, export, and analyze .fig files. Figma Plugin API via eval. Tailwind CSS export. JSON output for CI and automation.
   - icon: 🧩
     title: Toolkit, not just app
-    details: Build custom editing surfaces with the Vue SDK, embed Beresta into other products, or assemble workflow-specific editors around the same core.
+    details: Build custom editing surfaces with the Vue SDK, embed Norka into other products, or assemble workflow-specific editors around the same core.
   - icon: 🤖
     title: AI-Native
     details: Built-in chat with 90 tools — create shapes, set styles, manage layout, analyze tokens. MCP server for Claude Code, Cursor, Windsurf.

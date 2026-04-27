@@ -72,7 +72,7 @@ onUnmounted(() => {
   <button
     draggable="true"
     v-bind="htmlAttrs"
-    class="group flex w-full flex-col items-center gap-1 rounded-lg border bg-white px-1.5 pb-1.5 pt-1.5 text-center transition-colors"
+    class="group flex w-full flex-col items-center gap-1 rounded-lg border bg-panel px-1.5 pb-1.5 pt-1.5 text-center transition-colors"
     :class="
       isDisabled
         ? 'cursor-default border-border/30 opacity-40'
@@ -83,7 +83,7 @@ onUnmounted(() => {
     @dragstart="emit('dragStart', $event)"
   >
     <!-- React preview area -->
-    <div class="w-full overflow-hidden rounded" style="height: 48px; background: #f8f8f8">
+    <div class="h-12 w-full overflow-hidden rounded bg-canvas">
       <div
         v-if="!hasError"
         ref="mountEl"

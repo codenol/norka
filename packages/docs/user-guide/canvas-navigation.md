@@ -1,6 +1,6 @@
 ---
 title: Canvas Navigation
-description: Panning, zooming, and the hand tool in Beresta.
+description: Panning, zooming, and the hand tool in Norka.
 ---
 
 # Canvas Navigation

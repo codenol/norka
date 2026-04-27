@@ -4,7 +4,7 @@ import {
   computeAllLayouts,
   initCanvasKit,
   type SceneGraph
-} from '@beresta/core'
+} from '@norka/core'
 
 export { initCanvasKit }
 

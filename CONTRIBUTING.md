@@ -3,9 +3,9 @@
 ## Setup
 
 ```bash
-git clone https://github.com/beresta/open-pencil.git
-cd beresta
-git clone https://github.com/beresta/vue-stream-markdown.git
+git clone https://github.com/norka/norka.git
+cd norka
+git clone https://github.com/norka/vue-stream-markdown.git
 bun install
 ```
 
@@ -33,7 +33,7 @@ bun run test         # Playwright E2E (auto-starts dev server)
 - `packages/core` — scene graph, renderer, layout, codec (zero DOM deps)
 - `packages/cli` — headless CLI for .fig inspection and export
 - `packages/mcp` — MCP server for AI tools (stdio + HTTP)
-- `packages/docs` — VitePress documentation site (beresta.dev)
+- `packages/docs` — VitePress documentation site (norka.dev)
 - `src/` — Tauri/Vite desktop editor
 
 ## Conventions

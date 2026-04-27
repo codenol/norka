@@ -19,7 +19,7 @@ It exposes:
 ## Usage
 
 ```ts
-import { usePageList } from '@beresta/vue'
+import { usePageList } from '@norka/vue'
 
 const pageList = usePageList()
 ```

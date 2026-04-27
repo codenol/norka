@@ -1,15 +1,15 @@
 {
-  "name": "@beresta/cli",
+  "name": "@norka/cli",
   "version": "0.11.6",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "beresta": "./src/index.ts"
+    "norka": "./src/index.ts"
   },
   "files": ["src"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beresta/open-pencil.git",
+    "url": "git+https://github.com/norka/norka.git",
     "directory": "packages/cli"
   },
   "publishConfig": {
@@ -17,7 +17,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@beresta/core": "workspace:*",
+    "@norka/core": "workspace:*",
     "agentfmt": "^0.1.3",
     "canvaskit-wasm": "^0.40.0",
     "citty": "^0.1.6"

@@ -1,6 +1,6 @@
 ---
 title: Menu contestuale
-description: Azioni del menu contestuale con click destro in Beresta.
+description: Azioni del menu contestuale con click destro in Norka.
 ---
 # Menu contestuale
 

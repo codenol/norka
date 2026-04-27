@@ -18,7 +18,7 @@ It exposes state and actions for:
 ## Usage
 
 ```ts
-import { useLayout } from '@beresta/vue'
+import { useLayout } from '@norka/vue'
 
 const layout = useLayout()
 ```

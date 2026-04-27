@@ -5,12 +5,12 @@ description: Exécutez du JavaScript avec l'API Figma Plugin — interrogez des 
 
 # Scripter
 
-`beresta eval` vous donne accès à l'API complète Figma Plugin dans le terminal. Lisez des nœuds, modifiez des propriétés, créez des formes — puis écrivez les changements dans le fichier.
+`norka eval` vous donne accès à l'API complète Figma Plugin dans le terminal. Lisez des nœuds, modifiez des propriétés, créez des formes — puis écrivez les changements dans le fichier.
 
 ## Utilisation de base
 
 ```sh
-beresta eval design.fig -c "figma.currentPage.children.length"
+norka eval design.fig -c "figma.currentPage.children.length"
 ```
 
 L'option `-c` prend du JavaScript. Le global `figma` fonctionne comme l'API Figma Plugin.
@@ -18,7 +18,7 @@ L'option `-c` prend du JavaScript. Le global `figma` fonctionne comme l'API Figm
 ## Interroger des nœuds
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.findAll(n => n.type === 'FRAME' && n.name.includes('Button'))
     .map(b => ({ id: b.id, name: b.name, w: b.width, h: b.height }))
 "
@@ -27,7 +27,7 @@ beresta eval design.fig -c "
 ## Modifier et sauvegarder
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.children.forEach(n => n.opacity = 0.5)
 " -w
 ```
@@ -39,7 +39,7 @@ beresta eval design.fig -c "
 Pour des scripts plus longs :
 
 ```sh
-cat transform.js | beresta eval design.fig --stdin -w
+cat transform.js | norka eval design.fig --stdin -w
 ```
 
 ## Mode application en direct
@@ -47,7 +47,7 @@ cat transform.js | beresta eval design.fig --stdin -w
 Omettez le fichier pour exécuter sur l'application de bureau en cours d'exécution :
 
 ```sh
-beresta eval -c "figma.currentPage.name"
+norka eval -c "figma.currentPage.name"
 ```
 
 ## API disponible
@@ -66,5 +66,5 @@ C'est la même API que celle utilisée par les plugins Figma, donc les connaissa
 ## Sortie JSON
 
 ```sh
-beresta eval design.fig -c "..." --json
+norka eval design.fig -c "..." --json
 ```

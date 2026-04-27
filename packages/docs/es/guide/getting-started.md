@@ -2,11 +2,11 @@
 
 ## Probar en línea
 
-Beresta funciona en el navegador — sin instalación. Abre [app.beresta.dev](https://app.beresta.dev).
+Norka funciona en el navegador — sin instalación. Abre [app.norka.dev](https://app.norka.dev).
 
 ## Descargar la aplicación de escritorio
 
-Binarios para macOS, Windows y Linux en la [página de releases](https://github.com/beresta/beresta/releases/latest).
+Binarios para macOS, Windows y Linux en la [página de releases](https://github.com/norka/norka/releases/latest).
 
 | Plataforma | Descarga |
 |------------|----------|
@@ -19,8 +19,8 @@ Binarios para macOS, Windows y Linux en la [página de releases](https://github.
 ## Compilar desde el código fuente
 
 ```sh
-git clone https://github.com/beresta/open-pencil.git
-cd beresta
+git clone https://github.com/norka/norka.git
+cd norka
 bun install
 bun run dev
 ```

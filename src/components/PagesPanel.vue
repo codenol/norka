@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { PageListRoot, useI18n, useInlineRename } from '@beresta/vue'
+import { PageListRoot, useI18n, useInlineRename } from '@norka/vue'
 
 import Tip from '@/components/ui/Tip.vue'
 

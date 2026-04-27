@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, watch, onUnmounted } from 'vue'
 
-import { useI18n } from '@beresta/vue'
+import { useI18n } from '@norka/vue'
 
 import { useEditorStore } from '@/stores/editor'
 import { useLinterStore } from '@/stores/linter'
 import Tip from './ui/Tip.vue'
 
 import type { LintPreset } from '@/stores/linter'
-import type { LintMessage } from '@beresta/core'
+import type { LintMessage } from '@norka/core'
 
 const editor = useEditorStore()
 const linter = useLinterStore()

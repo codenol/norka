@@ -1,6 +1,6 @@
 ---
 title: Capas y páginas
-description: Gestionar capas, páginas y panel de propiedades en Beresta.
+description: Gestionar capas, páginas y panel de propiedades en Norka.
 ---
 # Capas y páginas
 

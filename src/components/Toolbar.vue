@@ -34,11 +34,11 @@ import {
   useI18n,
   useToolbarState,
   useViewportKind
-} from '@beresta/vue'
+} from '@norka/vue'
 import { computed } from 'vue'
 
 import type { Component } from 'vue'
-import type { Tool } from '@beresta/vue'
+import type { Tool } from '@norka/vue'
 
 const store = useEditorStore()
 const { isMobile } = useViewportKind()

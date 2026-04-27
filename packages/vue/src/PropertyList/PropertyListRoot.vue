@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useNodeProps } from '@beresta/vue/controls/useNodeProps'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useNodeProps } from '@norka/vue/controls/useNodeProps'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 import { providePropertyList } from './context'
 
 defineOptions({ inheritAttrs: false })
 
-import type { Fill, Stroke, Effect, SceneNode } from '@beresta/core'
+import type { Fill, Stroke, Effect, SceneNode } from '@norka/core'
 
 type ArrayPropKey = 'fills' | 'strokes' | 'effects'
 type ArrayItemType = Fill | Stroke | Effect

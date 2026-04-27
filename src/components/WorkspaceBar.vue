@@ -13,6 +13,8 @@ import { useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
 
+import type { PipelineStep } from '@/composables/use-projects'
+
 const route   = useRoute()
 const { isConfigured } = useAIChat()
 const settings = useSettingsDialog()
@@ -27,7 +29,7 @@ const ICONS = {
 
 const pipeline = [
   { key: 'analytics'  as const, label: 'Аналитика',   href: '/workspace/analytics',  step: 1 },
-  { key: 'design'     as const, label: 'Макеты',       href: '/workspace/design',     step: 2 },
+  { key: 'design'     as const, label: 'Прототип',     href: '/workspace/design',     step: 2 },
   { key: 'discussion' as const, label: 'Обсуждение',   href: '/workspace/discussion', step: 3 },
   { key: 'handoff'    as const, label: 'Передача',     href: '/workspace/handoff',    step: 4 },
 ]
@@ -36,8 +38,8 @@ function isActive(href: string) {
   return route.path.startsWith(href)
 }
 
-function isDone(key: string): boolean {
-  return currentFeature.value?.completedSteps.includes(key as any) ?? false
+function isDone(key: PipelineStep): boolean {
+  return currentFeature.value?.completedSteps.includes(key) ?? false
 }
 </script>
 

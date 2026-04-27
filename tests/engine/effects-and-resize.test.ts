@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, type Effect } from '@beresta/core'
+import { SceneGraph, type Effect } from '@norka/core'
 
 function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id

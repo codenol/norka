@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { GradientStop } from '@beresta/core'
+import type { GradientStop } from '@norka/core'
 
 const props = defineProps<{
   stops: GradientStop[]

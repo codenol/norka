@@ -5,7 +5,7 @@ description: Crea diseños con JSX — la sintaxis que los LLMs ya conocen de mi
 
 # Renderizador JSX
 
-Beresta usa JSX como su lenguaje de creación de diseños. Los LLMs han visto millones de componentes React — describir un layout como `<Frame><Text>` es natural, sin necesidad de entrenamiento especial. Cada token importa cuando un agente de IA realiza docenas de operaciones, y JSX es la representación declarativa más compacta.
+Norka usa JSX como su lenguaje de creación de diseños. Los LLMs han visto millones de componentes React — describir un layout como `<Frame><Text>` es natural, sin necesidad de entrenamiento especial. Cada token importa cuando un agente de IA realiza docenas de operaciones, y JSX es la representación declarativa más compacta.
 
 JSX también es diferenciable. Cuando una IA modifica un diseño, el cambio es un diff de JSX — legible, revisable, versionable.
 
@@ -95,8 +95,8 @@ Props abreviados compactos inspirados en la nomenclatura de Tailwind.
 Convierte diseños existentes de vuelta a JSX:
 
 ```sh
-beresta export design.fig -f jsx                   # formato Beresta
-beresta export design.fig -f jsx --style tailwind  # clases Tailwind
+norka export design.fig -f jsx                   # formato Norka
+norka export design.fig -f jsx --style tailwind  # clases Tailwind
 ```
 
 El viaje de ida y vuelta funciona: exporta un diseño como JSX, modifica el código, renderízalo de nuevo.

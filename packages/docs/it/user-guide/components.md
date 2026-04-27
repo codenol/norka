@@ -1,6 +1,6 @@
 ---
 title: Componenti
-description: Componenti riutilizzabili, istanze, override e sincronizzazione live in Beresta.
+description: Componenti riutilizzabili, istanze, override e sincronizzazione live in Norka.
 ---
 # Componenti
 

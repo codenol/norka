@@ -1,6 +1,6 @@
 import { computed, type ComputedRef } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
+import { useEditor } from '@norka/vue/context/editorContext'
 
 /**
  * Convenience wrapper for scene-derived computed state.

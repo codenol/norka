@@ -20,7 +20,7 @@ test.afterAll(async () => {
 
 function getPageChildren() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).map((n) => ({
       id: n.id,
       type: n.type,
@@ -32,7 +32,7 @@ function getPageChildren() {
 }
 
 function getSelectedCount() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.selectedIds.size)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.selectedIds.size)
 }
 
 async function rightClickShape(x: number, y: number) {
@@ -103,27 +103,27 @@ test('toggle visibility via context menu', async () => {
   await canvas.click(250, 230)
   await canvas.waitForRender()
 
-  const nodeId = await page.evaluate(() => [...window.__OPEN_PENCIL_STORE__!.state.selectedIds][0])
+  const nodeId = await page.evaluate(() => [...window.__NORKA_STORE__!.state.selectedIds][0])
 
   await rightClickShape(250, 230)
   await contextItem('context-toggle-visibility').click()
   await canvas.waitForRender()
 
   const hidden = await page.evaluate((id) => {
-    const n = window.__OPEN_PENCIL_STORE__!.graph.getNode(id)
+    const n = window.__NORKA_STORE__!.graph.getNode(id)
     return n ? { visible: n.visible } : null
   }, nodeId)
   expect(hidden!.visible).toBe(false)
 
   // Toggle back: select via store since invisible nodes can't be hit-tested
   await page.evaluate((id) => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     store.toggleVisibility()
   }, nodeId)
   await canvas.waitForRender()
 
   const restored = await page.evaluate((id) => {
-    const n = window.__OPEN_PENCIL_STORE__!.graph.getNode(id)
+    const n = window.__NORKA_STORE__!.graph.getNode(id)
     return n ? { visible: n.visible } : null
   }, nodeId)
   expect(restored!.visible).toBe(true)
@@ -177,7 +177,7 @@ test('group via context menu', async () => {
 test('ungroup via store after context-menu group', async () => {
   // Groups are click-through, so ungroup via store instead
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const group = store.graph.getChildren(store.state.currentPageId).find((n) => n.type === 'GROUP')
     if (group) store.select([group.id])
     store.ungroupSelected()

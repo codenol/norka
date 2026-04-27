@@ -1,4 +1,4 @@
-import type { Tool } from '@beresta/core/editor'
+import type { Tool } from '@norka/core/editor'
 
 const TOOL_CURSORS: Record<Tool, string> = {
   SELECT: 'default',

@@ -1,6 +1,6 @@
 ---
 title: Selección y manipulación
-description: Seleccionar, mover, redimensionar, rotar y organizar nodos en Beresta.
+description: Seleccionar, mover, redimensionar, rotar y organizar nodos en Norka.
 ---
 # Selección y manipulación
 

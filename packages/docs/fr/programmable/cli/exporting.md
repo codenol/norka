@@ -10,10 +10,10 @@ Exportez des designs depuis le terminal — images raster, vecteurs ou code JSX.
 ## Export d'images
 
 ```sh
-beresta export design.fig                          # PNG (par défaut)
-beresta export design.fig -f jpg -s 2 -q 90       # JPG en 2×, qualité 90
-beresta export design.fig -f webp -s 3             # WEBP en 3×
-beresta export design.fig -f svg                   # SVG vectoriel
+norka export design.fig                          # PNG (par défaut)
+norka export design.fig -f jpg -s 2 -q 90       # JPG en 2×, qualité 90
+norka export design.fig -f webp -s 3             # WEBP en 3×
+norka export design.fig -f svg                   # SVG vectoriel
 ```
 
 Options :
@@ -30,7 +30,7 @@ Options :
 Exportez en JSX avec des classes utilitaires Tailwind :
 
 ```sh
-beresta export design.fig -f jsx --style tailwind
+norka export design.fig -f jsx --style tailwind
 ```
 
 Résultat :
@@ -42,12 +42,12 @@ Résultat :
 </div>
 ```
 
-Supporte aussi `--style beresta` pour le format JSX natif (voir [Moteur de rendu JSX](../jsx-renderer)).
+Supporte aussi `--style norka` pour le format JSX natif (voir [Moteur de rendu JSX](../jsx-renderer)).
 
 ## Miniatures
 
 ```sh
-beresta export design.fig --thumbnail --width 1920 --height 1080
+norka export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Mode application en direct
@@ -55,5 +55,5 @@ beresta export design.fig --thumbnail --width 1920 --height 1080
 Omettez le fichier pour exporter depuis l'application en cours d'exécution :
 
 ```sh
-beresta export -f png    # capture du canevas actuel
+norka export -f png    # capture du canevas actuel
 ```

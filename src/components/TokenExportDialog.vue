@@ -13,14 +13,14 @@ import {
   TabsTrigger
 } from 'reka-ui'
 
-import { useI18n } from '@beresta/vue'
-import { exportTokens } from '@beresta/core'
+import { useI18n } from '@norka/vue'
+import { exportTokens } from '@norka/core'
 
 import { useEditorStore } from '@/stores/editor'
 import { useDialogUI } from '@/components/ui/dialog'
 import Tip from './ui/Tip.vue'
 
-import type { TokenExportFormat } from '@beresta/core'
+import type { TokenExportFormat } from '@norka/core'
 
 const open = defineModel<boolean>('open', { default: false })
 const cls = useDialogUI({ content: 'flex h-[75vh] w-[720px] max-w-[90vw] flex-col' })

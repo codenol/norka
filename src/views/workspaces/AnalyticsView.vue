@@ -16,9 +16,15 @@ import Tip from '@/components/ui/Tip.vue'
 import { createModel, useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
-import { workspacePath, readProjectMd, readScreenMd, writeFeatureFile } from '@/composables/use-workspace-fs'
+import {
+  workspacePath,
+  readProjectMd,
+  readScreenMd,
+  writeFeatureFile,
+  readAllComponentRules,
+  readFeatureFile
+} from '@/composables/use-workspace-fs'
 import { useAnalyticsDesign, ANALYTICS_DESIGN_INSTRUCTIONS } from '@/composables/use-analytics-design'
-import { readAllComponentRules, readFeatureFile } from '@/composables/use-workspace-fs'
 
 import type { UIMessage } from 'ai'
 
@@ -45,6 +51,8 @@ const briefContent = ref<Record<BriefSectionId, string>>({
   metrics:     '',
   questions:   '',
 })
+const analyticsSource = ref('')
+const implementationReady = ref('')
 
 function parseBriefMd(md: string) {
   for (const section of BRIEF_SECTIONS) {
@@ -91,9 +99,7 @@ async function buildSystemPrompt(): Promise<string> {
     readScreenMd(workspacePath.value, productId, screenId),
   ])
 
-  const [rules] = await Promise.all([
-    readAllComponentRules(workspacePath.value),
-  ])
+  const rules = await readAllComponentRules(workspacePath.value)
 
   const parts = [base]
   if (projectMd) parts.push(`\n\n# Контекст продукта\n${projectMd}`)
@@ -108,10 +114,16 @@ onMounted(async () => {
   if (!workspacePath.value || !projectContext.value) return
   const { productId, screenId, featureId } = projectContext.value
   try {
-    const md = await readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics.md')
+    const [md, sourceMd, implementationMd] = await Promise.all([
+      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics.md'),
+      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics-source.md'),
+      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'implementation-ready.md'),
+    ])
     if (md) parseBriefMd(md)
-  } catch {
-    // file may not exist yet — that's fine
+    analyticsSource.value = sourceMd
+    implementationReady.value = implementationMd
+  } catch (error) {
+    console.warn('Could not load analytics brief from disk:', error)
   }
 })
 
@@ -138,6 +150,37 @@ async function saveBrief() {
     savingBrief.value = false
   }
 }
+
+const savingSource = ref(false)
+const sourceDirty = ref(false)
+let sourceSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+async function saveAnalyticsSource() {
+  if (!workspacePath.value || !projectContext.value) return
+  savingSource.value = true
+  try {
+    const { productId, screenId, featureId } = projectContext.value
+    await writeFeatureFile(
+      workspacePath.value,
+      productId,
+      screenId,
+      featureId,
+      'analytics-source.md',
+      analyticsSource.value,
+    )
+    sourceDirty.value = false
+  } finally {
+    savingSource.value = false
+  }
+}
+
+watch(analyticsSource, () => {
+  sourceDirty.value = true
+  if (sourceSaveTimer) clearTimeout(sourceSaveTimer)
+  sourceSaveTimer = setTimeout(() => {
+    void saveAnalyticsSource()
+  }, 1200)
+})
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -224,6 +267,7 @@ async function resetChat() {
 onUnmounted(() => {
   if (statusInterval) clearInterval(statusInterval)
   if (saveTimer) clearTimeout(saveTimer)
+  if (sourceSaveTimer) clearTimeout(sourceSaveTimer)
 })
 
 if (isConfigured.value) void initChat()
@@ -329,6 +373,52 @@ async function updateBriefFromChat() {
   }
 }
 
+async function generateImplementationReadyDoc() {
+  if (!workspacePath.value || !projectContext.value) return
+  const sections = [
+    '# Implementation Ready',
+    '',
+    '## Source',
+    analyticsSource.value || '(not provided)',
+    '',
+    '## Analytics Brief',
+    briefToMd(),
+    '',
+    '## Ready For Engineering',
+    '### Functional Scope',
+    briefContent.value.task || '(tbd)',
+    '',
+    '### User Story',
+    briefContent.value.users || '(tbd)',
+    '',
+    '### Main Scenarios',
+    briefContent.value.scenarios || '(tbd)',
+    '',
+    '### States',
+    briefContent.value.states || '(tbd)',
+    '',
+    '### Constraints',
+    briefContent.value.constraints || '(tbd)',
+    '',
+    '### Metrics',
+    briefContent.value.metrics || '(tbd)',
+    '',
+    '### Open Questions',
+    briefContent.value.questions || '(none)',
+    '',
+  ]
+  implementationReady.value = sections.join('\n')
+  const { productId, screenId, featureId } = projectContext.value
+  await writeFeatureFile(
+    workspacePath.value,
+    productId,
+    screenId,
+    featureId,
+    'implementation-ready.md',
+    implementationReady.value,
+  )
+}
+
 const isStreaming = computed(() => chatStatus.value === 'streaming' || chatStatus.value === 'submitted')
 const canSend = computed(() => inputText.value.trim().length > 0 && isConfigured.value && !isStreaming.value)
 </script>
@@ -351,6 +441,13 @@ const canSend = computed(() => inputText.value.trim().length > 0 && isConfigured
         <icon-lucide-loader-circle v-if="isUpdatingBrief" class="size-3.5 animate-spin" />
         <icon-lucide-sparkles v-else class="size-3.5" />
         {{ isUpdatingBrief ? 'Обновляю…' : 'Обновить бриф' }}
+      </button>
+      <button
+        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
+        @click="generateImplementationReadyDoc"
+      >
+        <icon-lucide-file-check-2 class="size-3.5" />
+        Implementation-ready
       </button>
 
       <div class="flex-1" />
@@ -500,6 +597,20 @@ const canSend = computed(() => inputText.value.trim().length > 0 && isConfigured
         <ScrollAreaRoot class="flex-1 bg-canvas">
           <ScrollAreaViewport class="h-full">
             <div class="flex flex-col divide-y divide-border/60">
+              <div class="flex flex-col">
+                <div class="bg-panel/60 px-3 py-1.5">
+                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    Источник аналитики (Confluence)
+                  </span>
+                  <span class="ml-2 text-[10px] text-muted">{{ savingSource ? 'Сохраняю…' : sourceDirty ? 'Не сохранено' : 'Сохранено' }}</span>
+                </div>
+                <textarea
+                  v-model="analyticsSource"
+                  placeholder="Вставьте сюда source-аналитику и ссылку на Confluence"
+                  class="min-h-[92px] resize-none bg-canvas px-3 py-2.5 text-sm leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
+                  style="field-sizing: content"
+                />
+              </div>
               <div
                 v-for="section in BRIEF_SECTIONS"
                 :key="section.id"
@@ -514,6 +625,19 @@ const canSend = computed(() => inputText.value.trim().length > 0 && isConfigured
                   v-model="briefContent[section.id]"
                   :placeholder="`${section.title}…`"
                   class="min-h-[72px] resize-none bg-canvas px-3 py-2.5 text-sm leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
+                  style="field-sizing: content"
+                />
+              </div>
+              <div class="flex flex-col">
+                <div class="bg-panel/60 px-3 py-1.5">
+                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    implementation-ready.md
+                  </span>
+                </div>
+                <textarea
+                  v-model="implementationReady"
+                  placeholder="Сформируйте implementation-ready документ кнопкой сверху"
+                  class="min-h-[140px] resize-none bg-canvas px-3 py-2.5 font-mono text-xs leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
                   style="field-sizing: content"
                 />
               </div>

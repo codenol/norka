@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
+import { useEditor } from '@norka/vue/context/editorContext'
 
-import type { Color, Effect, SceneNode } from '@beresta/core'
+import type { Color, Effect, SceneNode } from '@norka/core'
 
 type EffectType = Effect['type']
 

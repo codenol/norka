@@ -1,11 +1,11 @@
 import { useStore } from '@nanostores/vue'
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { commandMessages } from '@beresta/vue/i18n'
-import { usePageList } from '@beresta/vue/PageList/usePageList'
-import { useSelectionCapabilities } from '@beresta/vue/selection/useSelectionCapabilities'
-import { useSelectionState } from '@beresta/vue/selection/useSelectionState'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { commandMessages } from '@norka/vue/i18n'
+import { usePageList } from '@norka/vue/PageList/usePageList'
+import { useSelectionCapabilities } from '@norka/vue/selection/useSelectionCapabilities'
+import { useSelectionState } from '@norka/vue/selection/useSelectionState'
 
 import type { Component, ComputedRef } from 'vue'
 

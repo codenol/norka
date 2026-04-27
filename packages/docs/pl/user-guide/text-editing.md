@@ -1,6 +1,6 @@
 ---
 title: Edycja tekstu
-description: Tworzenie i edycja tekstu z formatowaniem w Beresta.
+description: Tworzenie i edycja tekstu z formatowaniem w Norka.
 ---
 # Edycja tekstu
 

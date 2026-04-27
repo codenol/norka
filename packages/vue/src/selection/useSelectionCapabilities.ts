@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
-import { useSelectionState } from '@beresta/vue/selection/useSelectionState'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
+import { useSelectionState } from '@norka/vue/selection/useSelectionState'
 
 /**
  * Returns reactive booleans describing which selection-dependent actions are

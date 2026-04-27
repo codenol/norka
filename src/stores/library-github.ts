@@ -2,7 +2,7 @@
  * library-github — GitHub publishing for design libraries.
  *
  * Uses the GitHub Contents API to upload .fig files to a public repo
- * (default: beresta-libraries). The raw download URL is shareable
+ * (default: norka-libraries). The raw download URL is shareable
  * so teammates can subscribe via library-url.
  *
  * Flow:
@@ -29,7 +29,7 @@ export interface GitHubConfig {
 // Persistence
 // ---------------------------------------------------------------------------
 
-const CONFIG_KEY = 'beresta:github'
+const CONFIG_KEY = 'norka:github'
 
 function loadConfig(): GitHubConfig | null {
   try {
@@ -66,7 +66,7 @@ const _publishedUrls = new Map<string, string>()
 // ---------------------------------------------------------------------------
 
 const GH_API = 'https://api.github.com'
-const DEFAULT_REPO = 'beresta-libraries'
+const DEFAULT_REPO = 'norka-libraries'
 
 async function ghFetch<T>(
   path: string,

@@ -315,7 +315,7 @@ export const dialogMessages = i18n('dialogs', {
 
   libPublishHosting: 'Hosting',
   libPublishTokenPlaceholder: 'GitHub Personal Access Token…',
-  libPublishRepoPlaceholder: 'Repository name (e.g. beresta-libraries)',
+  libPublishRepoPlaceholder: 'Repository name (e.g. norka-libraries)',
   libPublishTokenHint: 'Token requires repo scope. Stored locally only.',
   libPublishConnect: 'Connect',
   libPublishConnecting: 'Connecting…',

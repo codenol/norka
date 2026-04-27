@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 
 import { usePreview } from '@/composables/use-preview'
-import { useI18n } from '@beresta/vue'
+import { useI18n } from '@norka/vue'
 
 const { isOpen, isGenerating, htmlCode, error, close, generate, reset } = usePreview()
 const { dialogs } = useI18n()

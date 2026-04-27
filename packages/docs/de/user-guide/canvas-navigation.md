@@ -1,6 +1,6 @@
 ---
 title: Canvas-Navigation
-description: Schwenken, Zoomen und das Handwerkzeug in Beresta.
+description: Schwenken, Zoomen und das Handwerkzeug in Norka.
 ---
 
 # Canvas-Navigation

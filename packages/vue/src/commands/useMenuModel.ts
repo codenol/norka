@@ -1,10 +1,10 @@
 import { useStore } from '@nanostores/vue'
 import { computed } from 'vue'
 
-import { useEditorCommands } from '@beresta/vue/commands/useEditorCommands'
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { menuMessages } from '@beresta/vue/i18n'
-import { useSelectionState } from '@beresta/vue/selection/useSelectionState'
+import { useEditorCommands } from '@norka/vue/commands/useEditorCommands'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { menuMessages } from '@norka/vue/i18n'
+import { useSelectionState } from '@norka/vue/selection/useSelectionState'
 
 /**
  * Action entry used by menu models returned from {@link useMenuModel}.

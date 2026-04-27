@@ -1,6 +1,6 @@
 ---
 title: Locale APIs
-description: Lower-level locale stores and metadata exported by @beresta/vue.
+description: Lower-level locale stores and metadata exported by @norka/vue.
 ---
 
 # Locale APIs
@@ -24,7 +24,7 @@ import {
   setLocale,
   AVAILABLE_LOCALES,
   LOCALE_LABELS,
-} from '@beresta/vue'
+} from '@norka/vue'
 ```
 
 ## Notes

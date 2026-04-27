@@ -7,10 +7,10 @@ import {
   toggleBoldInRange,
   toggleDecorationInRange,
   toggleItalicInRange
-} from '@beresta/core'
+} from '@norka/core'
 
-import type { SceneNode } from '@beresta/core'
-import type { Editor } from '@beresta/core/editor'
+import type { SceneNode } from '@norka/core'
+import type { Editor } from '@norka/core/editor'
 
 const CARET_BLINK_MS = 530
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, computeLayout } from '@beresta/core'
-import { createEditor } from '@beresta/core/editor'
+import { SceneGraph, computeLayout } from '@norka/core'
+import { createEditor } from '@norka/core/editor'
 
 import { computeAutoLayoutIndicatorForFrame } from '../../packages/vue/src/shared/input/auto-layout'
 import { handleMoveUp } from '../../packages/vue/src/shared/input/move'

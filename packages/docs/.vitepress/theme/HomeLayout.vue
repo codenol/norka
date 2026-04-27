@@ -13,7 +13,7 @@ const { frontmatter } = useData()
       <div v-if="frontmatter.layout === 'home'" class="screenshot">
         <img
           src="/screenshot.png"
-          alt="Beresta editor with a Material 3 design file open"
+          alt="Norka editor with a Material 3 design file open"
         />
       </div>
     </template>

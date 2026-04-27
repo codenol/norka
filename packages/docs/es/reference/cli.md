@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Complete reference for all beresta commands, options, and flags.
+description: Complete reference for all norka commands, options, and flags.
 ---
 
 # CLI Reference
@@ -12,7 +12,7 @@ All commands accept a `.fig` file as a positional argument. When omitted, the CL
 Show document info — pages, node counts, fonts, file size.
 
 ```sh
-beresta info [file] [--json]
+norka info [file] [--json]
 ```
 
 | Option | Description |
@@ -24,7 +24,7 @@ beresta info [file] [--json]
 Print the node hierarchy.
 
 ```sh
-beresta tree [file] [options]
+norka tree [file] [options]
 ```
 
 | Option | Description |
@@ -38,7 +38,7 @@ beresta tree [file] [options]
 Search nodes by name or type.
 
 ```sh
-beresta find [file] [options]
+norka find [file] [options]
 ```
 
 | Option | Description |
@@ -54,7 +54,7 @@ beresta find [file] [options]
 Show detailed properties of a node.
 
 ```sh
-beresta node [file] --id <id> [--json]
+norka node [file] --id <id> [--json]
 ```
 
 | Option | Description |
@@ -67,7 +67,7 @@ beresta node [file] --id <id> [--json]
 List all pages in the document.
 
 ```sh
-beresta pages [file] [--json]
+norka pages [file] [--json]
 ```
 
 | Option | Description |
@@ -79,7 +79,7 @@ beresta pages [file] [--json]
 List design variables and collections.
 
 ```sh
-beresta variables [file] [options]
+norka variables [file] [options]
 ```
 
 | Option | Description |
@@ -93,7 +93,7 @@ beresta variables [file] [options]
 Export to PNG, JPG, WEBP, SVG, or JSX.
 
 ```sh
-beresta export [file] [options]
+norka export [file] [options]
 ```
 
 | Option | Alias | Description |
@@ -104,7 +104,7 @@ beresta export [file] [options]
 | `--quality` | `-q` | Quality 0–100, JPG/WEBP only (default: 90) |
 | `--page` | | Page name (default: first page) |
 | `--node` | | Node ID to export (default: all top-level nodes) |
-| `--style` | | JSX style: `beresta` (default), `tailwind` |
+| `--style` | | JSX style: `norka` (default), `tailwind` |
 | `--thumbnail` | | Export page thumbnail instead of full render |
 | `--width` | | Thumbnail width (default: 1920) |
 | `--height` | | Thumbnail height (default: 1080) |
@@ -114,7 +114,7 @@ beresta export [file] [options]
 Execute JavaScript with the Figma Plugin API.
 
 ```sh
-beresta eval [file] [options]
+norka eval [file] [options]
 ```
 
 | Option | Alias | Description |
@@ -131,7 +131,7 @@ beresta eval [file] [options]
 Analyze color palette usage across the document.
 
 ```sh
-beresta analyze colors [file] [options]
+norka analyze colors [file] [options]
 ```
 
 | Option | Description |
@@ -146,7 +146,7 @@ beresta analyze colors [file] [options]
 Analyze font family, size, and weight distribution.
 
 ```sh
-beresta analyze typography [file] [options]
+norka analyze typography [file] [options]
 ```
 
 | Option | Description |
@@ -160,7 +160,7 @@ beresta analyze typography [file] [options]
 Analyze gap and padding values across auto-layout frames.
 
 ```sh
-beresta analyze spacing [file] [options]
+norka analyze spacing [file] [options]
 ```
 
 | Option | Description |
@@ -173,7 +173,7 @@ beresta analyze spacing [file] [options]
 Find repeated node patterns — potential components.
 
 ```sh
-beresta analyze clusters [file] [options]
+norka analyze clusters [file] [options]
 ```
 
 | Option | Description |

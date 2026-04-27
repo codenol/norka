@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { colorToHexRaw, parseColor } from '@beresta/core'
+import { colorToHexRaw, parseColor } from '@norka/core'
 
 defineOptions({ inheritAttrs: false })
 
-import type { Color } from '@beresta/core'
+import type { Color } from '@norka/core'
 import type { OkHCLControls } from './types'
 
 const props = defineProps<{

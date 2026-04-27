@@ -87,7 +87,7 @@ test('resize corner handle drag increases node dimensions', async () => {
   expect(before).not.toBeNull()
 
   const viewport = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
     if (!n) return null
@@ -131,7 +131,7 @@ test('rotation handle drag rotates node', async () => {
   const initialRotation = before!.rotation ?? 0
 
   const viewport = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
     if (!n) return null
@@ -186,7 +186,7 @@ async function setupFrameChild(rotation: number) {
   await canvas.clearCanvas()
 
   const setup = await page.evaluate((frameRotation) => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const frameId = store.createShape('FRAME', 180, 160, 240, 160)
     if (!frameId) return null
     store.updateNode(frameId, { rotation: frameRotation })
@@ -203,7 +203,7 @@ async function setupFrameChild(rotation: number) {
   await canvas.waitForRender()
 
   const state = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const pageId = store.state.currentPageId
     const pageNode = store.graph.getNode(pageId)
     const frame = pageNode?.childIds
@@ -239,7 +239,7 @@ test('frame children keep correct hover and click hit area without rotation', as
   const state = await setupFrameChild(0)
 
   await canvas.hover(state.hitX, state.hitY)
-  const hoveredId = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.hoveredNodeId)
+  const hoveredId = await page.evaluate(() => window.__NORKA_STORE__!.state.hoveredNodeId)
   expect(hoveredId).toBe(state.childId)
 
   await canvas.click(state.hitX, state.hitY)
@@ -248,7 +248,7 @@ test('frame children keep correct hover and click hit area without rotation', as
   expect(selected?.id).toBe(state.childId)
 
   await canvas.hover(state.missX, state.missY)
-  const hoveredMiss = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.hoveredNodeId)
+  const hoveredMiss = await page.evaluate(() => window.__NORKA_STORE__!.state.hoveredNodeId)
   expect(hoveredMiss).not.toBe(state.childId)
   canvas.assertNoErrors()
 })
@@ -257,7 +257,7 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   const state = await setupFrameChild(35)
 
   await canvas.hover(state.hitX, state.hitY)
-  const hoveredId = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.hoveredNodeId)
+  const hoveredId = await page.evaluate(() => window.__NORKA_STORE__!.state.hoveredNodeId)
   expect(hoveredId).toBe(state.childId)
 
   await canvas.click(state.hitX, state.hitY)
@@ -266,7 +266,7 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   expect(selected?.id).toBe(state.childId)
 
   await canvas.hover(state.missX, state.missY)
-  const hoveredMiss = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.hoveredNodeId)
+  const hoveredMiss = await page.evaluate(() => window.__NORKA_STORE__!.state.hoveredNodeId)
   expect(hoveredMiss).not.toBe(state.childId)
   canvas.assertNoErrors()
 })
@@ -278,7 +278,7 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   await canvas.waitForRender()
 
   const viewport = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
     if (!n) return null
@@ -304,13 +304,13 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   await page.mouse.move(rx + 60, ry + 60, { steps: 15 })
   await canvas.waitForRender()
 
-  const preview = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.rotationPreview)
+  const preview = await page.evaluate(() => window.__NORKA_STORE__!.state.rotationPreview)
   expect(preview).not.toBeNull()
 
   await page.mouse.up()
   await canvas.waitForRender()
 
-  const clearedPreview = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.rotationPreview)
+  const clearedPreview = await page.evaluate(() => window.__NORKA_STORE__!.state.rotationPreview)
   expect(clearedPreview).toBeNull()
   canvas.assertNoErrors()
 })

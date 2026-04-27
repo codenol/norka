@@ -12,7 +12,7 @@ import {
   rgba255ToColor,
   colorToFill,
   colorDistance
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('parseColor', () => {
   test('hex 6-digit', () => {

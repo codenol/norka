@@ -4,19 +4,19 @@
 
 ```
 packages/
-  core/              @beresta/core — engine (zero DOM deps)
+  core/              @norka/core — engine (zero DOM deps)
     src/             Scene graph, renderer, layout, codec, kiwi, types
-  cli/               @beresta/cli — headless CLI for .fig operations
+  cli/               @norka/cli — headless CLI for .fig operations
     src/commands/    info, tree, find, export, eval, analyze
-  mcp/               @beresta/mcp — MCP server for AI tools
+  mcp/               @norka/mcp — MCP server for AI tools
     src/             stdio + HTTP (Hono) transports, 87 tools
 src/
   components/        Vue SFCs (canvas, panels, toolbar, color picker)
     properties/      Property panel sections (Appearance, Fill, Stroke, etc.)
   composables/       Canvas input, keyboard shortcuts, rendering hooks
   stores/            Editor state (Vue reactivity)
-  engine/            Re-export shims from @beresta/core
-  kiwi/              Re-export shims from @beresta/core
+  engine/            Re-export shims from @norka/core
+  kiwi/              Re-export shims from @norka/core
   types.ts           Shared types (re-exported from core)
   constants.ts       UI colors, defaults, thresholds
 desktop/             Tauri v2 (Rust + config)
@@ -60,7 +60,7 @@ bun run check
 
 ### AI Agent Conventions
 
-Developers and AI agents working on the codebase should read `AGENTS.md` in the repo root ([view on GitHub](https://github.com/beresta/beresta/blob/master/AGENTS.md)). Covers rendering, scene graph, components & instances, layout, UI, file format, Tauri conventions, and known issues.
+Developers and AI agents working on the codebase should read `AGENTS.md` in the repo root ([view on GitHub](https://github.com/norka/norka/blob/master/AGENTS.md)). Covers rendering, scene graph, components & instances, layout, UI, file format, Tauri conventions, and known issues.
 
 ## Making Changes
 

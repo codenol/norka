@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import AppGroupedSelect from '@/components/ui/AppGroupedSelect.vue'
-import { ACP_AGENTS, AI_PROVIDERS, IS_TAURI } from '@beresta/core'
+import { ACP_AGENTS, AI_PROVIDERS, IS_TAURI } from '@norka/core'
 import { useAIChat } from '@/composables/use-chat'
 
 const { providerID, providerDef } = useAIChat()

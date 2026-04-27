@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ColorPickerRoot } from '@beresta/vue'
+import { ColorPickerRoot } from '@norka/vue'
 
 import ColorPickerPanel from './ColorPickerPanel.vue'
 import { usePopoverUI } from './ui/popover'
 
-import type { Color } from '@beresta/core'
-import type { OkHCLControls } from '@beresta/vue/ColorPicker/types'
+import type { Color } from '@norka/core'
+import type { OkHCLControls } from '@norka/vue/ColorPicker/types'
 
 const { color, okhcl = null } = defineProps<{ color: Color; okhcl?: OkHCLControls | null }>()
 const emit = defineEmits<{ update: [color: Color] }>()

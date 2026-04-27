@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { fetchBundledFont, markFontLoaded, probeGlyphOutlineCommands } from '@beresta/core'
+import { fetchBundledFont, markFontLoaded, probeGlyphOutlineCommands } from '@norka/core'
 
 describe('clipboard text outline probe', () => {
   test('lazy-loads opentype.js and extracts glyph commands from a loaded font', async () => {

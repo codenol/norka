@@ -9,9 +9,9 @@ The CLI lets you explore design documents without opening the editor. Every comm
 
 ::: tip Install
 ```sh
-bun add -g @beresta/cli
+bun add -g @norka/cli
 # or
-brew install beresta/tap/beresta
+brew install norka/tap/norka
 ```
 :::
 
@@ -20,7 +20,7 @@ brew install beresta/tap/beresta
 Get a quick overview — page count, total nodes, fonts used, file size:
 
 ```sh
-beresta info design.fig
+norka info design.fig
 ```
 
 ## Node Tree
@@ -28,7 +28,7 @@ beresta info design.fig
 Print the full node hierarchy:
 
 ```sh
-beresta tree design.fig
+norka tree design.fig
 ```
 
 ```
@@ -45,13 +45,13 @@ beresta tree design.fig
 Search by type:
 
 ```sh
-beresta find design.fig --type TEXT
+norka find design.fig --type TEXT
 ```
 
 Search by name:
 
 ```sh
-beresta find design.fig --name "Button"
+norka find design.fig --name "Button"
 ```
 
 Both flags can be combined to narrow results further.
@@ -61,7 +61,7 @@ Both flags can be combined to narrow results further.
 Use XPath selectors to find nodes by type, attributes, and tree structure:
 
 ```sh
-beresta query design.fig "//FRAME"
+norka query design.fig "//FRAME"
 ```
 
 ### Useful patterns
@@ -69,34 +69,34 @@ beresta query design.fig "//FRAME"
 **By type:**
 
 ```sh
-beresta query design.fig "//TEXT"                    # All text nodes
-beresta query design.fig "//COMPONENT"               # All components
-beresta query design.fig "//INSTANCE"                # All instances
+norka query design.fig "//TEXT"                    # All text nodes
+norka query design.fig "//COMPONENT"               # All components
+norka query design.fig "//INSTANCE"                # All instances
 ```
 
 **By attributes:**
 
 ```sh
-beresta query design.fig "//FRAME[@width < 300]"                # Frames under 300px wide
-beresta query design.fig "//*[@cornerRadius > 0]"               # Rounded corners
-beresta query design.fig "//*[@visible = false]"                # Hidden nodes
-beresta query design.fig "//TEXT[@fontSize >= 24]"              # Large text
-beresta query design.fig "//*[@opacity < 1]"                    # Semi-transparent nodes
+norka query design.fig "//FRAME[@width < 300]"                # Frames under 300px wide
+norka query design.fig "//*[@cornerRadius > 0]"               # Rounded corners
+norka query design.fig "//*[@visible = false]"                # Hidden nodes
+norka query design.fig "//TEXT[@fontSize >= 24]"              # Large text
+norka query design.fig "//*[@opacity < 1]"                    # Semi-transparent nodes
 ```
 
 **By name and text content:**
 
 ```sh
-beresta query design.fig "//TEXT[contains(@name, 'Button')]"    # Name contains 'Button'
-beresta query design.fig "//TEXT[contains(@text, 'Hello')]"     # Text content contains 'Hello'
+norka query design.fig "//TEXT[contains(@name, 'Button')]"    # Name contains 'Button'
+norka query design.fig "//TEXT[contains(@text, 'Hello')]"     # Text content contains 'Hello'
 ```
 
 **By hierarchy:**
 
 ```sh
-beresta query design.fig "//SECTION//TEXT"            # Text inside sections
-beresta query design.fig "//FRAME/TEXT"               # Direct text children of frames
-beresta query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside component sets
+norka query design.fig "//SECTION//TEXT"            # Text inside sections
+norka query design.fig "//FRAME/TEXT"               # Direct text children of frames
+norka query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside component sets
 ```
 
 ### Queryable attributes
@@ -120,7 +120,7 @@ beresta query design.fig "//COMPONENT_SET//INSTANCE"  # Instances inside compone
 Inspect all properties of a specific node by its ID:
 
 ```sh
-beresta node design.fig --id 1:23
+norka node design.fig --id 1:23
 ```
 
 ## Pages
@@ -128,7 +128,7 @@ beresta node design.fig --id 1:23
 List all pages in the document:
 
 ```sh
-beresta pages design.fig
+norka pages design.fig
 ```
 
 ## Variables
@@ -136,7 +136,7 @@ beresta pages design.fig
 List design variables and their collections:
 
 ```sh
-beresta variables design.fig
+norka variables design.fig
 ```
 
 ## Live App Mode
@@ -144,8 +144,8 @@ beresta variables design.fig
 When the desktop app is running, omit the file argument — the CLI connects via RPC and operates on the live canvas:
 
 ```sh
-beresta tree              # inspect the live document
-beresta eval -c "..."     # query the editor
+norka tree              # inspect the live document
+norka eval -c "..."     # query the editor
 ```
 
 ## Lint Designs
@@ -153,10 +153,10 @@ beresta eval -c "..."     # query the editor
 Check documents for naming, layout, structure, and accessibility issues:
 
 ```sh
-beresta lint design.fig
-beresta lint design.pen --preset strict
-beresta lint design.fig --rule color-contrast
-beresta lint design.fig --list-rules
+norka lint design.fig
+norka lint design.pen --preset strict
+norka lint design.fig --rule color-contrast
+norka lint design.fig --list-rules
 ```
 
 Use `--json` for machine-readable output.
@@ -166,5 +166,5 @@ Use `--json` for machine-readable output.
 All commands support `--json` for machine-readable output — pipe into `jq`, feed to CI scripts, or process with other tools:
 
 ```sh
-beresta tree design.fig --json | jq '.[] | .name'
+norka tree design.fig --json | jq '.[] | .name'
 ```

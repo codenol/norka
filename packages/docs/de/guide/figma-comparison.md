@@ -1,6 +1,6 @@
 # Figma-Funktionsmatrix
 
-Feature-für-Feature-Vergleich der Figma-Design-Funktionen mit dem aktuellen Implementierungsstand von Beresta.
+Feature-für-Feature-Vergleich der Figma-Design-Funktionen mit dem aktuellen Implementierungsstand von Norka.
 
 ::: tip Statuslegende
 ✅ Unterstützt — Funktion funktioniert vollständig · 🟡 Teilweise — Grundverhalten vorhanden, einige Unterfunktionen fehlen · 🔲 Noch nicht implementiert
@@ -215,7 +215,7 @@ Feature-für-Feature-Vergleich der Figma-Design-Funktionen mit dem aktuellen Imp
 | Code Connect | 🔲 | Design-Komponenten mit Code verknüpfen |
 | Code-Snippets | 🟡 | JSX-Export mit Hervorhebung und Kopieren; keine CSS/Swift/Kotlin-Snippets |
 | Figma für VS Code | 🔲 | Editor-Plugin-Integration |
-| MCP-Server | ✅ | @beresta/mcp mit stdio + HTTP-Transporten; 87 Kern-Werkzeuge + 3 Dateiverwaltung = 90 gesamt |
+| MCP-Server | ✅ | @norka/mcp mit stdio + HTTP-Transporten; 87 Kern-Werkzeuge + 3 Dateiverwaltung = 90 gesamt |
 | CLI-Werkzeuge | ✅ | Headless-CLI: info, tree, find, export, analyze, node, pages, variables, eval; MCP-Server |
 
 ## Figma Draw

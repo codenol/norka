@@ -1,5 +1,5 @@
 [package]
-name = "beresta"
+name = "norka"
 version = "0.2.2"
 description = "A Tauri App"
 authors = ["you"]
@@ -8,11 +8,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "Beresta"
+name = "Norka"
 path = "src/main.rs"
 
 [lib]
-name = "beresta_lib"
+name = "norka_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

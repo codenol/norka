@@ -1,6 +1,6 @@
 ---
 title: Esportazione
-description: Esportare immagini (PNG, JPG, WEBP, SVG) e gestire file .fig in Beresta.
+description: Esportare immagini (PNG, JPG, WEBP, SVG) e gestire file .fig in Norka.
 ---
 # Esportazione
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
-import { useAppearance } from '@beresta/vue/controls/useAppearance'
+import { useAppearance } from '@norka/vue/controls/useAppearance'
 
 const ctx = useAppearance()
 </script>

@@ -20,18 +20,18 @@ test.afterAll(async () => {
 
 function getPageChildCount() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).length
   })
 }
 
 function getSelectedCount() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.selectedIds.size)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.selectedIds.size)
 }
 
 function getSelectedNodes() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return [...store.state.selectedIds].map((id) => {
       const n = store.graph.getNode(id)!
       return { id: n.id, name: n.name, type: n.type, x: n.x, y: n.y, width: n.width, height: n.height, fills: n.fills }
@@ -46,7 +46,7 @@ test('copy + paste via store duplicates a shape', async () => {
   const countBefore = await getPageChildCount()
 
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const data = new DataTransfer()
     store.writeCopyData(data)
     const html = data.getData('text/html')
@@ -83,7 +83,7 @@ test('⌘D duplicates in place', async () => {
 test('duplicate preserves fills', async () => {
   // Set a custom fill on the selected node
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     store.updateNodeWithUndo(id, {
       fills: [{ type: 'SOLID', color: { r: 0, g: 0.5, b: 1, a: 1 }, opacity: 1, visible: true, blendMode: 'NORMAL' }]
@@ -106,7 +106,7 @@ test('cut removes original', async () => {
 
   // Cut via store
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const data = new DataTransfer()
     store.writeCopyData(data)
     store.deleteSelected()

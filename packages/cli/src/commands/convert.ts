@@ -2,7 +2,7 @@ import { basename, extname, resolve } from 'node:path'
 
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
 
 import { requireFile } from '../app-client'
 import { ok, printError } from '../format'

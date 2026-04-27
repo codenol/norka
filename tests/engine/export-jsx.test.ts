@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, sceneNodeToJSX, selectionToJSX } from '@beresta/core'
+import { SceneGraph, sceneNodeToJSX, selectionToJSX } from '@norka/core'
 
 function makeGraph() {
   const graph = new SceneGraph()

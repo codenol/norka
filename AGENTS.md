@@ -1,4 +1,4 @@
-# Beresta
+# Norka
 
 Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also runs in browser.
 
@@ -8,38 +8,38 @@ Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also 
 
 Bun workspace with three packages:
 
-- `packages/core` — `@beresta/core`: scene graph, renderer, layout, codec, kiwi, clipboard, vector, snap, undo. Zero DOM deps, runs headless in Bun.
-- `packages/cli` — `@beresta/cli`: headless CLI for .fig inspection, export, linting. Uses `citty` + `agentfmt`.
-- `packages/docs` — `@beresta/docs`: VitePress documentation site. Run with `cd packages/docs && bun run dev`.
-- `packages/mcp` — `@beresta/mcp`: MCP server for AI coding tools. Stdio + HTTP (Hono). Reuses `createServer()` factory with all core tools.
+- `packages/core` — `@norka/core`: scene graph, renderer, layout, codec, kiwi, clipboard, vector, snap, undo. Zero DOM deps, runs headless in Bun.
+- `packages/cli` — `@norka/cli`: headless CLI for .fig inspection, export, linting. Uses `citty` + `agentfmt`.
+- `packages/docs` — `@norka/docs`: VitePress documentation site. Run with `cd packages/docs && bun run dev`.
+- `packages/mcp` — `@norka/mcp`: MCP server for AI coding tools. Stdio + HTTP (Hono). Reuses `createServer()` factory with all core tools.
 
-- `packages/vue` — `@beresta/vue`: headless Vue 3 SDK (Reka UI-style) for building custom Beresta-powered editor shells and embedded editing surfaces. Renderless components and composables. The app is one consumer of the SDK.
+- `packages/vue` — `@norka/vue`: headless Vue 3 SDK (Reka UI-style) for building custom Norka-powered editor shells and embedded editing surfaces. Renderless components and composables. The app is one consumer of the SDK.
 
-The root app (`src/`) is the Tauri/Vite desktop editor. Its `src/engine/` files are thin re-export shims from `@beresta/core`. `src/composables/use-canvas.ts` re-exports from `@beresta/vue`.
+The root app (`src/`) is the Tauri/Vite desktop editor. Its `src/engine/` files are thin re-export shims from `@norka/core`. `src/composables/use-canvas.ts` re-exports from `@norka/vue`.
 
 ### Core subpath exports
 
-`@beresta/core` exposes domain-specific subpath exports for targeted imports. The main `"."` entry re-exports everything for backward compatibility.
+`@norka/core` exposes domain-specific subpath exports for targeted imports. The main `"."` entry re-exports everything for backward compatibility.
 
 | Subpath | What | Heavy dep isolated |
 |---|---|---|
-| `@beresta/core` | everything (barrel) | all |
-| `@beresta/core/scene-graph` | SceneGraph, node types, hit-test, copy, snap, undo | — |
-| `@beresta/core/color` | parseColor, colorToHex, color management, OkHCL | culori |
-| `@beresta/core/text` | fonts, text editor, style runs, direction | — |
-| `@beresta/core/vector` | vector network encode/decode, bezier math | — |
-| `@beresta/core/figma-api` | FigmaAPI, FigmaNodeProxy | — |
-| `@beresta/core/icons` | Iconify API client, icon rendering | @iconify/utils |
-| `@beresta/core/canvas` | SkiaRenderer (Skia/CanvasKit painting engine) | — |
-| `@beresta/core/design-jsx` | JSX-to-design renderer | sucrase |
-| `@beresta/core/editor` | createEditor, Editor, EditorState | — |
-| `@beresta/core/tools` | ToolDef, ALL_TOOLS, AI adapter | diff |
-| `@beresta/core/kiwi` | .fig parse/serialize, codec, protocol | fflate, fzstd |
-| `@beresta/core/rpc` | RPC commands for CLI | — |
-| `@beresta/core/lint` | design linter rules and presets | — |
-| `@beresta/core/profiler` | render profiling | — |
-| `@beresta/core/canvaskit` | getCanvasKit loader | canvaskit-wasm |
-| `@beresta/core/layout` | computeLayout | yoga-layout |
+| `@norka/core` | everything (barrel) | all |
+| `@norka/core/scene-graph` | SceneGraph, node types, hit-test, copy, snap, undo | — |
+| `@norka/core/color` | parseColor, colorToHex, color management, OkHCL | culori |
+| `@norka/core/text` | fonts, text editor, style runs, direction | — |
+| `@norka/core/vector` | vector network encode/decode, bezier math | — |
+| `@norka/core/figma-api` | FigmaAPI, FigmaNodeProxy | — |
+| `@norka/core/icons` | Iconify API client, icon rendering | @iconify/utils |
+| `@norka/core/canvas` | SkiaRenderer (Skia/CanvasKit painting engine) | — |
+| `@norka/core/design-jsx` | JSX-to-design renderer | sucrase |
+| `@norka/core/editor` | createEditor, Editor, EditorState | — |
+| `@norka/core/tools` | ToolDef, ALL_TOOLS, AI adapter | diff |
+| `@norka/core/kiwi` | .fig parse/serialize, codec, protocol | fflate, fzstd |
+| `@norka/core/rpc` | RPC commands for CLI | — |
+| `@norka/core/lint` | design linter rules and presets | — |
+| `@norka/core/profiler` | render profiling | — |
+| `@norka/core/canvaskit` | getCanvasKit loader | canvaskit-wasm |
+| `@norka/core/layout` | computeLayout | yoga-layout |
 
 Runtime `canvaskit-wasm` import exists only in `canvaskit.ts` — all other files use `import type`. CanvasKit instance is passed as a parameter everywhere.
 
@@ -77,18 +77,18 @@ The app store (`src/stores/editor.ts`) is a thin Vue wrapper: creates `shallowRe
 - `bun test ./tests/engine` — unit tests
 - `bun run test` — Playwright visual regression
 - `bun run tauri dev` — desktop app with hot reload
-- `bun beresta info <file>` — document stats
-- `bun beresta tree <file>` — node tree
-- `bun beresta find <file>` — search nodes
-- `bun beresta node <file> --id <id>` — detailed node properties
-- `bun beresta pages <file>` — list pages
-- `bun beresta variables <file>` — list design variables
-- `bun beresta export <file>` — headless render to PNG/JPG/WEBP
-- `bun beresta analyze colors <file>` — color palette usage
-- `bun beresta analyze typography <file>` — font/size/weight stats
-- `bun beresta analyze spacing <file>` — gap/padding values
-- `bun beresta analyze clusters <file>` — repeated patterns
-- `bun beresta eval <file> --code '<js>'` — execute JS with Figma Plugin API
+- `bun norka info <file>` — document stats
+- `bun norka tree <file>` — node tree
+- `bun norka find <file>` — search nodes
+- `bun norka node <file> --id <id>` — detailed node properties
+- `bun norka pages <file>` — list pages
+- `bun norka variables <file>` — list design variables
+- `bun norka export <file>` — headless render to PNG/JPG/WEBP
+- `bun norka analyze colors <file>` — color palette usage
+- `bun norka analyze typography <file>` — font/size/weight stats
+- `bun norka analyze spacing <file>` — gap/padding values
+- `bun norka analyze clusters <file>` — repeated patterns
+- `bun norka eval <file> --code '<js>'` — execute JS with Figma Plugin API
 
 ## Releases & CI
 
@@ -101,17 +101,17 @@ The app store (`src/stores/editor.ts`) is a thin Vue wrapper: creates `shallowRe
 5. The `build.yml` workflow triggers on `v*` tags and:
    - Builds Tauri binaries for macOS (arm64 + x64), Windows (x64 + arm64), Linux (x64)
    - Creates a draft GitHub Release with all platform binaries
-   - Publishes `@beresta/core`, `@beresta/cli`, `@beresta/mcp`, and `@beresta/vue` to npm with provenance
+   - Publishes `@norka/core`, `@norka/cli`, `@norka/mcp`, and `@norka/vue` to npm with provenance
 6. Go to GitHub Releases → edit the draft → paste changelog section → publish
 
 ### CI workflows
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `build.yml` | `v*` tag push or manual | Build Tauri desktop apps (5 targets), create GitHub Release, publish `@beresta/core`, `@beresta/cli`, `@beresta/mcp`, and `@beresta/vue` |
-| `homebrew.yml` | Release published | Update `beresta/homebrew-tap` cask with new version + SHA256 hashes |
-| `app.yml` | Push to `master` (non-docs) | Build web app, deploy to Cloudflare Pages (`app.beresta.dev`) |
-| `docs.yml` | Push to `master` (`packages/docs/**`) | Build VitePress docs, deploy to Cloudflare Pages (`beresta.dev`) |
+| `build.yml` | `v*` tag push or manual | Build Tauri desktop apps (5 targets), create GitHub Release, publish `@norka/core`, `@norka/cli`, `@norka/mcp`, and `@norka/vue` |
+| `homebrew.yml` | Release published | Update `norka/homebrew-tap` cask with new version + SHA256 hashes |
+| `app.yml` | Push to `master` (non-docs) | Build web app, deploy to Cloudflare Pages (`app.norka.dev`) |
+| `docs.yml` | Push to `master` (`packages/docs/**`) | Build VitePress docs, deploy to Cloudflare Pages (`norka.dev`) |
 
 ### Before committing
 
@@ -130,7 +130,7 @@ bun run test           # Playwright E2E
 - `CHANGELOG.md` — all user-facing changes, grouped by version. "Unreleased" section at top for in-progress work.
 - `README.md` — user-facing: features, getting started, CLI, project structure. No implementation details.
 - `AGENTS.md` (this file) — contributor/agent reference: architecture, conventions, how to release.
-- `packages/docs/` — VitePress site deployed at `beresta.dev`. User guide, SDK, automation, reference, and development docs.
+- `packages/docs/` — VitePress site deployed at `norka.dev`. User guide, SDK, automation, reference, and development docs.
 
 When adding features, update `CHANGELOG.md` (Unreleased section) and `README.md` (if user-facing). Update `AGENTS.md` when architecture or conventions change.
 
@@ -188,7 +188,7 @@ Release commits are the exception: keep using `Release v0.x.y`.
 - Pure mapping logic in `src/ai/acp-map-update.ts` — converts `SessionUpdate` → `UIMessageChunk`
 - System prompt (`ACP_DESIGN_CONTEXT`) in `src/constants.ts`
 - Agent definitions (`ACP_AGENTS`) in `packages/core/src/constants.ts`
-- MCP server: Vite plugin in dev, `beresta-mcp` via shell plugin in production Tauri (requires `npm i -g @beresta/mcp`; follow-up: bundle as Tauri sidecar)
+- MCP server: Vite plugin in dev, `norka-mcp` via shell plugin in production Tauri (requires `npm i -g @norka/mcp`; follow-up: bundle as Tauri sidecar)
 - Architecture: browser ↔ WebSocket :7601 ↔ MCP server :7600 ↔ HTTP ↔ agent subprocess
 - Shell permissions scoped per-command in `desktop/capabilities/default.json` (`args: true` — agents need dynamic SDK flags)
 - ACP providers visible only in Tauri desktop when MCP server is reachable

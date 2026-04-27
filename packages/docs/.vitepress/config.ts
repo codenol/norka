@@ -297,7 +297,7 @@ const localeThemeConfig = (
     { text: nav.sdk, link: `${prefix}/programmable/sdk/` },
     { text: nav.reference, link: `${prefix}/reference/keyboard-shortcuts` },
     { text: nav.development, link: `${prefix}/development/contributing` },
-    { text: nav.openApp, link: 'https://app.beresta.dev' },
+    { text: nav.openApp, link: 'https://app.norka.dev' },
   ],
   sidebar: {
     [`${prefix}/user-guide/`]: userGuideSidebar(prefix, sidebar),
@@ -325,7 +325,7 @@ const PL: SidebarLabels = { gettingAround: 'Nawigacja', creatingContent: 'Tworze
 
 const RU: SidebarLabels = { gettingAround: 'Навигация', creatingContent: 'Создание контента', organizing: 'Организация', advanced: 'Продвинутые функции', canvasNav: 'Навигация по холсту', selection: 'Выделение и редактирование', shapes: 'Рисование фигур', text: 'Редактирование текста', pen: 'Инструмент «Перо»', layers: 'Слои и страницы', contextMenu: 'Контекстное меню', exporting: 'Экспорт', autoLayout: 'Авто-раскладка', components: 'Компоненты', variables: 'Переменные', guide: 'Руководство', gettingStarted: 'Начало работы', features: 'Возможности', architecture: 'Архитектура', techStack: 'Технологии', comparison: 'Сравнение', figmaMatrix: 'Матрица функций Figma' }
 
-const BASE = 'https://beresta.dev'
+const BASE = 'https://norka.dev'
 
 const LOCALE_PREFIXES = ['de', 'fr', 'es', 'it', 'pl', 'ru'] as const
 
@@ -340,7 +340,7 @@ const LOCALES: Record<string, { hreflang: string; ogLocale: string; prefix: stri
 }
 
 export default defineConfig({
-  title: 'Beresta',
+  title: 'Norka',
   description: 'Open-source, AI-native design editor. Figma alternative built from scratch with full .fig file compatibility.',
   cleanUrls: true,
   lastUpdated: true,
@@ -369,13 +369,13 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:site_name', content: 'Beresta' }],
+    ['meta', { property: 'og:site_name', content: 'Norka' }],
     ['meta', { property: 'og:image', content: `${BASE}/screenshot.png` }],
     ['meta', { property: 'og:image:width', content: '2784' }],
     ['meta', { property: 'og:image:height', content: '1824' }],
-    ['meta', { property: 'og:image:alt', content: 'Beresta — AI-Native Design Editor' }],
+    ['meta', { property: 'og:image:alt', content: 'Norka — AI-Native Design Editor' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:site', content: '@berestaDev' }],
+    ['meta', { name: 'twitter:site', content: '@norkaDev' }],
     ['meta', { name: 'twitter:image', content: `${BASE}/screenshot.png` }],
   ],
 
@@ -414,7 +414,7 @@ export default defineConfig({
     h.push(['link', { rel: 'alternate', hreflang: 'x-default', href: enSlug }])
 
     if (pageData.title) {
-      const ogTitle = `${pageData.title} — Beresta`
+      const ogTitle = `${pageData.title} — Norka`
       h.push(['meta', { property: 'og:title', content: ogTitle }])
       h.push(['meta', { name: 'twitter:title', content: ogTitle }])
     }
@@ -479,7 +479,7 @@ export default defineConfig({
       { text: 'SDK', link: '/programmable/sdk/' },
       { text: 'Reference', link: '/reference/keyboard-shortcuts' },
       { text: 'Development', link: '/development/contributing' },
-      { text: 'Open App', link: 'https://app.beresta.dev' },
+      { text: 'Open App', link: 'https://app.norka.dev' },
     ],
 
     sidebar: {
@@ -501,10 +501,10 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/beresta/open-pencil' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/norka/norka' }],
 
     editLink: {
-      pattern: 'https://github.com/beresta/beresta/edit/main/packages/docs/:path',
+      pattern: 'https://github.com/norka/norka/edit/main/packages/docs/:path',
     },
 
     footer: {

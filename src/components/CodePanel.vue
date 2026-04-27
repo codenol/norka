@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import Prism from 'prismjs'
-import 'prismjs/components/prism-jsx'
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui'
 import { useClipboard } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
-import { selectionToJSX, selectionToCode } from '@beresta/core'
-import { useI18n, useSceneComputed } from '@beresta/vue'
+import { selectionToJSX, selectionToCode } from '@norka/core'
+import { useI18n, useSceneComputed } from '@norka/vue'
 
 import { useEditorStore } from '@/stores/editor'
 import { useCodeConnectStore } from '@/stores/code-connect'
 import CodeConnectDialog from '@/components/CodeConnectDialog.vue'
 
-import type { JSXFormat, CodeFramework } from '@beresta/core'
+import type { JSXFormat, CodeFramework } from '@norka/core'
 
 const store = useEditorStore()
 const codeConnect = useCodeConnectStore()
@@ -21,13 +19,13 @@ const { dialogs } = useI18n()
 
 // ── Format / Framework toggles ────────────────────────────────────────────────
 
-const jsxFormat = ref<JSXFormat>('beresta')
+const jsxFormat = ref<JSXFormat>('norka')
 const codeFramework = ref<CodeFramework>('react-tsx')
 const useCodeConnect = ref(true)  // use Code Connect map when available
 const codeConnectOpen = ref(false)
 
 function toggleFormat() {
-  jsxFormat.value = jsxFormat.value === 'beresta' ? 'tailwind' : 'beresta'
+  jsxFormat.value = jsxFormat.value === 'norka' ? 'tailwind' : 'norka'
 }
 
 const frameworkLabel = computed(() => {
@@ -68,10 +66,16 @@ const displayCode = computed(() => generatedCode.value?.code ?? jsxCode.value)
 
 const unmappedCount = computed(() => generatedCode.value?.unresolvedInstanceIds.length ?? 0)
 
+function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
 const highlightedLines = computed(() => {
   if (!displayCode.value) return []
-  const grammar = Prism.languages.jsx ?? Prism.languages.javascript
-  return displayCode.value.split('\n').map((line) => Prism.highlight(line, grammar, 'jsx'))
+  return displayCode.value.split('\n').map((line) => escapeHtml(line))
 })
 
 // ── Copy actions ──────────────────────────────────────────────────────────────
@@ -126,7 +130,7 @@ function copyFull() {
           class="rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
           @click="toggleFormat"
         >
-          {{ jsxFormat === 'beresta' ? 'Nork' : 'Tailwind' }}
+          {{ jsxFormat === 'norka' ? 'Nork' : 'Tailwind' }}
         </button>
 
         <!-- Framework selector (when Code Connect is active) -->

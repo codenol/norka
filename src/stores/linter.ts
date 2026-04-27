@@ -7,9 +7,9 @@
 
 import { shallowRef } from 'vue'
 
-import { createLinter } from '@beresta/core'
+import { createLinter } from '@norka/core'
 
-import type { LintResult, SceneGraph } from '@beresta/core'
+import type { LintResult, SceneGraph } from '@norka/core'
 
 export type LintPreset = 'recommended' | 'strict' | 'accessibility'
 

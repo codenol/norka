@@ -5,12 +5,12 @@ description: JavaScript mit der Figma Plugin API ausführen — Knoten abfragen,
 
 # Skripting
 
-`beresta eval` bietet dir die vollständige Figma Plugin API im Terminal. Knoten lesen, Eigenschaften ändern, Formen erstellen — und Änderungen zurück in die Datei schreiben.
+`norka eval` bietet dir die vollständige Figma Plugin API im Terminal. Knoten lesen, Eigenschaften ändern, Formen erstellen — und Änderungen zurück in die Datei schreiben.
 
 ## Grundlegende Verwendung
 
 ```sh
-beresta eval design.fig -c "figma.currentPage.children.length"
+norka eval design.fig -c "figma.currentPage.children.length"
 ```
 
 Das `-c`-Flag nimmt JavaScript entgegen. Das `figma`-Global funktioniert wie die Figma Plugin API.
@@ -18,7 +18,7 @@ Das `-c`-Flag nimmt JavaScript entgegen. Das `figma`-Global funktioniert wie die
 ## Knoten abfragen
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.findAll(n => n.type === 'FRAME' && n.name.includes('Button'))
     .map(b => ({ id: b.id, name: b.name, w: b.width, h: b.height }))
 "
@@ -27,7 +27,7 @@ beresta eval design.fig -c "
 ## Bearbeiten und speichern
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.children.forEach(n => n.opacity = 0.5)
 " -w
 ```
@@ -39,7 +39,7 @@ beresta eval design.fig -c "
 Für längere Skripte:
 
 ```sh
-cat transform.js | beresta eval design.fig --stdin -w
+cat transform.js | norka eval design.fig --stdin -w
 ```
 
 ## Live-App-Modus
@@ -47,7 +47,7 @@ cat transform.js | beresta eval design.fig --stdin -w
 Lass die Datei weg, um gegen die laufende Desktop-App auszuführen:
 
 ```sh
-beresta eval -c "figma.currentPage.name"
+norka eval -c "figma.currentPage.name"
 ```
 
 ## Verfügbare API
@@ -66,5 +66,5 @@ Dies ist dieselbe API, die Figma-Plugins verwenden, sodass bestehendes Wissen un
 ## JSON-Ausgabe
 
 ```sh
-beresta eval design.fig -c "..." --json
+norka eval design.fig -c "..." --json
 ```

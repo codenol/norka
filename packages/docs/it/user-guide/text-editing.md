@@ -1,6 +1,6 @@
 ---
 title: Modifica testo
-description: Creare e modificare testo con formattazione rich in Beresta.
+description: Creare e modificare testo con formattazione rich in Norka.
 ---
 # Modifica testo
 

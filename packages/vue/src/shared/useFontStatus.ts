@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import { isFontLoaded, DEFAULT_FONT_FAMILY } from '@beresta/core'
+import { isFontLoaded, DEFAULT_FONT_FAMILY } from '@norka/core'
 
-import type { SceneNode } from '@beresta/core'
+import type { SceneNode } from '@norka/core'
 
 /**
  * Returns missing-font information for a text node getter.

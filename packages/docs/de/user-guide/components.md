@@ -1,6 +1,6 @@
 ---
 title: Komponenten
-description: Wiederverwendbare Komponenten, Instanzen, Komponenten-Sets, Overrides und Live-Synchronisation in Beresta.
+description: Wiederverwendbare Komponenten, Instanzen, Komponenten-Sets, Overrides und Live-Synchronisation in Norka.
 ---
 
 # Komponenten

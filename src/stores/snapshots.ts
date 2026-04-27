@@ -8,9 +8,9 @@
 
 import { computed, shallowRef } from 'vue'
 
-import { exportFigFile, parseFigFile } from '@beresta/core'
+import { exportFigFile, parseFigFile } from '@norka/core'
 
-import type { SceneGraph } from '@beresta/core'
+import type { SceneGraph } from '@norka/core'
 
 // ---------------------------------------------------------------------------
 // Types

@@ -19,16 +19,16 @@ test.afterAll(async () => {
 })
 
 function getActiveTool() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.activeTool)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.activeTool)
 }
 
 function getSelectedCount() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.selectedIds.size)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.selectedIds.size)
 }
 
 function getPageChildren() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).map((n) => ({
       id: n.id,
       type: n.type,
@@ -39,7 +39,7 @@ function getPageChildren() {
 }
 
 function getUIVisible() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.showUI)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.showUI)
 }
 
 test.describe('tool switching', () => {
@@ -128,7 +128,7 @@ test.describe('z-order shortcuts', () => {
 
     // Select the first (bottom) node
     await page.evaluate((id) => {
-      window.__OPEN_PENCIL_STORE__!.select([id])
+      window.__NORKA_STORE__!.select([id])
     }, firstId)
     await canvas.waitForRender()
 
@@ -145,7 +145,7 @@ test.describe('z-order shortcuts', () => {
 
     // Select the last (top) node
     await page.evaluate((id) => {
-      window.__OPEN_PENCIL_STORE__!.select([id])
+      window.__NORKA_STORE__!.select([id])
     }, lastId)
     await canvas.waitForRender()
 
@@ -219,7 +219,7 @@ test.describe('zoom shortcuts', () => {
 
     // Set zoom to something other than 100%
     await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       store.state.zoom = 2
     })
     await canvas.waitForRender()
@@ -227,7 +227,7 @@ test.describe('zoom shortcuts', () => {
     await page.keyboard.press('Meta+0')
     await canvas.waitForRender()
 
-    const zoomAfter = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.zoom)
+    const zoomAfter = await page.evaluate(() => window.__NORKA_STORE__!.state.zoom)
     expect(zoomAfter).toBe(1)
   })
 
@@ -235,7 +235,7 @@ test.describe('zoom shortcuts', () => {
     await page.keyboard.press('Meta+1')
     await canvas.waitForRender()
 
-    const zoom = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.zoom)
+    const zoom = await page.evaluate(() => window.__NORKA_STORE__!.state.zoom)
     expect(zoom).toBeGreaterThan(0)
     expect(zoom).toBeLessThanOrEqual(1)
   })
@@ -246,7 +246,7 @@ test.describe('zoom shortcuts', () => {
     await page.keyboard.press('Meta+2')
     await canvas.waitForRender()
 
-    const zoom = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.zoom)
+    const zoom = await page.evaluate(() => window.__NORKA_STORE__!.state.zoom)
     expect(zoom).toBeGreaterThan(0)
     expect(zoom).toBeLessThanOrEqual(1)
   })
@@ -255,7 +255,7 @@ test.describe('zoom shortcuts', () => {
     await page.keyboard.press('Shift+1')
     await canvas.waitForRender()
 
-    const zoom = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.zoom)
+    const zoom = await page.evaluate(() => window.__NORKA_STORE__!.state.zoom)
     expect(zoom).toBeGreaterThan(0)
     expect(zoom).toBeLessThanOrEqual(1)
   })
@@ -266,7 +266,7 @@ test.describe('zoom shortcuts', () => {
     await page.keyboard.press('Shift+2')
     await canvas.waitForRender()
 
-    const zoom = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.zoom)
+    const zoom = await page.evaluate(() => window.__NORKA_STORE__!.state.zoom)
     expect(zoom).toBeGreaterThan(0)
     expect(zoom).toBeLessThanOrEqual(1)
   })
@@ -300,14 +300,14 @@ test.describe('auto-layout shortcut', () => {
 
     // Change to frame type for auto-layout
     await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const nodes = [...store.state.selectedIds]
       if (nodes[0]) store.updateNode(nodes[0], { type: 'FRAME' })
     })
     await canvas.waitForRender()
 
     const layoutBefore = await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })
@@ -317,7 +317,7 @@ test.describe('auto-layout shortcut', () => {
     await canvas.waitForRender()
 
     const layoutAfter = await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })
@@ -328,7 +328,7 @@ test.describe('auto-layout shortcut', () => {
     await canvas.waitForRender()
 
     const layoutFinal = await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })

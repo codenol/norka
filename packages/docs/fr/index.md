@@ -1,27 +1,27 @@
 ---
 layout: home
-title: Beresta — Éditeur de Design Open Source
+title: Norka — Éditeur de Design Open Source
 description: Alternative open-source à Figma. Ouvre les fichiers .fig, IA intégrée, entièrement programmable.
 
 hero:
-  name: Beresta
+  name: Norka
   text: Éditeur de Design Open Source
   tagline: Ouvre les fichiers Figma. IA intégrée. Entièrement programmable. Gratuit pour toujours.
   actions:
     - theme: brand
       text: Essayer en ligne
-      link: https://app.beresta.dev/demo
+      link: https://app.norka.dev/demo
     - theme: alt
       text: Télécharger
-      link: https://github.com/beresta/beresta/releases/latest
+      link: https://github.com/norka/norka/releases/latest
     - theme: alt
       text: GitHub
-      link: https://github.com/beresta/open-pencil
+      link: https://github.com/norka/norka
 
 features:
   - icon: 📂
     title: Compatible Figma
-    details: Ouvre les fichiers .fig nativement. Copier-coller entre Figma et Beresta. Codec binaire Kiwi avec fidélité aller-retour.
+    details: Ouvre les fichiers .fig nativement. Copier-coller entre Figma et Norka. Codec binaire Kiwi avec fidélité aller-retour.
   - icon: ⚡
     title: Programmable
     details: CLI headless pour inspecter, exporter et analyser les fichiers .fig. API Plugin Figma via eval. Export Tailwind CSS. Sortie JSON pour la CI.

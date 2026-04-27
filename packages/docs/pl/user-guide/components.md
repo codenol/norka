@@ -1,6 +1,6 @@
 ---
 title: Komponenty
-description: Komponenty wielokrotnego użytku, instancje, nadpisania i synchronizacja w Beresta.
+description: Komponenty wielokrotnego użytku, instancje, nadpisania i synchronizacja w Norka.
 ---
 # Komponenty
 

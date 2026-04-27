@@ -14,7 +14,7 @@ import {
   summary as fmtSummary
 } from 'agentfmt'
 
-import type { SceneNode, SceneGraph } from '@beresta/core'
+import type { SceneNode, SceneGraph } from '@norka/core'
 import type { TreeNode, ListItem, NodeData } from 'agentfmt'
 
 export {

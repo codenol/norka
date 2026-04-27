@@ -1,7 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 
 import type { DragState } from './types'
-import type { Editor } from '@beresta/core/editor'
+import type { Editor } from '@norka/core/editor'
 import type { Ref } from 'vue'
 
 export function setupPanZoom(

@@ -13,8 +13,8 @@ fileDialog.onChange((files) => {
 
 if (IS_BROWSER) {
   ;(
-    window as Window & { __OPEN_PENCIL_OPEN_FILE__?: (path: string) => Promise<void> }
-  ).__OPEN_PENCIL_OPEN_FILE__ = async (path: string) => {
+    window as Window & { __NORKA_OPEN_FILE__?: (path: string) => Promise<void> }
+  ).__NORKA_OPEN_FILE__ = async (path: string) => {
     const response = await fetch(path)
     const blob = await response.blob()
     const name = path.split('/').pop() ?? 'file.fig'

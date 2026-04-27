@@ -3,7 +3,7 @@ import {
   loadFont as loadFontCore,
   markFontLoaded,
   styleToWeight
-} from '@beresta/core'
+} from '@norka/core'
 
 interface TauriFontFamily {
   family: string
@@ -48,7 +48,7 @@ export async function listFamilies(): Promise<string[]> {
     return fonts.map((f) => f.family)
   }
 
-  const { listFamilies: coreList } = await import('@beresta/core')
+  const { listFamilies: coreList } = await import('@norka/core')
   return coreList()
 }
 

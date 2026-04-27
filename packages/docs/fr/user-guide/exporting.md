@@ -1,6 +1,6 @@
 ---
 title: Exportation
-description: Exporter des images (PNG, JPG, WEBP, SVG) et gérer les fichiers .fig dans Beresta.
+description: Exporter des images (PNG, JPG, WEBP, SVG) et gérer les fichiers .fig dans Norka.
 ---
 # Exportation
 

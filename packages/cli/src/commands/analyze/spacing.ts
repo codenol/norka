@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../../app-client'
 import { bold, kv, fmtHistogram, fmtSummary } from '../../format'
 import { loadDocument } from '../../headless'
 
-import type { AnalyzeSpacingResult } from '@beresta/core'
+import type { AnalyzeSpacingResult } from '@norka/core'
 
 async function getData(file?: string): Promise<AnalyzeSpacingResult> {
   if (isAppMode(file)) return rpc<AnalyzeSpacingResult>('analyze_spacing')

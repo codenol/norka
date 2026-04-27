@@ -1,7 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 import { ref, type Ref } from 'vue'
 
-import type { Editor } from '@beresta/core/editor'
+import type { Editor } from '@norka/core/editor'
 
 const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'])
 

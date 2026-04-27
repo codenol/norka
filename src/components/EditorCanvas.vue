@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { ContextMenuRoot, ContextMenuTrigger, ContextMenuPortal } from 'reka-ui'
 
-import { toolCursor, useCanvas, useCanvasDrop, useCanvasInput, useTextEdit } from '@beresta/vue'
+import { toolCursor, useCanvas, useCanvasDrop, useCanvasInput, useTextEdit } from '@norka/vue'
 import { useCollabInjected } from '@/composables/use-collab'
 import { useEditorStore } from '@/stores/editor'
 import CanvasMenu from './CanvasMenu.vue'

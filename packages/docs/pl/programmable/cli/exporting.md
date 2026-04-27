@@ -10,10 +10,10 @@ Eksportuj projekty z terminala — obrazy rastrowe, wektory lub kod JSX.
 ## Eksport obrazów
 
 ```sh
-beresta export design.fig                          # PNG (domyślnie)
-beresta export design.fig -f jpg -s 2 -q 90       # JPG w 2×, jakość 90
-beresta export design.fig -f webp -s 3             # WEBP w 3×
-beresta export design.fig -f svg                   # SVG wektor
+norka export design.fig                          # PNG (domyślnie)
+norka export design.fig -f jpg -s 2 -q 90       # JPG w 2×, jakość 90
+norka export design.fig -f webp -s 3             # WEBP w 3×
+norka export design.fig -f svg                   # SVG wektor
 ```
 
 Opcje:
@@ -30,7 +30,7 @@ Opcje:
 Eksportuj jako JSX z klasami narzędziowymi Tailwind:
 
 ```sh
-beresta export design.fig -f jsx --style tailwind
+norka export design.fig -f jsx --style tailwind
 ```
 
 Wynik:
@@ -42,12 +42,12 @@ Wynik:
 </div>
 ```
 
-Obsługuje również `--style beresta` dla natywnego formatu JSX (zobacz [Renderer JSX](../jsx-renderer)).
+Obsługuje również `--style norka` dla natywnego formatu JSX (zobacz [Renderer JSX](../jsx-renderer)).
 
 ## Miniatury
 
 ```sh
-beresta export design.fig --thumbnail --width 1920 --height 1080
+norka export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Tryb żywej aplikacji
@@ -55,5 +55,5 @@ beresta export design.fig --thumbnail --width 1920 --height 1080
 Pomiń plik, aby eksportować z uruchomionej aplikacji:
 
 ```sh
-beresta export -f png    # zrzut ekranu bieżącego płótna
+norka export -f png    # zrzut ekranu bieżącego płótna
 ```

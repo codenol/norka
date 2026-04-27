@@ -7,7 +7,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
   let child: ReturnType<typeof spawn> | null = null
 
   return {
-    name: 'beresta-automation',
+    name: 'norka-automation',
     configureServer() {
       if (child) return
 
@@ -17,8 +17,8 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
           ...process.env,
           PORT: '7600',
           WS_PORT: '7601',
-          ...(authToken ? { OPENPENCIL_MCP_AUTH_TOKEN: authToken } : {}),
-          OPENPENCIL_MCP_CORS_ORIGIN: corsOrigin
+          ...(authToken ? { NORKA_MCP_AUTH_TOKEN: authToken } : {}),
+          NORKA_MCP_CORS_ORIGIN: corsOrigin
         }
       })
 

@@ -4,7 +4,7 @@
  * Manages the on-disk project workspace:
  *
  *   <root>/
- *   ├── beresta.json           ← full project tree (IDs, titles, completedSteps)
+ *   ├── norka.json           ← full project tree (IDs, titles, completedSteps)
  *   ├── DESIGN.md              ← Google Stitch–compatible design system doc
  *   ├── library/components/    ← per-component markdown
  *   └── projects/
@@ -30,9 +30,56 @@ import type { Product } from './use-projects'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type FeatureFile = 'analytics.md' | 'concept.tsx' | 'discussion.md' | 'handoff.md'
+export type FeatureFile =
+  | 'analytics.md'
+  | 'analytics-source.md'
+  | 'implementation-ready.md'
+  | 'concept.tsx'
+  | 'discussion.md'
+  | 'handoff.md'
+  | 'preview-layout.json'
+  | 'feature-meta.json'
+  | 'comments.json'
+  | 'versions.json'
+  | 'final-export.md'
 
-interface BerestaJson {
+export interface CoreRuntimeComponentSpec {
+  id: string
+  name: string
+  importPath: string
+  exportName: string
+  description: string
+  rules: string
+  previewDefaults: Record<string, unknown>
+}
+
+export interface CoreRuntimeManifest {
+  version: string
+  generatedAt: string
+  components: CoreRuntimeComponentSpec[]
+}
+
+export interface FeatureComment {
+  id: string
+  versionId: string
+  status: 'open' | 'in_progress' | 'resolved'
+  author: string
+  text: string
+  createdAt: string
+  resolvedAt?: string
+  resolvedInVersionId?: string
+  nodeId?: string
+  replies: Array<{ id: string; author: string; text: string; createdAt: string }>
+}
+
+export interface FeatureVersion {
+  id: string
+  title: string
+  createdAt: string
+  notes?: string
+}
+
+interface NorkaJson {
   version: '1'
   products: Product[]
 }
@@ -130,9 +177,9 @@ function defaultDesignMd(): string {
 
 | Level | Shadow |
 |-------|--------|
-| 1 (card) | \`0 1px 3px rgba(0,0,0,.12)\` |
-| 2 (dropdown) | \`0 4px 12px rgba(0,0,0,.16)\` |
-| 3 (modal) | \`0 8px 32px rgba(0,0,0,.24)\` |
+| 1 (card) | \`0 1px 3px #0000001f\` |
+| 2 (dropdown) | \`0 4px 12px #00000029\` |
+| 3 (modal) | \`0 8px 32px #0000003d\` |
 
 ## 7. Do's and Don'ts
 
@@ -218,24 +265,24 @@ export async function openWorkspaceDialog(): Promise<string | null> {
   return typeof result === 'string' ? result : null
 }
 
-/** Read beresta.json from workspace root → Product[] */
-export async function readBerestaJson(rootPath: string): Promise<Product[] | null> {
+/** Read norka.json from workspace root → Product[] */
+export async function readNorkaJson(rootPath: string): Promise<Product[] | null> {
   if (!IS_TAURI) return null
-  const raw = await readText(join(rootPath, 'beresta.json'))
+  const raw = await readText(join(rootPath, 'norka.json'))
   if (!raw) return null
   try {
-    const data = JSON.parse(raw) as BerestaJson
-    return data.products ?? null
+    const data = JSON.parse(raw) as NorkaJson
+    return data.products
   } catch {
     return null
   }
 }
 
-/** Write products to beresta.json */
-export async function writeBerestaJson(rootPath: string, products: Product[]): Promise<void> {
+/** Write products to norka.json */
+export async function writeNorkaJson(rootPath: string, products: Product[]): Promise<void> {
   if (!IS_TAURI) return
-  const payload: BerestaJson = { version: '1', products }
-  await writeText(join(rootPath, 'beresta.json'), JSON.stringify(payload, null, 2))
+  const payload: NorkaJson = { version: '1', products }
+  await writeText(join(rootPath, 'norka.json'), JSON.stringify(payload, null, 2))
 }
 
 /**
@@ -272,6 +319,24 @@ export async function ensureWorkspaceStructure(rootPath: string, products: Produ
       for (const feature of screen.features) {
         const featureDir = join(screenDir, 'features', feature.id)
         await ensureDir(featureDir)
+        const defaults: Array<[FeatureFile, string]> = [
+          ['feature-meta.json', JSON.stringify({
+            jiraIssueKey: feature.jiraIssueKey ?? '',
+            jiraUrl: feature.jiraUrl ?? '',
+            designerFullName: feature.designerFullName ?? '',
+            confluenceUrl: feature.confluenceUrl ?? '',
+          }, null, 2)],
+          ['analytics-source.md', '# Analytics Source\n\n<!-- Paste source analytics from Confluence -->\n'],
+          ['implementation-ready.md', '# Implementation Ready\n\n<!-- Final aligned document for engineering handoff -->\n'],
+          ['comments.json', JSON.stringify([], null, 2)],
+          ['versions.json', JSON.stringify([{ id: 'v1', title: 'v1', createdAt: new Date().toISOString(), notes: 'Initial version' }], null, 2)],
+        ]
+        for (const [file, content] of defaults) {
+          const filePath = join(featureDir, file)
+          if (!(await fileExists(filePath))) {
+            await writeText(filePath, content)
+          }
+        }
       }
     }
   }
@@ -335,6 +400,72 @@ export async function writeFeatureFile(
   await writeText(join(dir, file), content)
 }
 
+export async function readFeatureComments(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+): Promise<FeatureComment[]> {
+  const raw = await readFeatureFile(rootPath, productId, screenId, featureId, 'comments.json')
+  if (!raw.trim()) return []
+  try {
+    const parsed = JSON.parse(raw) as FeatureComment[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+export async function writeFeatureComments(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  comments: FeatureComment[],
+): Promise<void> {
+  await writeFeatureFile(
+    rootPath,
+    productId,
+    screenId,
+    featureId,
+    'comments.json',
+    JSON.stringify(comments, null, 2),
+  )
+}
+
+export async function readFeatureVersions(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+): Promise<FeatureVersion[]> {
+  const raw = await readFeatureFile(rootPath, productId, screenId, featureId, 'versions.json')
+  if (!raw.trim()) return []
+  try {
+    const parsed = JSON.parse(raw) as FeatureVersion[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+export async function writeFeatureVersions(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  versions: FeatureVersion[],
+): Promise<void> {
+  await writeFeatureFile(
+    rootPath,
+    productId,
+    screenId,
+    featureId,
+    'versions.json',
+    JSON.stringify(versions, null, 2),
+  )
+}
+
 // ── Library component markdown ────────────────────────────────────────────────
 
 /** Read a component spec markdown: <root>/library/components/<id>.md */
@@ -364,7 +495,7 @@ export async function readAllComponentRules(rootPath: string): Promise<string> {
     const entries = await readDir(dir)
     const parts: string[] = []
     for (const entry of entries) {
-      if (!entry.name?.endsWith('.md')) continue
+      if (!entry.name.endsWith('.md')) continue
       const md = await readText(join(dir, entry.name))
       if (!md) continue
       // Extract component name from first line: # ComponentName
@@ -372,7 +503,7 @@ export async function readAllComponentRules(rootPath: string): Promise<string> {
       const compName = nameMatch ? nameMatch[1].trim() : entry.name.replace('.md', '')
       // Extract ## Правила section
       const rulesMatch = md.match(/## Правила\s*\n([\s\S]*?)(?=\n## |$)/)
-      if (rulesMatch && rulesMatch[1].trim()) {
+      if (rulesMatch?.[1].trim()) {
         parts.push(`## ${compName}\n${rulesMatch[1].trim()}`)
       }
     }
@@ -390,6 +521,76 @@ export interface CoreComponentSpec {
   primeReactExport: string
   description: string
   rules: string
+}
+
+function defaultPreviewPropsFor(name: string): Record<string, unknown> {
+  switch (name) {
+    case 'Button':
+      return { label: 'Button', severity: 'primary' }
+    case 'InputText':
+      return { placeholder: 'Type here' }
+    case 'Card':
+      return { title: 'Card title', subTitle: 'Subtitle', children: 'Card content' }
+    case 'Dialog':
+      return { visible: true, header: 'Dialog', modal: false, children: 'Dialog content' }
+    case 'Badge':
+      return { value: 'Badge', severity: 'info' }
+    case 'Avatar':
+      return { label: 'AB', shape: 'circle' }
+    case 'TabView':
+      return { tabs: [{ header: 'Tab 1', content: 'Tab content' }] }
+    case 'Dropdown':
+      return {
+        options: [{ label: 'Option 1', value: '1' }, { label: 'Option 2', value: '2' }],
+        optionLabel: 'label',
+        placeholder: 'Select'
+      }
+    default:
+      return {}
+  }
+}
+
+function buildCoreRuntimeManifest(components: CoreComponentSpec[]): CoreRuntimeManifest {
+  return {
+    version: '1',
+    generatedAt: new Date().toISOString(),
+    components: components.map(comp => ({
+      id: comp.id,
+      name: comp.name,
+      importPath: comp.primeReactImport,
+      exportName: comp.primeReactExport,
+      description: comp.description,
+      rules: comp.rules,
+      previewDefaults: defaultPreviewPropsFor(comp.primeReactExport),
+    }))
+  }
+}
+
+export function validateCoreRuntimeManifest(manifest: CoreRuntimeManifest): { ok: true } | { ok: false, errors: string[] } {
+  const errors: string[] = []
+  if (manifest.version !== '1') errors.push('Unsupported manifest version')
+  if (!Array.isArray(manifest.components) || manifest.components.length === 0) {
+    errors.push('No components in runtime manifest')
+  }
+  for (const comp of manifest.components) {
+    if (!comp.id) errors.push('Component with empty id')
+    if (!comp.exportName) errors.push(`Component "${comp.id}" has empty exportName`)
+    if (!comp.importPath) errors.push(`Component "${comp.id}" has empty importPath`)
+  }
+  return errors.length === 0 ? { ok: true } : { ok: false, errors }
+}
+
+export async function readCoreRuntimeManifest(rootPath: string): Promise<CoreRuntimeManifest | null> {
+  if (!IS_TAURI) return null
+  const raw = await readText(join(rootPath, 'core', 'runtime-manifest.json'))
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as CoreRuntimeManifest
+    const validation = validateCoreRuntimeManifest(parsed)
+    return validation.ok ? parsed : null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -460,6 +661,10 @@ export async function exportCoreComponents(rootPath: string, components: CoreCom
     ]),
   ]
   await writeText(join(coreDir, 'README.md'), readmeLines.join('\n'))
+
+  // runtime-manifest.json
+  const runtimeManifest = buildCoreRuntimeManifest(components)
+  await writeText(join(coreDir, 'runtime-manifest.json'), JSON.stringify(runtimeManifest, null, 2))
 }
 
 // ── Composable (reactive wrapper) ─────────────────────────────────────────────
@@ -469,8 +674,8 @@ export function useWorkspaceFs() {
     workspacePath,
     isDesktop: IS_TAURI,
     openWorkspaceDialog,
-    readBerestaJson,
-    writeBerestaJson,
+    readNorkaJson,
+    writeNorkaJson,
     ensureWorkspaceStructure,
     readDesignMd,
     writeDesignMd,
@@ -480,9 +685,14 @@ export function useWorkspaceFs() {
     writeScreenMd,
     readFeatureFile,
     writeFeatureFile,
+    readFeatureComments,
+    writeFeatureComments,
+    readFeatureVersions,
+    writeFeatureVersions,
     readComponentMd,
     writeComponentMd,
     readAllComponentRules,
+    readCoreRuntimeManifest,
     exportCoreComponents,
   }
 }

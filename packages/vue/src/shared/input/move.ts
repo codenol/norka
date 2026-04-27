@@ -1,10 +1,10 @@
-import { AUTO_LAYOUT_BREAK_THRESHOLD, computeSelectionBounds, computeSnap } from '@beresta/core'
+import { AUTO_LAYOUT_BREAK_THRESHOLD, computeSelectionBounds, computeSnap } from '@norka/core'
 
 import { computeAutoLayoutIndicator, computeAutoLayoutIndicatorForFrame } from './auto-layout'
 
 import type { DragMove, DragState } from './types'
-import type { SceneNode } from '@beresta/core'
-import type { Editor } from '@beresta/core/editor'
+import type { SceneNode } from '@norka/core'
+import type { Editor } from '@norka/core/editor'
 
 const AUTO_LAYOUT_REORDER_CLICK_SLOP = 3
 

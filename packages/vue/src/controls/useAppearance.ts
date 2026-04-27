@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { MIXED, useNodeProps } from '@beresta/vue/controls/useNodeProps'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { MIXED, useNodeProps } from '@norka/vue/controls/useNodeProps'
 
-import type { SceneNode } from '@beresta/core'
+import type { SceneNode } from '@norka/core'
 
 const CORNER_RADIUS_TYPES = new Set([
   'RECTANGLE',

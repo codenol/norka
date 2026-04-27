@@ -1,6 +1,6 @@
 ---
 title: Disegno forme
-description: Creare rettangoli, ellissi, linee, frame e sezioni in Beresta.
+description: Creare rettangoli, ellissi, linee, frame e sezioni in Norka.
 ---
 # Disegno forme
 

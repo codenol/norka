@@ -10,10 +10,10 @@ description: Рендер .fig-файлов в PNG, JPG, WEBP, SVG или JSX с
 ## Экспорт изображений
 
 ```sh
-beresta export design.fig                          # PNG (по умолчанию)
-beresta export design.fig -f jpg -s 2 -q 90       # JPG в 2×, качество 90
-beresta export design.fig -f webp -s 3             # WEBP в 3×
-beresta export design.fig -f svg                   # SVG-вектор
+norka export design.fig                          # PNG (по умолчанию)
+norka export design.fig -f jpg -s 2 -q 90       # JPG в 2×, качество 90
+norka export design.fig -f webp -s 3             # WEBP в 3×
+norka export design.fig -f svg                   # SVG-вектор
 ```
 
 Параметры:
@@ -30,7 +30,7 @@ beresta export design.fig -f svg                   # SVG-вектор
 Экспорт в JSX с утилитарными классами Tailwind:
 
 ```sh
-beresta export design.fig -f jsx --style tailwind
+norka export design.fig -f jsx --style tailwind
 ```
 
 Результат:
@@ -42,12 +42,12 @@ beresta export design.fig -f jsx --style tailwind
 </div>
 ```
 
-Также поддерживается `--style beresta` для нативного JSX-формата (см. [JSX-рендерер](../jsx-renderer)).
+Также поддерживается `--style norka` для нативного JSX-формата (см. [JSX-рендерер](../jsx-renderer)).
 
 ## Миниатюры
 
 ```sh
-beresta export design.fig --thumbnail --width 1920 --height 1080
+norka export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Режим работы с приложением
@@ -55,5 +55,5 @@ beresta export design.fig --thumbnail --width 1920 --height 1080
 Опустите файл для экспорта из запущенного приложения:
 
 ```sh
-beresta export -f png    # снимок текущего холста
+norka export -f png    # снимок текущего холста
 ```

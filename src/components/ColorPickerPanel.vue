@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { ColorAreaRoot, ColorAreaArea, ColorAreaThumb } from 'reka-ui'
 
-import type { Color } from '@beresta/core'
-import { colorToCSS } from '@beresta/core'
-import type { OkHCLControls } from '@beresta/vue/ColorPicker/types'
+import type { Color } from '@norka/core'
+import { colorToCSS } from '@norka/core'
+import type { OkHCLControls } from '@norka/vue/ColorPicker/types'
 import {
   createColorPickerModel,
   createOkHCLSliderGradientModel,
@@ -20,7 +20,7 @@ import {
   updateHue,
   updateRGBChannel,
   useI18n
-} from '@beresta/vue'
+} from '@norka/vue'
 import PickerSlider from './PickerSlider.vue'
 import AppSelect from './ui/AppSelect.vue'
 

@@ -1,11 +1,11 @@
 import { shallowRef, computed, triggerRef } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
 
-import { createEditorStore, setActiveEditorStore } from './editor'
+import { createEditorStore, setActiveEditorStore } from '@/stores/editor'
 
-import type { EditorStore } from './editor'
-import type { SceneGraph } from '@beresta/core'
+import type { EditorStore } from '@/stores/editor'
+import type { SceneGraph } from '@norka/core'
 
 export interface Tab {
   id: string
@@ -51,7 +51,7 @@ function activateTab(tab: Tab) {
   activeTabId.value = tab.id
   setActiveEditorStore(tab.store)
   triggerRef(tabsRef)
-  window.__OPEN_PENCIL_STORE__ = tab.store
+  window.__NORKA_STORE__ = tab.store
 }
 
 export function switchTab(tabId: string) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts } from '@beresta/core'
+import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts } from '@norka/core'
 
 function setup() {
   const graph = new SceneGraph()

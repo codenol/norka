@@ -6,7 +6,7 @@
  *   - Design → Code: `selectionToCode()` emits `<Button>` instead of `<Frame>`
  *   - Code → Canvas: `reverseMap` resolves code component names back to library refs
  *
- * Persistence: localStorage['beresta:code-connect'] — JSON serialised map.
+ * Persistence: localStorage['norka:code-connect'] — JSON serialised map.
  *
  * Each entry is keyed by the COMPONENT node ID from the library graph. Entries
  * are seeded as stubs when a library is registered (`seedFromLibrary`) and
@@ -16,7 +16,7 @@
 import { shallowRef, computed } from 'vue'
 import type { ShallowRef, ComputedRef } from 'vue'
 
-import { libraryRegistry } from '@beresta/core'
+import { libraryRegistry } from '@norka/core'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,7 +61,7 @@ export interface CodeConnectStore {
 // Persistence
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = 'beresta:code-connect'
+const STORAGE_KEY = 'norka:code-connect'
 
 function loadMap(): CodeConnectMap {
   try {

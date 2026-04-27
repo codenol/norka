@@ -24,4 +24,4 @@ MIT
 
 ---
 
-Основан на [OpenPencil](https://github.com/beresta/open-pencil).
+Основан на [Norka](https://github.com/norka/norka).

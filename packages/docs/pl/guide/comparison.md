@@ -1,6 +1,6 @@
-# Beresta vs Penpot: Porównanie architektury i wydajności
+# Norka vs Penpot: Porównanie architektury i wydajności
 
-Dlaczego porównujemy? Beresta istnieje, ponieważ zamknięte platformy projektowe kontrolują co jest możliwe. Zrozumienie różnic architektonicznych pokazuje, co otwarta alternatywa local-first może zrobić inaczej.
+Dlaczego porównujemy? Norka istnieje, ponieważ zamknięte platformy projektowe kontrolują co jest możliwe. Zrozumienie różnic architektonicznych pokazuje, co otwarta alternatywa local-first może zrobić inaczej.
 
 ::: info Renderer WASM Penpota
 Penpot 2.x zawiera renderer Rust/Skia WASM (`render-wasm/v1`) aktywowany przez flagi serwera lub parametr URL `?wasm=true`. Stary renderer SVG pozostaje domyślny. Ta strona obejmuje oba.
@@ -8,7 +8,7 @@ Penpot 2.x zawiera renderer Rust/Skia WASM (`render-wasm/v1`) aktywowany przez f
 
 ## 1. Skala i rozmiar kodu
 
-| Metryka | Beresta | Penpot |
+| Metryka | Norka | Penpot |
 |---------|-------------|--------|
 | LOC ogółem | **~26 000** | **~299 000** |
 | Pliki źródłowe | ~143 | ~2 900 |
@@ -18,11 +18,11 @@ Penpot 2.x zawiera renderer Rust/Skia WASM (`render-wasm/v1`) aktywowany przez f
 | Backend | Brak (local-first) | 32 600 LOC + 151 plików SQL |
 | Stosunek LOC | **1×** | **~11×** |
 
-Beresta jest **~11× mniejszy** — i o to chodzi. To nie uproszczenie; to fundamentalnie inna architektura.
+Norka jest **~11× mniejszy** — i o to chodzi. To nie uproszczenie; to fundamentalnie inna architektura.
 
 ## 2. Architektura
 
-### Beresta: Klient monolityczny
+### Norka: Klient monolityczny
 
 ```
 ┌─────────────────────────────────┐
@@ -74,11 +74,11 @@ Beresta jest **~11× mniejszy** — i o to chodzi. To nie uproszczenie; to funda
 
 ### Werdykt: Architektura
 
-Architektura jednoprocesowa Beresta eliminuje: opóźnienie sieci, narzut serializacji, złożoność orkiestracji kontenerów i narzut zapytań do bazy danych.
+Architektura jednoprocesowa Norka eliminuje: opóźnienie sieci, narzut serializacji, złożoność orkiestracji kontenerów i narzut zapytań do bazy danych.
 
 ## 3. Pipeline renderowania
 
-### Beresta: TS → CanvasKit WASM (bezpośrednio)
+### Norka: TS → CanvasKit WASM (bezpośrednio)
 
 ```typescript
 renderSceneToCanvas(canvas, graph, pageId) {
@@ -104,7 +104,7 @@ Gdy wyłączone (domyślnie), renderowanie jako drzewo DOM SVG. Gdy włączone, 
 
 ### Werdykt: Renderowanie
 
-| Aspekt | Beresta | Penpot |
+| Aspekt | Norka | Penpot |
 |--------|-------------|--------|
 | Granica JS→WASM | Bezpośrednia (obiekty TS) | Pakowanie binarne (104 bajty na kształt) |
 | Model renderowania | Natychmiastowy/pełne przerysowanie | Cache kafelkowy |
@@ -115,7 +115,7 @@ Gdy wyłączone (domyślnie), renderowanie jako drzewo DOM SVG. Gdy włączone, 
 
 ## 4. Graf sceny i model danych
 
-### Beresta
+### Norka
 
 ```typescript
 nodes: Map<string, SceneNode>
@@ -130,11 +130,11 @@ nodes: Map<string, SceneNode>
 
 ### Werdykt: Model danych
 
-Beresta reutylizuje sprawdzony schemat Figmy (194 definicje Kiwi) bezpośrednio w TypeScript. Penpot utrzymuje własny system typów w trzech językach.
+Norka reutylizuje sprawdzony schemat Figmy (194 definicje Kiwi) bezpośrednio w TypeScript. Penpot utrzymuje własny system typów w trzech językach.
 
 ## 5. Silnik layoutu
 
-### Beresta: Yoga WASM (314 LOC)
+### Norka: Yoga WASM (314 LOC)
 
 ```typescript
 import Yoga from 'yoga-layout'
@@ -151,7 +151,7 @@ Penpot utrzymuje **dwa niezależne silniki layoutu** (CLJS i Rust) — ~3 000+ L
 
 ## 6. Format pliku i kompatybilność z Figmą
 
-### Beresta
+### Norka
 
 - **Natywny format binarny Kiwi** — ta sama serializacja co Figma
 - Bezpośredni import `.fig`, wklejanie ze schowka Figmy
@@ -164,11 +164,11 @@ Penpot utrzymuje **dwa niezależne silniki layoutu** (CLJS i Rust) — ~3 000+ L
 
 ### Werdykt: Format pliku
 
-Beresta ma znaczącą przewagę — może czytać pliki Figmy natywnie i wklejać dane ze schowka Figmy.
+Norka ma znaczącą przewagę — może czytać pliki Figmy natywnie i wklejać dane ze schowka Figmy.
 
 ## 7. Zarządzanie stanem i cofanie
 
-### Beresta
+### Norka
 
 ```typescript
 // 110 LOC — wzorzec komendy odwrotnej
@@ -184,7 +184,7 @@ Zarządzanie stanem przez Potok. Cofanie z wektorami zmian odwrotnych (max 50 wp
 
 ## 8. Doświadczenie developerskie
 
-| Metryka | Beresta | Penpot |
+| Metryka | Norka | Penpot |
 |---------|-------------|--------|
 | Setup dev | `bun install && bun dev` | Docker Compose + JVM + Node + Rust |
 | Hot reload | Vite HMR (~50ms) | shadow-cljs (sekundy) |
@@ -195,7 +195,7 @@ Zarządzanie stanem przez Potok. Cofanie z wektorami zmian odwrotnych (max 50 wp
 
 ## 9. Charakterystyki wydajności
 
-| Scenariusz | Beresta | Penpot |
+| Scenariusz | Norka | Penpot |
 |------------|-------------|--------|
 | Zimny start | <2s (ładowanie WASM) | 10s+ (serwer + klient + WASM) |
 | Opóźnienie operacji | <1ms (w procesie) | 10-50ms (round-trip sieci) |
@@ -206,30 +206,30 @@ Zarządzanie stanem przez Potok. Cofanie z wektorami zmian odwrotnych (max 50 wp
 ## 10. Co Penpot robi lepiej
 
 1. **Współpraca serwerowa** — centralna edycja wieloużytkownikowa z WebSockets, kontami i kontrolą dostępu
-2. **Serwerowy eksport PDF** — usługa eksportu headless Chromium dla PDF (Beresta eksportuje już SVG natywnie)
+2. **Serwerowy eksport PDF** — usługa eksportu headless Chromium dla PDF (Norka eksportuje już SVG natywnie)
 3. **System pluginów** — pełne API z sandboxowanym wykonywaniem
 4. **Tokeny projektowe** — natywne wsparcie design tokenów
-5. **CSS Grid layout** — własna implementacja (Beresta czeka na Yoga Grid)
+5. **CSS Grid layout** — własna implementacja (Norka czeka na Yoga Grid)
 6. **Self-hosting** — wdrożenie Docker dla zespołów
 7. **Dojrzałość** — lata użytkowania w produkcji
 
 ## 11. Scripting i rozszerzalność
 
-Beresta zawiera [komendę `eval`](/programmable/cli/scripting) oferującą API Plugin kompatybilne z Figmą do skryptowania headless. Ponadto 90 narzędzi AI dostępnych przez wbudowany chat, serwer MCP (stdio + HTTP) i CLI. Penpot ma system pluginów z sandboxem, ale bez API skryptowania headless ani integracji MCP.
+Norka zawiera [komendę `eval`](/programmable/cli/scripting) oferującą API Plugin kompatybilne z Figmą do skryptowania headless. Ponadto 90 narzędzi AI dostępnych przez wbudowany chat, serwer MCP (stdio + HTTP) i CLI. Penpot ma system pluginów z sandboxem, ale bez API skryptowania headless ani integracji MCP.
 
 ## Podsumowanie
 
 | Wymiar | Zwycięzca | Dlaczego |
 |--------|-----------|----------|
-| **Prostota architektoniczna** | Beresta | Jeden proces vs 5+ usług |
-| **Wydajność renderowania** | Beresta | Bezpośredni CanvasKit vs SVG DOM (domyślnie) lub WASM pakowany |
-| **Utrzymywalność kodu** | Beresta | ~26K LOC w 1 języku vs 299K w 4+ |
-| **Kompatybilność z Figmą** | Beresta | Natywny kodek Kiwi vs brak wsparcia .fig |
-| **Onboarding developerów** | Beresta | TS/Vue vs Clojure/Rust/Docker |
-| **Doświadczenie desktop** | Beresta | Natywne Tauri vs tylko przeglądarka |
-| **Silnik layoutu** | Beresta | Yoga (sprawdzony) vs podwójna implementacja |
-| **Współpraca** | Remis | Penpot: serwer z kontrolą dostępu; Beresta: P2P przez Trystero + Yjs |
+| **Prostota architektoniczna** | Norka | Jeden proces vs 5+ usług |
+| **Wydajność renderowania** | Norka | Bezpośredni CanvasKit vs SVG DOM (domyślnie) lub WASM pakowany |
+| **Utrzymywalność kodu** | Norka | ~26K LOC w 1 języku vs 299K w 4+ |
+| **Kompatybilność z Figmą** | Norka | Natywny kodek Kiwi vs brak wsparcia .fig |
+| **Onboarding developerów** | Norka | TS/Vue vs Clojure/Rust/Docker |
+| **Doświadczenie desktop** | Norka | Natywne Tauri vs tylko przeglądarka |
+| **Silnik layoutu** | Norka | Yoga (sprawdzony) vs podwójna implementacja |
+| **Współpraca** | Remis | Penpot: serwer z kontrolą dostępu; Norka: P2P przez Trystero + Yjs |
 | **Self-hosting** | Penpot | Gotowy Docker vs tylko desktop |
 | **Dojrzałość ekosystemu** | Penpot | Lata produkcji vs wczesny etap |
 
-Beresta jest architektonicznie szczuplejszy — jednoprocesowy renderer CanvasKit w ~26K LOC TypeScript, kompatybilny z Figmą z założenia. Penpot to platforma full-stack z ~299K LOC. Beresta ma skryptowanie headless, **90 narzędzi AI/MCP**, eksport SVG i natywną aplikację desktop.
+Norka jest architektonicznie szczuplejszy — jednoprocesowy renderer CanvasKit w ~26K LOC TypeScript, kompatybilny z Figmą z założenia. Penpot to platforma full-stack z ~299K LOC. Norka ma skryptowanie headless, **90 narzędzi AI/MCP**, eksport SVG i natywną aplikację desktop.

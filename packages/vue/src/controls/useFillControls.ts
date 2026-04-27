@@ -1,4 +1,4 @@
-import { DEFAULT_SHAPE_FILL } from '@beresta/core'
+import { DEFAULT_SHAPE_FILL } from '@norka/core'
 
 import { useColorVariableBinding } from './useColorVariableBinding'
 

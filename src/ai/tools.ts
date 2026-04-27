@@ -12,10 +12,10 @@ import {
   isFontLoaded,
   loadFont,
   toolsToAI
-} from '@beresta/core'
+} from '@norka/core'
 
 import type { EditorStore } from '@/stores/editor'
-import type { SceneNode, StepBudget, ToolLogEntry } from '@beresta/core'
+import type { SceneNode, StepBudget, ToolLogEntry } from '@norka/core'
 
 export const MAX_AGENT_STEPS = 50
 
@@ -102,11 +102,10 @@ function makeSaveComponentRulesTool() {
     anti_patterns: v.optional(v.array(v.string())),
   })
 
-  // eslint-disable-next-line typescript-eslint/no-explicit-any -- inputSchema + execute overloads not narrowable with valibot; same pattern as toolsToAI
-  return (tool as (...a: any[]) => unknown)({
+  return (tool as (...args: unknown[]) => unknown)({
     description:
       'Save usage rules for a design library component. Call this after the user confirms the rules you proposed for a component.',
-    inputSchema: valibotSchema(schema as any),
+    inputSchema: valibotSchema(schema as unknown as Parameters<typeof valibotSchema>[0]),
     execute: async (args: Record<string, unknown>) => {
       const component_node_id = args.component_node_id as string
       const usage = args.usage as string

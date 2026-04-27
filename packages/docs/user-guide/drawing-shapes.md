@@ -1,6 +1,6 @@
 ---
 title: Drawing Shapes
-description: Creating rectangles, ellipses, lines, frames, sections, polygons, and stars in Beresta.
+description: Creating rectangles, ellipses, lines, frames, sections, polygons, and stars in Norka.
 ---
 
 # Drawing Shapes

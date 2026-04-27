@@ -3,12 +3,12 @@ import { computed } from 'vue'
 
 import { useAIChat } from '@/composables/use-chat'
 import { TOOL_SHORTCUTS, useEditorStore } from '@/stores/editor'
-import { closeTab, createTab, activeTab as activeTabRef } from '@/stores/tabs'
+import { closeTab, activeTab as activeTabRef } from '@/stores/tabs'
 import {
   extractImageFilesFromClipboard,
   useEditorCommands,
   useViewportKind
-} from '@beresta/vue'
+} from '@norka/vue'
 
 import { openFileDialog } from './use-menu'
 
@@ -190,8 +190,6 @@ export function useKeyboard() {
   whenever(mod('keyw'), () => {
     if (activeTabRef.value) closeTab(activeTabRef.value.id)
   })
-  whenever(mod('keyn'), () => createTab())
-  whenever(mod('keyt'), () => createTab())
   whenever(mod('keyz'), () => runCommand('edit.undo'))
   whenever(mod('keyy'), () => runCommand('edit.redo'))
   whenever(mod('digit0'), () => runCommand('view.zoom100'))

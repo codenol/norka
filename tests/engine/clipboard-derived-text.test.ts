@@ -7,7 +7,7 @@ import {
   buildFontDigestMap,
   buildDerivedTextDataV4,
   initCodec
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('clipboard derived text export', () => {
   test('builds richer v4 derivedTextData from shaped text + glyph outlines', async () => {

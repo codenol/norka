@@ -18,7 +18,7 @@ Use it when building:
 ## Usage
 
 ```ts
-import { useSelectionCapabilities } from '@beresta/vue'
+import { useSelectionCapabilities } from '@norka/vue'
 
 const caps = useSelectionCapabilities()
 ```
@@ -27,7 +27,7 @@ const caps = useSelectionCapabilities()
 
 ```vue
 <script setup lang="ts">
-import { useSelectionCapabilities } from '@beresta/vue'
+import { useSelectionCapabilities } from '@norka/vue'
 
 const { canDelete, canDuplicate, canCreateComponent } = useSelectionCapabilities()
 </script>

@@ -1,6 +1,6 @@
 ---
 title: Textbearbeitung
-description: Text erstellen und bearbeiten mit Rich-Formatierung, Schriften und Inline-Bearbeitung in Beresta.
+description: Text erstellen und bearbeiten mit Rich-Formatierung, Schriften und Inline-Bearbeitung in Norka.
 ---
 
 # Textbearbeitung

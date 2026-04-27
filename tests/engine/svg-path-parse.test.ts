@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { parseSVGPath, vectorNetworkToSVGPaths } from '@beresta/core'
+import { parseSVGPath, vectorNetworkToSVGPaths } from '@norka/core'
 
 describe('parseSVGPath', () => {
   test('simple rectangle M L L L Z', () => {

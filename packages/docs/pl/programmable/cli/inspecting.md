@@ -9,9 +9,9 @@ CLI pozwala eksplorować pliki `.fig` bez otwierania edytora. Każde polecenie d
 
 ::: tip Instalacja
 ```sh
-bun add -g @beresta/cli
+bun add -g @norka/cli
 # lub
-brew install beresta/tap/beresta
+brew install norka/tap/norka
 ```
 :::
 
@@ -20,7 +20,7 @@ brew install beresta/tap/beresta
 Szybki przegląd — liczba stron, łączna liczba węzłów, użyte czcionki, rozmiar pliku:
 
 ```sh
-beresta info design.fig
+norka info design.fig
 ```
 
 ## Drzewo węzłów
@@ -28,7 +28,7 @@ beresta info design.fig
 Wyświetl pełną hierarchię węzłów:
 
 ```sh
-beresta tree design.fig
+norka tree design.fig
 ```
 
 ```
@@ -45,13 +45,13 @@ beresta tree design.fig
 Szukaj po typie:
 
 ```sh
-beresta find design.fig --type TEXT
+norka find design.fig --type TEXT
 ```
 
 Szukaj po nazwie:
 
 ```sh
-beresta find design.fig --name "Button"
+norka find design.fig --name "Button"
 ```
 
 Obie flagi można łączyć, aby zawęzić wyniki.
@@ -61,7 +61,7 @@ Obie flagi można łączyć, aby zawęzić wyniki.
 Sprawdź wszystkie właściwości konkretnego węzła po jego ID:
 
 ```sh
-beresta node design.fig --id 1:23
+norka node design.fig --id 1:23
 ```
 
 ## Strony
@@ -69,7 +69,7 @@ beresta node design.fig --id 1:23
 Wylistuj wszystkie strony w dokumencie:
 
 ```sh
-beresta pages design.fig
+norka pages design.fig
 ```
 
 ## Zmienne
@@ -77,7 +77,7 @@ beresta pages design.fig
 Wylistuj zmienne projektowe i ich kolekcje:
 
 ```sh
-beresta variables design.fig
+norka variables design.fig
 ```
 
 ## Tryb żywej aplikacji
@@ -85,8 +85,8 @@ beresta variables design.fig
 Gdy aplikacja desktopowa jest uruchomiona, pomiń argument pliku — CLI łączy się przez RPC i operuje na żywym płótnie:
 
 ```sh
-beresta tree              # przeglądaj żywy dokument
-beresta eval -c "..."     # odpytuj edytor
+norka tree              # przeglądaj żywy dokument
+norka eval -c "..."     # odpytuj edytor
 ```
 
 ## Wyjście JSON
@@ -94,5 +94,5 @@ beresta eval -c "..."     # odpytuj edytor
 Wszystkie polecenia obsługują `--json` dla wyjścia w formacie do odczytu maszynowego — przekieruj do `jq`, zasilaj skrypty CI lub przetwarzaj innymi narzędziami:
 
 ```sh
-beresta tree design.fig --json | jq '.[] | .name'
+norka tree design.fig --json | jq '.[] | .name'
 ```

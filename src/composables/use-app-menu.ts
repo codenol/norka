@@ -2,9 +2,9 @@ import { computed } from 'vue'
 
 import { openFileDialog } from '@/composables/use-menu'
 import { useEditorStore } from '@/stores/editor'
-import { useEditorCommands, useI18n } from '@beresta/vue'
+import { useEditorCommands, useI18n } from '@norka/vue'
 
-import type { MenuEntry } from '@beresta/vue'
+import type { MenuEntry } from '@norka/vue'
 
 export interface AppMenuGroup {
   label: string
@@ -30,13 +30,6 @@ export function useAppMenu(mod: string) {
     {
       label: t.value.file,
       items: [
-        {
-          label: t.value.new,
-          shortcut: `${mod}N`,
-          action: () => {
-            void import('@/stores/tabs').then((m) => m.createTab())
-          }
-        },
         { label: t.value.open, shortcut: `${mod}O`, action: () => void openFileDialog() },
         { separator: true as const },
         { label: t.value.save, shortcut: `${mod}S`, action: () => void store.saveFigFile() },

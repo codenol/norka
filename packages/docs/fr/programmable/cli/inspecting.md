@@ -9,9 +9,9 @@ Le CLI vous permet d'explorer des fichiers `.fig` sans ouvrir l'éditeur. Chaque
 
 ::: tip Installation
 ```sh
-bun add -g @beresta/cli
+bun add -g @norka/cli
 # ou
-brew install beresta/tap/beresta
+brew install norka/tap/norka
 ```
 :::
 
@@ -20,7 +20,7 @@ brew install beresta/tap/beresta
 Obtenez un aperçu rapide — nombre de pages, nombre total de nœuds, polices utilisées, taille du fichier :
 
 ```sh
-beresta info design.fig
+norka info design.fig
 ```
 
 ## Arborescence des nœuds
@@ -28,7 +28,7 @@ beresta info design.fig
 Affichez la hiérarchie complète des nœuds :
 
 ```sh
-beresta tree design.fig
+norka tree design.fig
 ```
 
 ```
@@ -45,13 +45,13 @@ beresta tree design.fig
 Rechercher par type :
 
 ```sh
-beresta find design.fig --type TEXT
+norka find design.fig --type TEXT
 ```
 
 Rechercher par nom :
 
 ```sh
-beresta find design.fig --name "Button"
+norka find design.fig --name "Button"
 ```
 
 Les deux options peuvent être combinées pour affiner les résultats.
@@ -61,7 +61,7 @@ Les deux options peuvent être combinées pour affiner les résultats.
 Inspectez toutes les propriétés d'un nœud spécifique par son identifiant :
 
 ```sh
-beresta node design.fig --id 1:23
+norka node design.fig --id 1:23
 ```
 
 ## Pages
@@ -69,7 +69,7 @@ beresta node design.fig --id 1:23
 Listez toutes les pages du document :
 
 ```sh
-beresta pages design.fig
+norka pages design.fig
 ```
 
 ## Variables
@@ -77,7 +77,7 @@ beresta pages design.fig
 Listez les variables de design et leurs collections :
 
 ```sh
-beresta variables design.fig
+norka variables design.fig
 ```
 
 ## Mode application en direct
@@ -85,8 +85,8 @@ beresta variables design.fig
 Quand l'application de bureau est en cours d'exécution, omettez l'argument fichier — le CLI se connecte via RPC et opère sur le canevas en direct :
 
 ```sh
-beresta tree              # inspecter le document en direct
-beresta eval -c "..."     # interroger l'éditeur
+norka tree              # inspecter le document en direct
+norka eval -c "..."     # interroger l'éditeur
 ```
 
 ## Sortie JSON
@@ -94,5 +94,5 @@ beresta eval -c "..."     # interroger l'éditeur
 Toutes les commandes supportent `--json` pour une sortie lisible par machine — redirigez vers `jq`, alimentez des scripts CI, ou traitez avec d'autres outils :
 
 ```sh
-beresta tree design.fig --json | jq '.[] | .name'
+norka tree design.fig --json | jq '.[] | .name'
 ```

@@ -9,7 +9,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   ru: 'Русский'
 }
 
-const LOCALE_STORAGE_KEY = 'beresta-locale'
+const LOCALE_STORAGE_KEY = 'norka-locale'
 
 export const localeSetting = atom<Locale | undefined>(undefined)
 

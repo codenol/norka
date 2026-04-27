@@ -7,7 +7,7 @@ import {
   vectorNetworkToSVGPaths,
   svg,
   renderSVGNode
-} from '@beresta/core'
+} from '@norka/core'
 
 function makeGraph() {
   const graph = new SceneGraph()

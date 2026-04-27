@@ -1,4 +1,4 @@
-import { FigmaAPI } from '@beresta/core'
+import { FigmaAPI } from '@norka/core'
 
 import type { EditorStore } from '@/stores/editor'
 

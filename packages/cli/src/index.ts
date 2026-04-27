@@ -19,8 +19,8 @@ const { version } = await import('../package.json')
 
 const main = defineCommand({
   meta: {
-    name: 'beresta',
-    description: 'Beresta CLI — inspect, export, and lint Beresta design documents',
+    name: 'norka',
+    description: 'Norka CLI — inspect, export, and lint Norka design documents',
     version
   },
   subCommands: {

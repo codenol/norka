@@ -6,7 +6,7 @@ import {
   exportFigFile,
   parseFigFile,
   initCodec,
-} from '@beresta/core'
+} from '@norka/core'
 
 beforeAll(async () => {
   await initCodec()

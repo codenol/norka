@@ -4,18 +4,18 @@
 
 ```
 packages/
-  core/              @beresta/core — Engine (keine DOM-Abhängigkeiten)
+  core/              @norka/core — Engine (keine DOM-Abhängigkeiten)
     src/             Szenengraph, Renderer, Layout, Codec, Kiwi, Typen
-  cli/               @beresta/cli — Headless-CLI für .fig-Operationen
+  cli/               @norka/cli — Headless-CLI für .fig-Operationen
     src/commands/    info, tree, find, export, eval, analyze
-  mcp/               @beresta/mcp — MCP-Server für KI-Werkzeuge
+  mcp/               @norka/mcp — MCP-Server für KI-Werkzeuge
     src/             stdio + HTTP (Hono) Transporte, 87 Werkzeuge
 src/
   components/        Vue SFCs (Canvas, Panels, Werkzeugleiste, Farbauswahl)
     properties/      Eigenschaftspanel-Abschnitte
   composables/       Canvas-Input, Tastenkürzel, Rendering-Hooks
   stores/            Editor-Zustand (Vue-Reaktivität)
-  engine/            Re-Export-Shims von @beresta/core
+  engine/            Re-Export-Shims von @norka/core
 desktop/             Tauri v2 (Rust + Konfiguration)
 tests/
   e2e/               Playwright visuelle Regression
@@ -59,7 +59,7 @@ bun run check
 
 ### KI-Agent-Konventionen
 
-Entwickler und KI-Agenten sollten `AGENTS.md` im Repo-Root lesen ([auf GitHub ansehen](https://github.com/beresta/beresta/blob/master/AGENTS.md)). Behandelt Rendering, Szenengraph, Komponenten & Instanzen, Layout, UI, Dateiformat, Tauri-Konventionen und bekannte Probleme.
+Entwickler und KI-Agenten sollten `AGENTS.md` im Repo-Root lesen ([auf GitHub ansehen](https://github.com/norka/norka/blob/master/AGENTS.md)). Behandelt Rendering, Szenengraph, Komponenten & Instanzen, Layout, UI, Dateiformat, Tauri-Konventionen und bekannte Probleme.
 
 ## Änderungen vornehmen
 

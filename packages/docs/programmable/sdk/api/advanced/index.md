@@ -1,6 +1,6 @@
 ---
 title: Advanced
-description: Lower-level and specialized APIs in @beresta/vue.
+description: Lower-level and specialized APIs in @norka/vue.
 ---
 
 # Advanced

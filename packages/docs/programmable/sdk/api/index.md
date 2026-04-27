@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: Reference documentation for @beresta/vue components, composables, and advanced APIs.
+description: Reference documentation for @norka/vue components, composables, and advanced APIs.
 ---
 
 # API Reference

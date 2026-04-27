@@ -1,6 +1,6 @@
 ---
 title: Sélection et manipulation
-description: Sélectionner, déplacer, redimensionner, tourner et organiser les nœuds dans Beresta.
+description: Sélectionner, déplacer, redimensionner, tourner et organiser les nœuds dans Norka.
 ---
 # Sélection et manipulation
 

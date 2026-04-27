@@ -12,7 +12,7 @@ Use it when you want direct control over collections, active modes, filtering, a
 ## Usage
 
 ```ts
-import { useVariables } from '@beresta/vue'
+import { useVariables } from '@norka/vue'
 
 const variables = useVariables()
 ```

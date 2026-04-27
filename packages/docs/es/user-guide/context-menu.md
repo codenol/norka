@@ -1,6 +1,6 @@
 ---
 title: Menú contextual
-description: Acciones del menú contextual (clic derecho) en Beresta.
+description: Acciones del menú contextual (clic derecho) en Norka.
 ---
 # Menú contextual
 

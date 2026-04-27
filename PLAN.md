@@ -1,4 +1,4 @@
-# Beresta
+# Norka
 
 Open-source, AI-native design editor. Think Figma, but you can self-host it, extend it, and talk to it.
 
@@ -10,7 +10,7 @@ Open-source, AI-native design editor. Think Figma, but you can self-host it, ext
 
 ## Positioning
 
-| | Beresta | Figma | Penpot |
+| | Norka | Figma | Penpot |
 |---|---|---|---|
 | Open source | ✅ MIT | ❌ | ✅ |
 | Rendering | Skia (WASM) | Skia (WASM) | SVG |
@@ -99,7 +99,7 @@ We've built a substantial toolkit in figma-use that transfers directly:
 │  │  ┌──────────────────────────────────────────────────────┐ │  │
 │  │  │              File Format Layer                        │ │  │
 │  │  │                                                      │ │  │
-│  │  │  .beresta (Kiwi binary, same codec as .fig)       │ │  │
+│  │  │  .norka (Kiwi binary, same codec as .fig)       │ │  │
 │  │  │  .fig import ── .pen import ── .svg/.png export      │ │  │
 │  │  └──────────────────────────────────────────────────────┘ │  │
 │  └────────────────────────────────────────────────────────────┘  │
@@ -887,12 +887,12 @@ We already have the full pipeline from figma-use:
   → decode Message → NodeChange[]
   → build SceneGraph (flat map of nodes)
   → resolve blob references (images, vector networks)
-  → apply to Beresta scene graph
+  → apply to Norka scene graph
 ```
 
 #### Rendering compatibility
 
-Both Beresta and Figma use Skia CanvasKit for rendering. This means identical rendering primitives. The pixel-perfect challenge is in:
+Both Norka and Figma use Skia CanvasKit for rendering. This means identical rendering primitives. The pixel-perfect challenge is in:
 
 1. **Layout computation** — auto-layout (flexbox) results must match exactly. Using Yoga helps since Figma's layout is also CSS-flexbox-based, but we need to verify edge cases.
 2. **Text shaping** — same font + same Skia text shaper = same glyphs. We must use the same fonts (embedded in .fig blobs or loaded from the same sources).
@@ -908,10 +908,10 @@ Crawl Figma files → for each:
   1. Export from Figma (via REST API or screenshot):
      figma-use export node <id> --scale 2 --output expected.png
   
-  2. Import .fig into Beresta
+  2. Import .fig into Norka
   
-  3. Render same node in Beresta:
-     beresta render <id> --scale 2 --output actual.png
+  3. Render same node in Norka:
+     norka render <id> --scale 2 --output actual.png
   
   4. Compare with pixelmatch:
      - Threshold: 0.1 (allow minor subpixel differences)
@@ -944,7 +944,7 @@ tests/figma-compat/
 │   ├── basic-shapes/
 │   │   ├── node-1-2.png
 │   │   └── ...
-├── actual/                       # Screenshots from Beresta (test run)
+├── actual/                       # Screenshots from Norka (test run)
 ├── diffs/                        # Visual diffs
 └── report.html                   # Test report with side-by-side comparison
 ```
@@ -955,7 +955,7 @@ tests/figma-compat/
 # 1. Crawl: download .fig files and export screenshots from Figma
 bun run test:figma:crawl
 
-# 2. Render: import .fig into Beresta, render same nodes
+# 2. Render: import .fig into Norka, render same nodes
 bun run test:figma:render
 
 # 3. Compare: pixel diff with threshold
@@ -1011,14 +1011,14 @@ Mapping Figma layout fields to Yoga:
 
 ### File Format: Kiwi binary
 
-We already have the full Kiwi codec from figma-use. The `.beresta` format will use the same encoding:
+We already have the full Kiwi codec from figma-use. The `.norka` format will use the same encoding:
 
 - Kiwi binary schema (compact, fast parsing)
 - Zstd compression
 - Same NodeChange-based structure (proven at Figma scale)
 - Superset of .fig — we add our own fields but can read Figma files
 
-Migration from .fig: decode with our Kiwi codec → re-encode as .beresta.
+Migration from .fig: decode with our Kiwi codec → re-encode as .norka.
 
 ### Collaboration (P2P CRDT)
 
@@ -1074,7 +1074,7 @@ P2P real-time collaboration via Trystero (WebRTC) + Yjs CRDT. Cursors, presence,
 
 ### Phase 7: Distribution ✅
 
-Tauri v2 desktop app (macOS, Windows, Linux). Web app at app.beresta.dev. CLI published on npm. Documentation site at beresta.dev. GitHub Actions CI for builds and deploys.
+Tauri v2 desktop app (macOS, Windows, Linux). Web app at app.norka.dev. CLI published on npm. Documentation site at norka.dev. GitHub Actions CI for builds and deploys.
 
 ### What's next
 
@@ -1094,7 +1094,7 @@ Tauri v2 desktop app (macOS, Windows, Linux). Web app at app.beresta.dev. CLI pu
 
 ## CLI & Headless Mode
 
-The CLI (`@beresta/cli`) runs headless in Bun — loads the engine directly, no window, no Tauri, no WebGL. CanvasKit WASM CPU software rasterizer enables PNG export without a display server.
+The CLI (`@norka/cli`) runs headless in Bun — loads the engine directly, no window, no Tauri, no WebGL. CanvasKit WASM CPU software rasterizer enables PNG export without a display server.
 
 ### Monorepo structure (implemented)
 
@@ -1103,10 +1103,10 @@ Bun workspace with three packages:
 ```
 package.json              — workspace root
 packages/
-  core/                   — @beresta/core: scene graph, renderer, layout, codec, tools
-  cli/                    — @beresta/cli: headless CLI (info, tree, find, export, analyze)
+  core/                   — @norka/core: scene graph, renderer, layout, codec, tools
+  cli/                    — @norka/cli: headless CLI (info, tree, find, export, analyze)
   docs/                   — VitePress documentation site
-src/                      — Vue 3 + Tauri desktop editor (imports from @beresta/core)
+src/                      — Vue 3 + Tauri desktop editor (imports from @norka/core)
 desktop/                  — Tauri v2 Rust backend
 tests/
   e2e/                    — Playwright visual regression
@@ -1132,7 +1132,7 @@ A faster Rust/WASM decoder would require code generation (like protobuf's `prost
 
 - **CanvasKit WASM in Bun** ✅ — CPU surface works headless for CLI export
 - **Font loading in headless** ✅ — system fonts loaded via `readFileSync` + `FontMgr.FromData()`
-- **Core extraction** ✅ — engine is `@beresta/core` with zero DOM deps, used by both app and CLI
+- **Core extraction** ✅ — engine is `@norka/core` with zero DOM deps, used by both app and CLI
 - **Kiwi codec performance** ✅ — JS decoder is 3.5–5.4x faster than Rust kiwi-schema crate (JIT-compiled `new Function()` vs dynamic `Value` with HashMap)
 - **P2P collaboration** ✅ — Trystero + Yjs works without a relay server
 

@@ -1,6 +1,6 @@
 ---
 title: Calques et pages
-description: Gérer les calques, pages et le panneau des propriétés dans Beresta.
+description: Gérer les calques, pages et le panneau des propriétés dans Norka.
 ---
 # Calques et pages
 

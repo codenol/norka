@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
-import type { Effect, Fill, SceneNode, Stroke } from '@beresta/core'
+import type { Effect, Fill, SceneNode, Stroke } from '@norka/core'
 
 /** Sentinel value returned when a property differs across multiple selected nodes. */
 export const MIXED = Symbol('mixed')

@@ -1,6 +1,6 @@
 ---
 title: Rysowanie kształtów
-description: Tworzenie prostokątów, elips, linii, ramek i sekcji w Beresta.
+description: Tworzenie prostokątów, elips, linii, ramek i sekcji w Norka.
 ---
 # Rysowanie kształtów
 

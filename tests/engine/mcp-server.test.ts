@@ -11,7 +11,7 @@ import {
   SceneGraph,
   computeAllLayouts,
   executeRpcCommand
-} from '@beresta/core'
+} from '@norka/core'
 import { serve } from '@hono/node-server'
 
 import type { AddressInfo } from 'node:net'

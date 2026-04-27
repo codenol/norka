@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
 /**
  * Returns reactive page state and page-management actions.

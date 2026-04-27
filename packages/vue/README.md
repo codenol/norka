@@ -1,8 +1,8 @@
-# @beresta/vue
+# @norka/vue
 
-Headless Vue 3 SDK for building Beresta-powered editors.
+Headless Vue 3 SDK for building Norka-powered editors.
 
-`@beresta/vue` sits on top of `@beresta/core` and provides:
+`@norka/vue` sits on top of `@norka/core` and provides:
 
 - Vue editor injection via `provideEditor()` / `useEditor()`
 - canvas integration via `useCanvas()`, `useCanvasInput()`, and `useTextEdit()`
@@ -14,15 +14,15 @@ The SDK is headless by design: it provides logic and structure, while your app o
 ## Install
 
 ```bash
-bun add @beresta/vue @beresta/core canvaskit-wasm
+bun add @norka/vue @norka/core canvaskit-wasm
 ```
 
 ## Quick start
 
 ```vue
 <script setup lang="ts">
-import { createEditor } from '@beresta/core/editor'
-import { provideEditor } from '@beresta/vue'
+import { createEditor } from '@norka/core/editor'
+import { provideEditor } from '@norka/vue'
 
 const editor = createEditor({
   width: 1200,
@@ -51,7 +51,7 @@ provideEditor(editor)
 Use `provideEditor(editor)` once near the top of your subtree.
 
 ```ts
-import { provideEditor } from '@beresta/vue'
+import { provideEditor } from '@norka/vue'
 
 provideEditor(editor)
 ```
@@ -59,7 +59,7 @@ provideEditor(editor)
 Read it anywhere below with `useEditor()`.
 
 ```ts
-import { useEditor } from '@beresta/vue'
+import { useEditor } from '@norka/vue'
 
 const editor = useEditor()
 ```
@@ -180,9 +180,9 @@ These are mostly useful when extending SDK primitives rather than building from 
 
 ```vue
 <script setup lang="ts">
-import { provideEditor } from '@beresta/vue'
+import { provideEditor } from '@norka/vue'
 
-import type { Editor } from '@beresta/core/editor'
+import type { Editor } from '@norka/core/editor'
 
 const props = defineProps<{
   editor: Editor
@@ -199,7 +199,7 @@ provideEditor(props.editor)
 ### Read selection state
 
 ```ts
-import { useSelectionState } from '@beresta/vue'
+import { useSelectionState } from '@norka/vue'
 
 const { hasSelection, selectedCount, selectedNode } = useSelectionState()
 ```
@@ -207,7 +207,7 @@ const { hasSelection, selectedCount, selectedNode } = useSelectionState()
 ### Build a menu
 
 ```ts
-import { useMenuModel } from '@beresta/vue'
+import { useMenuModel } from '@norka/vue'
 
 const { appMenu, canvasMenu } = useMenuModel()
 ```

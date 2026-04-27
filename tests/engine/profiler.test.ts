@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { FrameStats, DrawCallCounter, PhaseTimer, GPUTimer, CaptureStack, toSpeedscopeJSON } from '@beresta/core'
+import { FrameStats, DrawCallCounter, PhaseTimer, GPUTimer, CaptureStack, toSpeedscopeJSON } from '@norka/core'
 
 describe('FrameStats', () => {
   it('records frames and computes rolling averages', () => {

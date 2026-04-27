@@ -2,11 +2,11 @@
 
 ## Online testen
 
-Beresta läuft im Browser — keine Installation nötig. Öffne [app.beresta.dev](https://app.beresta.dev) um loszulegen.
+Norka läuft im Browser — keine Installation nötig. Öffne [app.norka.dev](https://app.norka.dev) um loszulegen.
 
 ## Desktop-App herunterladen
 
-Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases-Seite](https://github.com/beresta/beresta/releases/latest) verfügbar.
+Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases-Seite](https://github.com/norka/norka/releases/latest) verfügbar.
 
 | Plattform | Download |
 |-----------|----------|
@@ -26,8 +26,8 @@ Vorgefertigte Binärdateien für macOS, Windows und Linux sind auf der [Releases
 ## Installation
 
 ```sh
-git clone https://github.com/beresta/open-pencil.git
-cd beresta
+git clone https://github.com/norka/norka.git
+cd norka
 bun install
 ```
 

@@ -3,9 +3,9 @@ import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useEventListener, useUrlSearchParams } from '@vueuse/core'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
+import { SplitterGroup, SplitterPanel } from 'reka-ui'
 
-import { useViewportKind } from '@beresta/vue'
+import { useViewportKind } from '@norka/vue'
 import { useKeyboard } from '@/composables/use-keyboard'
 import { useMenu } from '@/composables/use-menu'
 import { useCollab, COLLAB_KEY } from '@/composables/use-collab'
@@ -18,7 +18,6 @@ import { createTab, activeTab, getActiveStore } from '@/stores/tabs'
 
 import CollabPanel from '@/components/CollabPanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
-import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud.vue'
 import PreviewPanel from '@/components/PreviewPanel.vue'
@@ -27,9 +26,15 @@ import SafariBanner from '@/components/SafariBanner.vue'
 import TabBar from '@/components/TabBar.vue'
 import Toolbar from '@/components/Toolbar.vue'
 
+const { designShell = false } = defineProps<{
+  designShell?: boolean
+}>()
+
 const route = useRoute()
 const params = useUrlSearchParams('history')
-const showChrome = !('no-chrome' in params)
+const showChrome = params['no-chrome'] !== '1' && params['no-chrome'] !== 'true'
+const useDesignShell = designShell
+const forceDesktopPanels = route.path.startsWith('/workspace/design')
 
 const firstTab = createTab()
 const store = useEditorStore()
@@ -79,48 +84,39 @@ onUnmounted(() => {
 <template>
   <div data-test-id="editor-root" class="flex h-full w-full flex-col">
     <SafariBanner />
-    <TabBar />
 
     <!-- Desktop layout -->
     <SplitterGroup
-      v-if="!isMobile && showChrome && store.state.showUI"
+      v-if="!useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI"
       :key="activeTab?.id"
       direction="horizontal"
       class="flex-1 overflow-hidden"
-      auto-save-id="editor-layout"
+      auto-save-id="editor-layout-v3"
     >
-      <SplitterPanel :default-size="18" :min-size="10" :max-size="30" class="flex">
-        <LayersPanel />
-      </SplitterPanel>
-      <SplitterResizeHandle
-        data-test-id="left-splitter-handle"
-        class="group relative z-10 -mx-1 w-2 cursor-col-resize"
-      >
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />
-      </SplitterResizeHandle>
-      <SplitterPanel :default-size="64" :min-size="30" class="flex flex-col">
+      <SplitterPanel :default-size="100" :min-size="30" class="flex flex-col">
         <div class="relative flex min-w-0 flex-1">
           <EditorCanvas />
           <Toolbar />
         </div>
         <PreviewPanel />
       </SplitterPanel>
-      <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />
-      </SplitterResizeHandle>
-      <SplitterPanel :default-size="18" :min-size="10" :max-size="30" class="flex flex-col">
-        <div
-          class="flex shrink-0 items-center justify-between border-b border-border px-1.5 py-1.5"
-        >
-          <CollabPanel />
-        </div>
-        <PropertiesPanel />
-      </SplitterPanel>
     </SplitterGroup>
+
+    <!-- Embedded canvas layout for design shell -->
+    <div
+      v-else-if="useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI"
+      :key="'design-shell-' + activeTab?.id"
+      class="flex flex-1 overflow-hidden"
+    >
+      <div class="relative flex min-w-0 flex-1">
+        <EditorCanvas />
+        <Toolbar />
+      </div>
+    </div>
 
     <!-- Mobile layout -->
     <div
-      v-else-if="isMobile && showChrome && store.state.showUI"
+      v-else-if="isMobile && !forceDesktopPanels && showChrome && store.state.showUI"
       :key="'mobile-' + activeTab?.id"
       class="flex flex-1 overflow-hidden"
     >

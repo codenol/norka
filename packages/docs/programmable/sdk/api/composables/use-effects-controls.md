@@ -19,7 +19,7 @@ It provides helpers for:
 ## Usage
 
 ```ts
-import { useEffectsControls } from '@beresta/vue'
+import { useEffectsControls } from '@norka/vue'
 
 const effects = useEffectsControls()
 ```

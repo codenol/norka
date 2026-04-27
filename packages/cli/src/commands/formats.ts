@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
 
 import { bold, fmtList, kv } from '../format'
 

@@ -1,6 +1,6 @@
 ---
 title: Strumento penna
-description: Percorsi vettoriali con curve di Bézier in Beresta.
+description: Percorsi vettoriali con curve di Bézier in Norka.
 ---
 # Strumento penna
 
@@ -19,7 +19,7 @@ Clicca sul primo punto del percorso per chiuderlo in un anello. I percorsi chius
 Premi <kbd>Escape</kbd> per confermare il percorso corrente come percorso aperto.
 
 ## Reti vettoriali
-I percorsi in Beresta usano reti vettoriali — un modello più flessibile delle semplici liste di punti, che supporta percorsi ramificati e topologie complesse. Questo è lo stesso modello usato da Figma, quindi i percorsi si preservano perfettamente nei file .fig.
+I percorsi in Norka usano reti vettoriali — un modello più flessibile delle semplici liste di punti, che supporta percorsi ramificati e topologie complesse. Questo è lo stesso modello usato da Figma, quindi i percorsi si preservano perfettamente nei file .fig.
 
 | Azione | Mac | Windows / Linux |
 |--------|-----|-----------------|

@@ -45,7 +45,7 @@ export const INTERNAL_ID = Symbol('id')
 export const INTERNAL_GRAPH = Symbol('graph')
 export const INTERNAL_API = Symbol('api')
 
-const BERESTA_PLUGIN_DATA_NAMESPACE = 'open-pencil'
+const NORKA_PLUGIN_DATA_NAMESPACE = 'norka'
 
 export interface NodeProxyHost {
   wrapNode(id: string): FigmaNodeProxy
@@ -963,7 +963,7 @@ export class FigmaNodeProxy {
   getPluginData(key: string): string {
     return (
       this._raw().pluginData.find(
-        (entry) => entry.pluginId === BERESTA_PLUGIN_DATA_NAMESPACE && entry.key === key
+        (entry) => entry.pluginId === NORKA_PLUGIN_DATA_NAMESPACE && entry.key === key
       )?.value ?? ''
     )
   }
@@ -971,17 +971,17 @@ export class FigmaNodeProxy {
   setPluginData(key: string, value: string): void {
     const node = this._raw()
     const pluginData = node.pluginData.filter(
-      (entry) => !(entry.pluginId === BERESTA_PLUGIN_DATA_NAMESPACE && entry.key === key)
+      (entry) => !(entry.pluginId === NORKA_PLUGIN_DATA_NAMESPACE && entry.key === key)
     )
     if (value !== '') {
-      pluginData.push({ pluginId: BERESTA_PLUGIN_DATA_NAMESPACE, key, value })
+      pluginData.push({ pluginId: NORKA_PLUGIN_DATA_NAMESPACE, key, value })
     }
     this[INTERNAL_GRAPH].updateNode(this[INTERNAL_ID], { pluginData })
   }
 
   getPluginDataKeys(): string[] {
     return this._raw()
-      .pluginData.filter((entry) => entry.pluginId === BERESTA_PLUGIN_DATA_NAMESPACE)
+      .pluginData.filter((entry) => entry.pluginId === NORKA_PLUGIN_DATA_NAMESPACE)
       .map((entry) => entry.key)
   }
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, createLinter } from '@beresta/core'
+import { SceneGraph, createLinter } from '@norka/core'
 
 describe('createLinter', () => {
   test('reports default names and empty frames', () => {

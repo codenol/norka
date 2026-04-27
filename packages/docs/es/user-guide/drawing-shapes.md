@@ -1,6 +1,6 @@
 ---
 title: Dibujar formas
-description: Crear rectángulos, elipses, líneas, marcos y secciones en Beresta.
+description: Crear rectángulos, elipses, líneas, marcos y secciones en Norka.
 ---
 # Dibujar formas
 

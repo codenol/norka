@@ -1,6 +1,6 @@
 ---
 title: Auto-layout
-description: Layout flex y grid en Beresta — dirección, espaciado, padding, alineación, dimensionamiento y tracks CSS Grid.
+description: Layout flex y grid en Norka — dirección, espaciado, padding, alineación, dimensionamiento y tracks CSS Grid.
 ---
 # Auto-layout
 

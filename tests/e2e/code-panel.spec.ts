@@ -61,11 +61,11 @@ test('selecting a rectangle shows JSX code', async () => {
   expect(code).toContain('Rectangle')
 })
 
-test('format toggle switches between Beresta and Tailwind', async () => {
+test('format toggle switches between Norka and Tailwind', async () => {
   await expect(formatToggle()).toBeVisible()
 
   const initialFormat = await formatToggle().textContent()
-  expect(initialFormat).toContain('Beresta')
+  expect(initialFormat).toContain('Norka')
 
   await formatToggle().click()
   await expect(formatToggle()).toContainText('Tailwind')
@@ -77,7 +77,7 @@ test('format toggle switches between Beresta and Tailwind', async () => {
   expect(code).toContain('div')
 
   await formatToggle().click()
-  await expect(formatToggle()).toContainText('Beresta')
+  await expect(formatToggle()).toContainText('Norka')
 })
 
 test('copy button works and shows confirmation', async () => {
@@ -99,7 +99,7 @@ test('deselecting shows empty state again', async () => {
 test('selecting a frame shows Frame in JSX', async () => {
   // Create a frame via store to avoid click-targeting issues
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = store.createShape('FRAME', 300, 100, 200, 200)
     store.select([id])
   })

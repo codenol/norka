@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FontPickerRoot } from '@beresta/vue'
+import { FontPickerRoot } from '@norka/vue'
 
 import { useSelectUI } from '@/components/ui/select'
 import { usePopoverUI } from '@/components/ui/popover'

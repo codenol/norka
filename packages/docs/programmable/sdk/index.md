@@ -1,15 +1,15 @@
 ---
 title: Vue SDK
-description: Build Beresta-powered editors with headless Vue composables and primitives.
+description: Build Norka-powered editors with headless Vue composables and primitives.
 ---
 
 # Vue SDK
 
-`@beresta/vue` exists so Beresta can be more than a standalone design app.
+`@norka/vue` exists so Norka can be more than a standalone design app.
 
-The goal is to make Beresta a toolkit you can embed into other products, internal tools, and workflow-specific editors — not just a single default UI.
+The goal is to make Norka a toolkit you can embed into other products, internal tools, and workflow-specific editors — not just a single default UI.
 
-The Beresta app is one composition of that toolkit. The SDK is how you build a different one.
+The Norka app is one composition of that toolkit. The SDK is how you build a different one.
 
 It gives you:
 
@@ -41,7 +41,7 @@ The SDK is the layer that makes those possible.
 - **Headless first**: logic and structure, not app styling
 - **Composable over wrapper**: use composables when there is no meaningful structural coordination
 - **Intentional public API**: stable exports from `packages/vue/src/index.ts`
-- **Framework-aware**: Vue integration over `@beresta/core`
+- **Framework-aware**: Vue integration over `@norka/core`
 
 ## How to think about the package
 

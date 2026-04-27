@@ -7,7 +7,7 @@ import {
   rgbaToOkHCL,
   SceneGraph,
   setNodeFillOkHCL
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('OkHCL toggle conversion', () => {
   test('enabling OkHCL from an existing rgba fill preserves the visible color closely', () => {

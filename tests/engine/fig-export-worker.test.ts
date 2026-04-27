@@ -8,7 +8,7 @@ import {
   compressFigDataSync,
   initCodec,
   SceneGraph
-} from '@beresta/core'
+} from '@norka/core'
 import { heavy } from '../helpers/test-utils'
 
 setDefaultTimeout(30_000)

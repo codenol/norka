@@ -1,10 +1,10 @@
 import { computed } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { usePropScrub } from '@beresta/vue/controls/usePropScrub'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { usePropScrub } from '@norka/vue/controls/usePropScrub'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
-import type { SceneNode } from '@beresta/core'
+import type { SceneNode } from '@norka/core'
 
 /**
  * Returns position-related state and actions for the current selection.

@@ -20,7 +20,7 @@ test.afterAll(async () => {
 
 test('autosave triggers after scene changes with a file handle', async () => {
   const writeCount = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
 
     let writes = 0
     const mockWritable = {
@@ -50,7 +50,7 @@ test('autosave triggers after scene changes with a file handle', async () => {
   // Inject the file handle into the store's internal state
   // We do this by calling a save first to establish the handle
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     // Directly set the fileHandle via a test hook
     // Since fileHandle is a closure variable, we need to trigger the save path
     // The cleanest way: mock showSaveFilePicker to return our handle
@@ -73,7 +73,7 @@ test('autosave triggers after scene changes with a file handle', async () => {
 
   // Check that the scene version changed
   const versionAfterDraw = await page.evaluate(
-    () => window.__OPEN_PENCIL_STORE__!.state.sceneVersion
+    () => window.__NORKA_STORE__!.state.sceneVersion
   )
   expect(versionAfterDraw).toBeGreaterThan(0)
 

@@ -11,7 +11,7 @@ import {
   toggleItalicInRange,
   toggleDecorationInRange,
   type StyleRun,
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('getStyleAt', () => {
   test('returns style within run', () => {

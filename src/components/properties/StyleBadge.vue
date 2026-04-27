@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n, useSceneComputed, useSelectionState } from '@beresta/vue'
+import { useI18n, useSceneComputed, useSelectionState } from '@norka/vue'
 import { useEditorStore } from '@/stores/editor'
 import Tip from '@/components/ui/Tip.vue'
 
-import type { StyleType } from '@beresta/core'
+import type { StyleType } from '@norka/core'
 
 const { styleType } = defineProps<{ styleType: StyleType }>()
 const emit = defineEmits<{ openStyles: [] }>()

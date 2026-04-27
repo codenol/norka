@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, type SceneNode, type GridTrack, computeLayout, computeAllLayouts, createEditor, setTextMeasurer, FigmaAPI, readFigFile } from '@beresta/core'
+import { SceneGraph, type SceneNode, type GridTrack, computeLayout, computeAllLayouts, createEditor, setTextMeasurer, FigmaAPI, readFigFile } from '@norka/core'
 
 import { createEditorStore } from '@/stores/editor'
 

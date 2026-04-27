@@ -5,7 +5,7 @@ description: Build page and layer sidebars with PageListRoot, LayerTreeRoot, and
 
 # Navigation Panels
 
-Beresta sidebars usually combine two concerns:
+Norka sidebars usually combine two concerns:
 
 - page navigation
 - layer navigation

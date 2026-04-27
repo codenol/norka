@@ -1,6 +1,6 @@
 ---
 title: Nawigacja po płótnie
-description: Przesuwanie, powiększanie i narzędzie rączka w Beresta.
+description: Przesuwanie, powiększanie i narzędzie rączka w Norka.
 ---
 
 # Nawigacja po płótnie

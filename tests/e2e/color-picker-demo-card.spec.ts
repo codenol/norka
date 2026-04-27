@@ -21,7 +21,7 @@ async function selectDemoCard(page: Parameters<typeof test>[0]['page'], canvas: 
   await canvas.waitForInit()
 
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const nodes = Array.from(store.graph.nodes.values())
     const card = nodes.find((node) => node.name === 'Card' && node.type === 'COMPONENT')
       ?? nodes.find((node) => node.name === 'Card')
@@ -37,7 +37,7 @@ async function selectDemoCard(page: Parameters<typeof test>[0]['page'], canvas: 
 
 async function getSelectedFill(page: Parameters<typeof test>[0]['page']) {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     const node = store.graph.getNode(id)
     return node

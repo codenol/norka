@@ -51,7 +51,7 @@ const noInlineNamedTypes = {
         if (namedType) {
           context.report({
             node,
-            message: `Use '${namedType}' instead of inline type literal. Import from '@beresta/core'.`,
+            message: `Use '${namedType}' instead of inline type literal. Import from '@norka/core'.`,
           })
         }
       },
@@ -86,7 +86,7 @@ const noStructuredCloneSceneArrays = {
           if (props.has(arg.property.name)) {
             context.report({
               node,
-              message: `Use the typed copy helper instead of structuredClone for '${arg.property.name}'. Import from '@beresta/core'.`,
+              message: `Use the typed copy helper instead of structuredClone for '${arg.property.name}'. Import from '@norka/core'.`,
             })
           }
         }
@@ -246,7 +246,7 @@ const noTypeofWindowCheck = {
 }
 
 const plugin = {
-  meta: { name: 'beresta' },
+  meta: { name: 'norka' },
   rules: {
     'no-inline-named-types': noInlineNamedTypes,
     'no-structuredclone-scene-arrays': noStructuredCloneSceneArrays,

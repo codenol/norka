@@ -16,11 +16,11 @@ import {
   LibraryRegistry,
   buildPrimeReactGraph,
   PRIMEREACT_CONNECT_DEFS,
-} from '@beresta/core'
+} from '@norka/core'
 
 import { useCodeConnectStore } from './code-connect'
 
-import type { SceneGraph } from '@beresta/core'
+import type { SceneGraph } from '@norka/core'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -49,7 +49,6 @@ export function initBuiltinLibraries(): void {
   for (const node of graph.getAllNodes()) {
     if (node.type !== 'COMPONENT') continue
     const def = PRIMEREACT_CONNECT_DEFS[node.name]
-    if (!def) continue
     if (codeConnect.getEntry(node.id)) continue  // preserve user overrides
     codeConnect.upsertEntry({
       componentNodeId: node.id,

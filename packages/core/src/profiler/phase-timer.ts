@@ -45,7 +45,7 @@ export class PhaseTimer {
         devtools: {
           dataType: 'track-entry',
           track: 'Renderer',
-          trackGroup: 'Beresta',
+          trackGroup: 'Norka',
           color: colorForPhase(name)
         }
       }

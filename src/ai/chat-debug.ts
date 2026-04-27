@@ -1,7 +1,7 @@
 import { getStepUsages, getToolLogEntries } from '@/ai/tools'
-import { buildDebugLog } from '@beresta/core/tools'
+import { buildDebugLog } from '@norka/core/tools'
 
-import type { ToolDebugLog, ToolLogEntry } from '@beresta/core/tools'
+import type { ToolDebugLog, ToolLogEntry } from '@norka/core/tools'
 import type { UIMessage } from 'ai'
 
 function formatToolPart(part: Record<string, unknown>): string {
@@ -210,7 +210,7 @@ export function serializeChatLog(messages: UIMessage[]): string {
   const debugLog = buildDebugLog(toolLog)
 
   sections.push('╔══════════════════════════════════════╗')
-  sections.push('║     OPEN PENCIL AI DEBUG LOG         ║')
+  sections.push('║     NORKA AI DEBUG LOG         ║')
   sections.push(`║     ${new Date().toISOString()}   ║`)
   sections.push('╚══════════════════════════════════════╝')
   sections.push('')

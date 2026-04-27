@@ -1,6 +1,6 @@
 ---
 title: Edición de texto
-description: Crear y editar texto con formato enriquecido en Beresta.
+description: Crear y editar texto con formato enriquecido en Norka.
 ---
 # Edición de texto
 

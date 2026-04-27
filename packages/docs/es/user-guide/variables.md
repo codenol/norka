@@ -1,6 +1,6 @@
 ---
 title: Variables
-description: Variables de diseño, colecciones, modos y vinculaciones en Beresta.
+description: Variables de diseño, colecciones, modos y vinculaciones en Norka.
 ---
 # Variables
 

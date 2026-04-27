@@ -17,7 +17,7 @@ It manages:
 ## Usage
 
 ```ts
-import { useExport } from '@beresta/vue'
+import { useExport } from '@norka/vue'
 
 const exportState = useExport()
 ```

@@ -1,6 +1,6 @@
 ---
 title: Warstwy i strony
-description: Zarządzanie warstwami, stronami i panelem właściwości w Beresta.
+description: Zarządzanie warstwami, stronami i panelem właściwości w Norka.
 ---
 # Warstwy i strony
 

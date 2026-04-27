@@ -1,6 +1,6 @@
 ---
 title: Formen zeichnen
-description: Rechtecke, Ellipsen, Linien, Frames, Sektionen, Polygone und Sterne in Beresta erstellen.
+description: Rechtecke, Ellipsen, Linien, Frames, Sektionen, Polygone und Sterne in Norka erstellen.
 ---
 
 # Formen zeichnen

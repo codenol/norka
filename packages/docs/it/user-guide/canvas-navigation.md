@@ -1,6 +1,6 @@
 ---
 title: Navigazione canvas
-description: Panoramica, zoom e strumento mano in Beresta.
+description: Panoramica, zoom e strumento mano in Norka.
 ---
 
 # Navigazione canvas

@@ -1,8 +1,8 @@
 import { computed, ref, type Ref } from 'vue'
 
-import { colorToCSS, parseColor } from '@beresta/core'
+import { colorToCSS, parseColor } from '@norka/core'
 
-import type { Color, Fill, GradientStop, GradientTransform } from '@beresta/core'
+import type { Color, Fill, GradientStop, GradientTransform } from '@norka/core'
 
 type GradientSubtype =
   | 'GRADIENT_LINEAR'

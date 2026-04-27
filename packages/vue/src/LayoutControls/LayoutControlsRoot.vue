@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
-import { useLayout } from '@beresta/vue/controls/useLayout'
+import { useLayout } from '@norka/vue/controls/useLayout'
 
 const ctx = useLayout()
 </script>

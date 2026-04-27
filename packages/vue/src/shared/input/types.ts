@@ -1,6 +1,6 @@
-import type { NodeType, Rect, VectorNetwork } from '@beresta/core'
-import type { Vector } from '@beresta/core'
-import type { Tool } from '@beresta/core/editor'
+import type { NodeType, Rect, VectorNetwork } from '@norka/core'
+import type { Vector } from '@norka/core'
+import type { Tool } from '@norka/core/editor'
 
 export type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 

@@ -20,7 +20,7 @@ test.afterAll(async () => {
 
 function getSelectedNode() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const n = store.graph.getNode(id)
@@ -41,7 +41,7 @@ function getSelectedNode() {
 
 function getPageChildren() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).map((n) => ({
       type: n.type,
       name: n.name,
@@ -53,7 +53,7 @@ function getPageChildren() {
 test('pressing T activates text tool', async () => {
   await page.keyboard.press('t')
 
-  const tool = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.activeTool)
+  const tool = await page.evaluate(() => window.__NORKA_STORE__!.state.activeTool)
   expect(tool).toBe('TEXT')
 })
 
@@ -100,7 +100,7 @@ test('creating text via store works', async () => {
   await canvas.waitForRender()
 
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = store.createShape('TEXT', 100, 300, 200, 30)
     store.graph.updateNode(id, { text: 'Hello World', fontSize: 24, fontFamily: 'Inter' })
     store.select([id])
@@ -140,7 +140,7 @@ test('Enter key opens text editing and selects all without erasing', async () =>
   await canvas.waitForRender()
 
   const textId = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = store.createShape('TEXT', 300, 300, 200, 30)
     store.graph.updateNode(id, { text: 'Keep this text' })
     store.select([id])
@@ -156,11 +156,11 @@ test('Enter key opens text editing and selects all without erasing', async () =>
   await page.keyboard.press('Enter')
   await page.waitForTimeout(200)
 
-  const editing = await page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.editingTextId)
+  const editing = await page.evaluate(() => window.__NORKA_STORE__!.state.editingTextId)
   expect(editing).toBe(textId)
 
   const after = await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const id = store.state.editingTextId
     if (!id) return null
     return store.graph.getNode(id)?.text ?? null

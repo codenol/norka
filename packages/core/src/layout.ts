@@ -4,7 +4,6 @@ import Yoga, {
   Direction,
   Display,
   FlexDirection,
-  GridTrackType,
   Gutter,
   Justify,
   Edge,
@@ -27,6 +26,24 @@ export type TextMeasurer = (
 let globalTextMeasurer: TextMeasurer | null = null
 
 const GLYPH_WIDTH_FACTOR = 0.6
+const GRID_TRACK_AUTO = 0
+const GRID_TRACK_POINTS = 1
+const GRID_TRACK_FR = 2
+
+type GridTrackTypeCompat = number
+
+type GridTrackValue = { type: GridTrackTypeCompat; value: number }
+
+type YogaGridNode = YogaNode & {
+  setGridTemplateColumns?: (tracks: GridTrackValue[]) => void
+  setGridTemplateRows?: (tracks: GridTrackValue[]) => void
+  setGridColumnStart?: (value: number) => void
+  setGridColumnEndSpan?: (value: number) => void
+  setGridRowStart?: (value: number) => void
+  setGridRowEndSpan?: (value: number) => void
+  setWidthStretch?: () => void
+  setHeightStretch?: () => void
+}
 
 // Rough estimate for text size when CanvasKit/font is not available.
 // DO NOT REMOVE: without this, text nodes keep their 100×100 default size
@@ -102,15 +119,24 @@ function computeLayoutsBottomUp(graph: SceneGraph, nodeId: string, visited: Set<
 
 // --- Grid layout ---
 
-function mapGridTrack(track: GridTrack): { type: GridTrackType; value: number } {
+function mapGridTrack(track: GridTrack): GridTrackValue {
   switch (track.sizing) {
     case 'FR':
-      return { type: GridTrackType.Fr, value: track.value }
+      return { type: GRID_TRACK_FR, value: track.value }
     case 'FIXED':
-      return { type: GridTrackType.Points, value: track.value }
+      return { type: GRID_TRACK_POINTS, value: track.value }
     default:
-      return { type: GridTrackType.Auto, value: 0 }
+      return { type: GRID_TRACK_AUTO, value: 0 }
   }
+}
+
+function asGridNode(node: YogaNode): YogaGridNode {
+  return node as YogaGridNode
+}
+
+function setDisplayGridOrFallback(node: YogaNode): void {
+  const gridDisplay = (Display as unknown as { Grid?: Display }).Grid
+  node.setDisplay(gridDisplay ?? Display.Flex)
 }
 
 function configureAsGrid(
@@ -118,7 +144,8 @@ function configureAsGrid(
   node: SceneNode,
   direction: Exclude<SceneNode['layoutDirection'], 'AUTO'>
 ): void {
-  yogaNode.setDisplay(Display.Grid)
+  const gridNode = asGridNode(yogaNode)
+  setDisplayGridOrFallback(yogaNode)
   yogaNode.setDirection(direction === 'RTL' ? Direction.RTL : Direction.LTR)
   yogaNode.setWidth(node.width)
   if (node.gridTemplateRows.length > 0 || node.height > 0) {
@@ -126,10 +153,10 @@ function configureAsGrid(
   }
 
   if (node.gridTemplateColumns.length > 0) {
-    yogaNode.setGridTemplateColumns(node.gridTemplateColumns.map(mapGridTrack))
+    gridNode.setGridTemplateColumns?.(node.gridTemplateColumns.map(mapGridTrack))
   }
   if (node.gridTemplateRows.length > 0) {
-    yogaNode.setGridTemplateRows(node.gridTemplateRows.map(mapGridTrack))
+    gridNode.setGridTemplateRows?.(node.gridTemplateRows.map(mapGridTrack))
   }
 
   yogaNode.setGap(Gutter.Column, node.gridColumnGap)
@@ -143,26 +170,29 @@ function configureAsGrid(
 
 function createGridChildNode(child: SceneNode): YogaNode {
   const yogaChild = Yoga.Node.create()
+  const gridChild = asGridNode(yogaChild)
   if (!child.visible) {
     yogaChild.setDisplay(Display.None)
   } else {
     const pos = child.gridPosition
     if (pos) {
-      yogaChild.setGridColumnStart(pos.column)
-      yogaChild.setGridColumnEndSpan(pos.columnSpan)
-      yogaChild.setGridRowStart(pos.row)
-      yogaChild.setGridRowEndSpan(pos.rowSpan)
+      gridChild.setGridColumnStart?.(pos.column)
+      gridChild.setGridColumnEndSpan?.(pos.columnSpan)
+      gridChild.setGridRowStart?.(pos.row)
+      gridChild.setGridRowEndSpan?.(pos.rowSpan)
     }
     const hasLayout = child.layoutMode !== 'NONE'
     const explicitStretch = child.layoutGrow > 0 || child.layoutAlignSelf === 'STRETCH'
 
     if (explicitStretch || hasLayout) {
-      yogaChild.setWidthStretch()
+      if (gridChild.setWidthStretch) gridChild.setWidthStretch()
+      else yogaChild.setAlignSelf(Align.Stretch)
     } else {
       yogaChild.setWidth(child.width)
     }
     if (explicitStretch) {
-      yogaChild.setHeightStretch()
+      if (gridChild.setHeightStretch) gridChild.setHeightStretch()
+      else yogaChild.setAlignSelf(Align.Stretch)
     } else {
       yogaChild.setHeight(child.height)
     }
@@ -296,14 +326,15 @@ function configureChildAsGrid(
   inheritedDirection: 'LTR' | 'RTL'
 ): void {
   const direction = resolveNodeLayoutDirection(child, inheritedDirection)
-  yogaChild.setDisplay(Display.Grid)
+  const gridChild = asGridNode(yogaChild)
+  setDisplayGridOrFallback(yogaChild)
   yogaChild.setDirection(direction === 'RTL' ? Direction.RTL : Direction.LTR)
 
   if (child.gridTemplateColumns.length > 0) {
-    yogaChild.setGridTemplateColumns(child.gridTemplateColumns.map(mapGridTrack))
+    gridChild.setGridTemplateColumns?.(child.gridTemplateColumns.map(mapGridTrack))
   }
   if (child.gridTemplateRows.length > 0) {
-    yogaChild.setGridTemplateRows(child.gridTemplateRows.map(mapGridTrack))
+    gridChild.setGridTemplateRows?.(child.gridTemplateRows.map(mapGridTrack))
   }
 
   yogaChild.setGap(Gutter.Column, child.gridColumnGap)

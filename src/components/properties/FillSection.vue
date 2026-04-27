@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { colorToHexRaw } from '@beresta/core'
-import { PropertyListRoot, useFillControls, useOkHCL, useI18n } from '@beresta/vue'
+import { colorToHexRaw } from '@norka/core'
+import { PropertyListRoot, useFillControls, useOkHCL, useI18n } from '@norka/vue'
 
 import FillPicker from '@/components/FillPicker.vue'
 import ColorStyleRow from '@/components/properties/ColorStyleRow.vue'
 import { useIconButtonUI } from '@/components/ui/icon-button'
 import { useSectionUI } from '@/components/ui/section'
 
-import type { Fill } from '@beresta/core'
+import type { Fill } from '@norka/core'
 
 const fillCtx = useFillControls()
 const okhcl = useOkHCL()

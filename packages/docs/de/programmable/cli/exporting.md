@@ -10,10 +10,10 @@ Designs vom Terminal aus exportieren — Rasterbilder, Vektoren oder JSX-Code.
 ## Bildexport
 
 ```sh
-beresta export design.fig                          # PNG (Standard)
-beresta export design.fig -f jpg -s 2 -q 90       # JPG in 2×, Qualität 90
-beresta export design.fig -f webp -s 3             # WEBP in 3×
-beresta export design.fig -f svg                   # SVG-Vektor
+norka export design.fig                          # PNG (Standard)
+norka export design.fig -f jpg -s 2 -q 90       # JPG in 2×, Qualität 90
+norka export design.fig -f webp -s 3             # WEBP in 3×
+norka export design.fig -f svg                   # SVG-Vektor
 ```
 
 Optionen:
@@ -30,7 +30,7 @@ Optionen:
 Als JSX mit Tailwind-Utility-Klassen exportieren:
 
 ```sh
-beresta export design.fig -f jsx --style tailwind
+norka export design.fig -f jsx --style tailwind
 ```
 
 Ausgabe:
@@ -42,12 +42,12 @@ Ausgabe:
 </div>
 ```
 
-Unterstützt auch `--style beresta` für das native JSX-Format (siehe [JSX-Renderer](../jsx-renderer)).
+Unterstützt auch `--style norka` für das native JSX-Format (siehe [JSX-Renderer](../jsx-renderer)).
 
 ## Vorschaubilder
 
 ```sh
-beresta export design.fig --thumbnail --width 1920 --height 1080
+norka export design.fig --thumbnail --width 1920 --height 1080
 ```
 
 ## Live-App-Modus
@@ -55,5 +55,5 @@ beresta export design.fig --thumbnail --width 1920 --height 1080
 Lass die Datei weg, um aus der laufenden App zu exportieren:
 
 ```sh
-beresta export -f png    # Screenshot der aktuellen Zeichenfläche
+norka export -f png    # Screenshot der aktuellen Zeichenfläche
 ```

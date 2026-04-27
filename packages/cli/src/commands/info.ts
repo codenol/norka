@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { bold, fmtHistogram, fmtSummary, kv } from '../format'
 import { loadDocument } from '../headless'
 
-import type { InfoResult } from '@beresta/core'
+import type { InfoResult } from '@norka/core'
 
 async function getData(file?: string): Promise<InfoResult> {
   if (isAppMode(file)) return rpc<InfoResult>('info')

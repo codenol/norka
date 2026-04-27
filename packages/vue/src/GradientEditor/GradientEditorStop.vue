@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { colorToCSS, colorToHexRaw } from '@beresta/core'
+import { colorToCSS, colorToHexRaw } from '@norka/core'
 
-import type { GradientStop } from '@beresta/core'
+import type { GradientStop } from '@norka/core'
 
 const props = defineProps<{
   stop: GradientStop

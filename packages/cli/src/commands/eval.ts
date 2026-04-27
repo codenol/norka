@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { FigmaAPI } from '@beresta/core'
+import { FigmaAPI } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { printError } from '../format'
@@ -89,7 +89,7 @@ export default defineCommand({
     }
 
     if (args.write || args.output) {
-      const { BUILTIN_IO_FORMATS, IORegistry } = await import('@beresta/core')
+      const { BUILTIN_IO_FORMATS, IORegistry } = await import('@norka/core')
       const io = new IORegistry(BUILTIN_IO_FORMATS)
       const outPath = args.output ? args.output : file
       const result = await io.writeDocument('fig', graph)

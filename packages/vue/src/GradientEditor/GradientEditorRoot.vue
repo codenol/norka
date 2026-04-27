@@ -1,9 +1,9 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
 import { computed, ref } from 'vue'
-import { colorToCSS, parseColor } from '@beresta/core'
+import { colorToCSS, parseColor } from '@norka/core'
 
-import type { Fill, GradientStop, GradientTransform } from '@beresta/core'
+import type { Fill, GradientStop, GradientTransform } from '@norka/core'
 
 type GradientSubtype =
   | 'GRADIENT_LINEAR'

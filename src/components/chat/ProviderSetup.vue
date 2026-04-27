@@ -4,8 +4,8 @@ import { computed, ref } from 'vue'
 import ProviderSelectField from '@/components/chat/ProviderSelectField.vue'
 import { useInputUI } from '@/components/ui/input'
 import { useAIChat } from '@/composables/use-chat'
-import { ACP_AGENTS } from '@beresta/core'
-import { useI18n } from '@beresta/vue'
+import { ACP_AGENTS } from '@norka/core'
+import { useI18n } from '@norka/vue'
 
 const { providerID, providerDef, setAPIKey, customBaseURL, customModelID, markACPReady } =
   useAIChat()
@@ -64,7 +64,7 @@ function saveLMStudio() {
   customModelID.value = model
 }
 
-// ─── ACP setup (beresta-mcp + claude-agent-acp both bundled as sidecars) ─────
+// ─── ACP setup (norka-mcp + claude-agent-acp both bundled as sidecars) ─────
 const isRunning = ref(false)
 const setupError = ref<string | null>(null)
 const connectSuccess = ref(false)
@@ -75,7 +75,7 @@ async function runSetup() {
   connectSuccess.value = false
 
   try {
-    // beresta-mcp and claude-agent-acp are bundled inside the .app as sidecars.
+    // norka-mcp and claude-agent-acp are bundled inside the .app as sidecars.
     // Just start the MCP server — no npm install needed.
     const { spawnMCPIfNeeded } = await import('@/automation/spawn-mcp')
     await spawnMCPIfNeeded()

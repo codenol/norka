@@ -1,6 +1,6 @@
 ---
 title: Ebenen & Seiten
-description: Ebenen, Seiten und das Eigenschaftspanel in Beresta verwalten.
+description: Ebenen, Seiten und das Eigenschaftspanel in Norka verwalten.
 ---
 
 # Ebenen & Seiten

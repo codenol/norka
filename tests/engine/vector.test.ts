@@ -5,7 +5,7 @@ import {
   decodeVectorNetworkBlob,
   computeVectorBounds,
   type VectorNetwork,
-} from '@beresta/core'
+} from '@norka/core'
 
 describe('vectorNetworkBlob round-trip', () => {
   test('empty network', () => {

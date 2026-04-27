@@ -18,7 +18,7 @@ It is useful when building:
 ## Usage
 
 ```ts
-import { useEditorCommands } from '@beresta/vue'
+import { useEditorCommands } from '@norka/vue'
 
 const { commands, menuItem, runCommand, moveSelectionToPage, otherPages } = useEditorCommands()
 ```

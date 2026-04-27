@@ -5,7 +5,7 @@ description: Build property panels with control composables and headless list pr
 
 # Property Panels
 
-Property panels in `@beresta/vue` are intentionally composable-first.
+Property panels in `@norka/vue` are intentionally composable-first.
 
 If a panel mostly needs selection-derived values and update actions, prefer composables.
 If a panel needs reusable array/list structure, use a headless primitive like `PropertyListRoot`.
@@ -30,7 +30,7 @@ For list-style panels, use:
 
 ```vue
 <script setup lang="ts">
-import { usePosition } from '@beresta/vue'
+import { usePosition } from '@norka/vue'
 
 const { x, y, width, height, updateProp, commitProp } = usePosition()
 </script>
@@ -49,7 +49,7 @@ const { x, y, width, height, updateProp, commitProp } = usePosition()
 
 ```vue
 <script setup lang="ts">
-import { PropertyListRoot, useFillControls } from '@beresta/vue'
+import { PropertyListRoot, useFillControls } from '@norka/vue'
 
 const fillControls = useFillControls()
 </script>

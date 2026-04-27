@@ -1,14 +1,146 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
+import { computed, onMounted, ref } from 'vue'
+import {
+  ScrollAreaRoot,
+  ScrollAreaScrollbar,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+  SplitterGroup,
+  SplitterPanel,
+  SplitterResizeHandle,
+} from 'reka-ui'
 
 import Tip from '@/components/ui/Tip.vue'
 import { toast } from '@/utils/toast'
 import { useProjects } from '@/composables/use-projects'
-import { useWorkspaceFs, writeFeatureFile } from '@/composables/use-workspace-fs'
+import { useWorkspaceFs, type FeatureComment, type FeatureVersion } from '@/composables/use-workspace-fs'
 
 const { context, workspacePath } = useProjects()
-const { isDesktop } = useWorkspaceFs()
+const {
+  isDesktop,
+  readFeatureComments,
+  writeFeatureComments,
+  readFeatureVersions,
+  writeFeatureVersions,
+  writeFeatureFile,
+} = useWorkspaceFs()
+
+type FilterType = 'all' | 'open' | 'resolved'
+
+const activeFilter = ref<FilterType>('all')
+const activeCommentId = ref<string | null>(null)
+const activeVersionId = ref('v1')
+const replyText = ref('')
+const newCommentText = ref('')
+
+const comments = ref<FeatureComment[]>([])
+const versions = ref<FeatureVersion[]>([])
+
+const visibleComments = computed(() => {
+  const statusFiltered = comments.value.filter((c) => {
+    if (activeFilter.value === 'open') return c.status !== 'resolved'
+    if (activeFilter.value === 'resolved') return c.status === 'resolved'
+    return true
+  })
+  return statusFiltered.filter((c) => c.versionId === activeVersionId.value || c.status !== 'resolved')
+})
+
+const activeComment = computed(() =>
+  comments.value.find((c) => c.id === activeCommentId.value) ?? null,
+)
+
+const currentVersion = computed(() => versions.value.find((v) => v.id === activeVersionId.value) ?? null)
+
+async function loadDiscussionData() {
+  if (!workspacePath.value || !context.value) return
+  const { productId, screenId, featureId } = context.value
+  comments.value = await readFeatureComments(workspacePath.value, productId, screenId, featureId)
+  versions.value = await readFeatureVersions(workspacePath.value, productId, screenId, featureId)
+  if (versions.value.length === 0) {
+    versions.value = [{ id: 'v1', title: 'v1', createdAt: new Date().toISOString(), notes: 'Initial version' }]
+    await writeFeatureVersions(workspacePath.value, productId, screenId, featureId, versions.value)
+  }
+  if (!versions.value.some((v) => v.id === activeVersionId.value)) {
+    activeVersionId.value = versions.value[0]?.id ?? 'v1'
+  }
+}
+
+async function persistComments() {
+  if (!workspacePath.value || !context.value) return
+  const { productId, screenId, featureId } = context.value
+  await writeFeatureComments(workspacePath.value, productId, screenId, featureId, comments.value)
+}
+
+function selectComment(id: string) {
+  activeCommentId.value = id
+}
+
+async function addComment() {
+  if (!newCommentText.value.trim()) return
+  comments.value.push({
+    id: `c-${Date.now()}`,
+    versionId: activeVersionId.value,
+    status: 'open',
+    author: 'Дизайнер',
+    text: newCommentText.value.trim(),
+    createdAt: new Date().toISOString(),
+    replies: [],
+  })
+  newCommentText.value = ''
+  await persistComments()
+}
+
+async function sendReply() {
+  if (!replyText.value.trim() || !activeComment.value) return
+  activeComment.value.replies.push({
+    id: `r-${Date.now()}`,
+    author: 'Дизайнер',
+    text: replyText.value.trim(),
+    createdAt: new Date().toISOString(),
+  })
+  replyText.value = ''
+  await persistComments()
+}
+
+async function resolveComment() {
+  if (!activeComment.value) return
+  activeComment.value.status = 'resolved'
+  activeComment.value.resolvedAt = new Date().toISOString()
+  activeComment.value.resolvedInVersionId = activeVersionId.value
+  await persistComments()
+  toast.info('Комментарий отмечен как решённый')
+}
+
+async function createNewVersion() {
+  if (!workspacePath.value || !context.value) return
+  const { productId, screenId, featureId } = context.value
+  const nextIndex = versions.value.length + 1
+  const versionId = `v${nextIndex}`
+  const version: FeatureVersion = {
+    id: versionId,
+    title: versionId,
+    createdAt: new Date().toISOString(),
+    notes: `From ${activeVersionId.value}`,
+  }
+  versions.value.push(version)
+  // unresolved comments migrate
+  const unresolved = comments.value.filter((c) => c.versionId === activeVersionId.value && c.status !== 'resolved')
+  for (const c of unresolved) {
+    comments.value.push({
+      ...c,
+      id: `c-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+      versionId,
+      createdAt: new Date().toISOString(),
+      replies: [...c.replies],
+    })
+  }
+  activeVersionId.value = versionId
+  await Promise.all([
+    writeFeatureVersions(workspacePath.value, productId, screenId, featureId, versions.value),
+    persistComments(),
+  ])
+  toast.success(`Создана версия ${versionId}. Незакрытые комментарии перенесены.`)
+}
 
 async function saveDiscussionMd() {
   if (!workspacePath.value || !context.value) {
@@ -17,14 +149,11 @@ async function saveDiscussionMd() {
   }
   const lines: string[] = ['# Discussion\n']
   for (const c of comments.value) {
-    lines.push(`## #${c.number} [${c.resolved ? 'resolved' : 'open'}] — ${c.author} (${c.time})`)
-    lines.push(`**Page:** ${c.page}\n`)
+    lines.push(`## ${c.id} [${c.status}] version=${c.versionId}`)
+    lines.push(`Author: ${c.author} | Created: ${c.createdAt}`)
+    if (c.resolvedInVersionId) lines.push(`Resolved in: ${c.resolvedInVersionId}`)
+    lines.push('')
     lines.push(c.text)
-    if (c.replies.length) {
-      for (const r of c.replies) {
-        lines.push(`\n> **${r.author}** (${r.time}): ${r.text}`)
-      }
-    }
     lines.push('')
   }
   const { productId, screenId, featureId } = context.value
@@ -32,143 +161,16 @@ async function saveDiscussionMd() {
   toast.success('discussion.md сохранён')
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-interface Reply {
-  id: string
-  author: string
-  avatar: string
-  text: string
-  time: string
-}
-
-interface Comment {
-  id: string
-  number: number
-  author: string
-  avatar: string
-  text: string
-  time: string
-  page: string
-  top: number   // % position on mock canvas
-  left: number  // % position on mock canvas
-  resolved: boolean
-  replies: Reply[]
-}
-
-const MOCK_TEAM = [
-  { name: 'Алексей К.', avatar: 'АК', color: 'bg-violet-500' },
-  { name: 'Марина С.', avatar: 'МС', color: 'bg-blue-500' },
-  { name: 'Дмитрий Л.', avatar: 'ДЛ', color: 'bg-emerald-500' },
-]
-
-const comments = ref<Comment[]>([
-  {
-    id: 'c1', number: 1,
-    author: 'Алексей К.', avatar: 'АК', page: 'Главная',
-    text: 'Кнопка "Продолжить" слишком маленькая для мобильного. Минимум 44px по высоте.',
-    time: '10:14', resolved: false,
-    top: 38, left: 62,
-    replies: [
-      { id: 'r1', author: 'Марина С.', avatar: 'МС', text: 'Согласна, поправлю сегодня.', time: '10:22' },
-      { id: 'r2', author: 'Алексей К.', avatar: 'АК', text: 'Спасибо!', time: '10:23' },
-    ],
-  },
-  {
-    id: 'c2', number: 2,
-    author: 'Марина С.', avatar: 'МС', page: 'Главная',
-    text: 'Отступ между блоками 24px или 32px? Надо унифицировать с дизайн-системой.',
-    time: '11:05', resolved: false,
-    top: 18, left: 40,
-    replies: [],
-  },
-  {
-    id: 'c3', number: 3,
-    author: 'Дмитрий Л.', avatar: 'ДЛ', page: 'Онбординг',
-    text: 'Анимация перехода слишком резкая. Стоит добавить ease-out 200ms.',
-    time: '12:30', resolved: true,
-    top: 55, left: 25,
-    replies: [
-      { id: 'r3', author: 'Марина С.', avatar: 'МС', text: 'Исправлено в последнем коммите.', time: '13:01' },
-    ],
-  },
-  {
-    id: 'c4', number: 4,
-    author: 'Алексей К.', avatar: 'АК', page: 'Онбординг',
-    text: 'Нужен пустой стейт для этого блока — что показываем когда нет данных?',
-    time: '14:10', resolved: false,
-    top: 72, left: 55,
-    replies: [],
-  },
-  {
-    id: 'c5', number: 5,
-    author: 'Марина С.', avatar: 'МС', page: 'Профиль',
-    text: 'Аватар пользователя должен быть круглым, сейчас квадратный.',
-    time: '15:45', resolved: true,
-    top: 30, left: 70,
-    replies: [
-      { id: 'r4', author: 'Дмитрий Л.', avatar: 'ДЛ', text: 'Поправлено, проверь.', time: '15:52' },
-      { id: 'r5', author: 'Марина С.', avatar: 'МС', text: 'Отлично, спасибо!', time: '15:55' },
-    ],
-  },
-])
-
-const MOCK_PAGES = ['Главная', 'Онбординг', 'Профиль']
-
-// ── State ─────────────────────────────────────────────────────────────────────
-
-type FilterType = 'all' | 'open' | 'resolved' | 'mine'
-
-const activeFilter = ref<FilterType>('all')
-const activePageFilter = ref<string | null>(null)
-const activeAuthorFilter = ref<string | null>(null)
-const activeCommentId = ref<string | null>(null)
-const replyText = ref('')
-
-const visibleComments = computed(() => {
-  return comments.value.filter((c) => {
-    if (activeFilter.value === 'open' && c.resolved) return false
-    if (activeFilter.value === 'resolved' && !c.resolved) return false
-    if (activeFilter.value === 'mine' && c.author !== 'Алексей К.') return false
-    if (activePageFilter.value && c.page !== activePageFilter.value) return false
-    if (activeAuthorFilter.value && c.author !== activeAuthorFilter.value) return false
-    return true
-  })
-})
-
-const activeComment = computed(() =>
-  comments.value.find((c) => c.id === activeCommentId.value) ?? null
-)
-
-function selectComment(id: string) {
-  activeCommentId.value = id
-}
-
-function sendReply() {
-  if (!replyText.value.trim() || !activeComment.value) return
-  activeComment.value.replies.push({
-    id: `r-${Date.now()}`,
-    author: 'Алексей К.',
-    avatar: 'АК',
-    text: replyText.value.trim(),
-    time: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
-  })
-  replyText.value = ''
-}
-
-function resolveComment() {
-  if (!activeComment.value) return
-  activeComment.value.resolved = true
-  toast.info('Комментарий отмечен как решённый')
-}
-
 function countByFilter(f: FilterType) {
   if (f === 'all') return comments.value.length
-  if (f === 'open') return comments.value.filter((c) => !c.resolved).length
-  if (f === 'resolved') return comments.value.filter((c) => c.resolved).length
-  if (f === 'mine') return comments.value.filter((c) => c.author === 'Алексей К.').length
+  if (f === 'open') return comments.value.filter((c) => c.status !== 'resolved').length
+  if (f === 'resolved') return comments.value.filter((c) => c.status === 'resolved').length
   return 0
 }
+
+onMounted(() => {
+  void loadDiscussionData()
+})
 </script>
 
 <template>
@@ -177,10 +179,10 @@ function countByFilter(f: FilterType) {
     <header class="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3">
       <button
         class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs transition-colors"
-        :class="activeComment && !activeComment.resolved
+        :class="activeComment && activeComment.status !== 'resolved'
           ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30'
           : 'cursor-not-allowed text-muted opacity-50'"
-        :disabled="!activeComment || activeComment.resolved"
+        :disabled="!activeComment || activeComment.status === 'resolved'"
         @click="resolveComment"
       >
         <icon-lucide-check class="size-3.5" />
@@ -192,7 +194,7 @@ function countByFilter(f: FilterType) {
       <!-- Filter chips -->
       <div class="flex items-center gap-1">
         <button
-          v-for="(f, label) in { all: 'Все', open: 'Открытые', resolved: 'Решённые', mine: 'Мои' }"
+          v-for="(f, label) in { all: 'Все', open: 'Открытые', resolved: 'Решённые' }"
           :key="f"
           class="rounded px-2 py-0.5 text-[11px] transition-colors"
           :class="activeFilter === f
@@ -203,27 +205,21 @@ function countByFilter(f: FilterType) {
           {{ label }}
         </button>
       </div>
+      <div class="h-4 w-px bg-border" />
+      <select
+        v-model="activeVersionId"
+        class="rounded border border-border bg-canvas px-2 py-1 text-xs text-surface"
+      >
+        <option v-for="v in versions" :key="v.id" :value="v.id">{{ v.title }}</option>
+      </select>
+      <button
+        class="rounded border border-border px-2.5 py-1 text-xs text-surface hover:bg-hover"
+        @click="createNewVersion"
+      >
+        Новая версия
+      </button>
 
       <div class="flex-1" />
-
-      <!-- Team avatars -->
-      <div class="flex items-center gap-1">
-        <Tip v-for="m in MOCK_TEAM" :key="m.name" :label="m.name">
-          <button
-            class="flex size-6 items-center justify-center rounded-full text-[10px] font-medium text-white transition-all"
-            :class="[m.color, activeAuthorFilter === m.name ? 'ring-2 ring-accent ring-offset-1 ring-offset-canvas' : 'opacity-70 hover:opacity-100']"
-            @click="activeAuthorFilter = activeAuthorFilter === m.name ? null : m.name"
-          >
-            {{ m.avatar }}
-          </button>
-        </Tip>
-      </div>
-
-      <Tip label="Уведомления">
-        <button class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface">
-          <icon-lucide-bell class="size-4" />
-        </button>
-      </Tip>
 
       <Tip v-if="isDesktop" label="Сохранить discussion.md" side="bottom">
         <button
@@ -246,13 +242,13 @@ function countByFilter(f: FilterType) {
               <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Статус</header>
               <div class="flex flex-col gap-0.5">
                 <button
-                  v-for="(label, f) in { all: 'Все', open: 'Открытые', resolved: 'Решённые', mine: 'Мои' }"
+                  v-for="(label, f) in { all: 'Все', open: 'Открытые', resolved: 'Решённые' }"
                   :key="f"
                   class="flex items-center justify-between rounded px-2 py-1 text-xs transition-colors"
                   :class="activeFilter === f
                     ? 'bg-hover text-surface'
                     : 'text-muted hover:bg-hover hover:text-surface'"
-                  @click="activeFilter = f as FilterType; activePageFilter = null"
+                  @click="activeFilter = f as FilterType"
                 >
                   <span>{{ label }}</span>
                   <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px] text-muted">{{ countByFilter(f as FilterType) }}</span>
@@ -260,45 +256,18 @@ function countByFilter(f: FilterType) {
               </div>
             </div>
 
-            <div class="mb-3">
-              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Страница</header>
-              <div class="flex flex-col gap-0.5">
-                <button
-                  v-for="page in MOCK_PAGES"
-                  :key="page"
-                  class="flex items-center justify-between rounded px-2 py-1 text-xs transition-colors"
-                  :class="activePageFilter === page
-                    ? 'bg-hover text-surface'
-                    : 'text-muted hover:bg-hover hover:text-surface'"
-                  @click="activePageFilter = activePageFilter === page ? null : page"
-                >
-                  <span>{{ page }}</span>
-                  <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px] text-muted">
-                    {{ comments.filter(c => c.page === page).length }}
-                  </span>
-                </button>
-              </div>
-            </div>
-
             <div>
-              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Автор</header>
-              <div class="flex flex-col gap-0.5">
-                <button
-                  v-for="m in MOCK_TEAM"
-                  :key="m.name"
-                  class="flex items-center gap-2 rounded px-2 py-1 text-xs transition-colors"
-                  :class="activeAuthorFilter === m.name
-                    ? 'bg-hover text-surface'
-                    : 'text-muted hover:bg-hover hover:text-surface'"
-                  @click="activeAuthorFilter = activeAuthorFilter === m.name ? null : m.name"
-                >
-                  <span
-                    class="flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-medium text-white"
-                    :class="m.color"
-                  >{{ m.avatar }}</span>
-                  <span class="truncate">{{ m.name }}</span>
-                </button>
-              </div>
+              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Новый комментарий</header>
+              <textarea
+                v-model="newCommentText"
+                rows="5"
+                placeholder="Оставьте комментарий к текущей версии..."
+                class="w-full resize-none rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none"
+              />
+              <button
+                class="mt-2 w-full rounded border border-border px-2.5 py-1 text-xs text-surface hover:bg-hover"
+                @click="addComment"
+              >Добавить</button>
             </div>
           </ScrollAreaViewport>
           <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
@@ -311,42 +280,29 @@ function countByFilter(f: FilterType) {
         <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
       </SplitterResizeHandle>
 
-      <!-- Center: Canvas with comment pins -->
+      <!-- Center: Version summary -->
       <SplitterPanel :default-size="56" :min-size="30" class="flex flex-col overflow-hidden bg-canvas">
-        <div class="relative flex flex-1 items-center justify-center overflow-hidden p-8">
-          <!-- Mock artboard -->
-          <div class="relative h-full w-full max-h-[600px] max-w-[900px] rounded-lg border border-border/50 bg-panel/60 shadow-xl">
-            <!-- Artboard label -->
-            <div class="absolute -top-6 left-0 text-[11px] text-muted">Главная</div>
-
-            <!-- Mock UI content inside artboard -->
-            <div class="flex h-full flex-col gap-4 p-6 opacity-40">
-              <div class="h-8 w-40 rounded bg-surface/20" />
-              <div class="flex gap-3">
-                <div class="h-32 flex-1 rounded bg-surface/10" />
-                <div class="h-32 flex-1 rounded bg-surface/10" />
-                <div class="h-32 flex-1 rounded bg-surface/10" />
-              </div>
-              <div class="h-4 w-3/4 rounded bg-surface/10" />
-              <div class="h-4 w-1/2 rounded bg-surface/10" />
-              <div class="mt-2 h-10 w-32 rounded bg-accent/30" />
-            </div>
-
-            <!-- Comment pins -->
-            <div
-              v-for="c in visibleComments"
-              :key="c.id"
-              class="absolute flex size-6 cursor-pointer items-center justify-center rounded-full text-[10px] font-bold text-white shadow-lg transition-all hover:scale-110"
-              :class="[
-                c.resolved ? 'bg-emerald-600' : 'bg-accent',
-                activeCommentId === c.id ? 'ring-2 ring-white ring-offset-1 ring-offset-canvas scale-110' : '',
-              ]"
-              :style="{ top: c.top + '%', left: c.left + '%' }"
-              @click="selectComment(c.id)"
-            >
-              {{ c.number }}
-            </div>
+        <div class="flex flex-1 flex-col gap-3 overflow-auto p-6">
+          <div class="rounded border border-border/60 bg-panel px-3 py-2">
+            <p class="text-xs text-muted">Текущая версия</p>
+            <p class="mt-1 text-sm text-surface">{{ currentVersion?.title ?? activeVersionId }}</p>
           </div>
+          <button
+            v-for="(c, idx) in visibleComments"
+            :key="c.id"
+            class="rounded border px-3 py-2 text-left"
+            :class="activeCommentId === c.id ? 'border-accent bg-accent/5' : 'border-border/50 bg-panel/40'"
+            @click="selectComment(c.id)"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-muted">#{{ idx + 1 }}</span>
+              <span class="rounded px-1.5 py-0.5 text-[10px]" :class="c.status === 'resolved' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-hover text-muted'">
+                {{ c.status }}
+              </span>
+              <span class="text-[10px] text-muted">v: {{ c.versionId }}</span>
+            </div>
+            <p class="mt-1 text-xs text-surface">{{ c.text }}</p>
+          </button>
         </div>
       </SplitterPanel>
 
@@ -370,14 +326,14 @@ function countByFilter(f: FilterType) {
           <!-- Thread header -->
           <div class="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
             <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
-              {{ activeComment.number }}
+              {{ activeComment.id }}
             </span>
             <span class="flex-1 truncate text-xs text-surface">{{ activeComment.author }}</span>
-            <span class="text-[10px] text-muted">{{ activeComment.time }}</span>
+            <span class="text-[10px] text-muted">{{ new Date(activeComment.createdAt).toLocaleString('ru') }}</span>
             <Tip label="Отметить как решённый">
               <button
                 class="flex size-6 items-center justify-center rounded transition-colors"
-                :class="activeComment.resolved
+                :class="activeComment.status === 'resolved'
                   ? 'text-emerald-400 hover:bg-hover'
                   : 'text-muted hover:bg-hover hover:text-emerald-400'"
                 @click="resolveComment"
@@ -394,12 +350,12 @@ function countByFilter(f: FilterType) {
                 <!-- Original comment -->
                 <div class="flex gap-2">
                   <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted">
-                    {{ activeComment.avatar }}
+                    {{ activeComment.author.slice(0, 2).toUpperCase() }}
                   </span>
                   <div>
                     <div class="flex items-baseline gap-1.5">
                       <span class="text-[11px] font-medium text-surface">{{ activeComment.author }}</span>
-                      <span class="text-[10px] text-muted">{{ activeComment.time }}</span>
+                      <span class="text-[10px] text-muted">{{ new Date(activeComment.createdAt).toLocaleString('ru') }}</span>
                     </div>
                     <p class="mt-0.5 text-xs leading-relaxed text-surface/80">{{ activeComment.text }}</p>
                   </div>
@@ -412,12 +368,12 @@ function countByFilter(f: FilterType) {
                   class="flex gap-2"
                 >
                   <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted">
-                    {{ reply.avatar }}
+                    {{ reply.author.slice(0, 2).toUpperCase() }}
                   </span>
                   <div>
                     <div class="flex items-baseline gap-1.5">
                       <span class="text-[11px] font-medium text-surface">{{ reply.author }}</span>
-                      <span class="text-[10px] text-muted">{{ reply.time }}</span>
+                      <span class="text-[10px] text-muted">{{ new Date(reply.createdAt).toLocaleString('ru') }}</span>
                     </div>
                     <p class="mt-0.5 text-xs leading-relaxed text-surface/80">{{ reply.text }}</p>
                   </div>

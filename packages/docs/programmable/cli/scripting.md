@@ -5,12 +5,12 @@ description: Execute JavaScript with the Figma Plugin API — query nodes, batch
 
 # Scripting
 
-`beresta eval` gives you the full Figma Plugin API in the terminal. Read nodes, modify properties, create shapes — then write changes back to the file.
+`norka eval` gives you the full Figma Plugin API in the terminal. Read nodes, modify properties, create shapes — then write changes back to the file.
 
 ## Basic Usage
 
 ```sh
-beresta eval design.fig -c "figma.currentPage.children.length"
+norka eval design.fig -c "figma.currentPage.children.length"
 ```
 
 The `-c` flag takes JavaScript. The `figma` global works like the Figma Plugin API.
@@ -18,7 +18,7 @@ The `-c` flag takes JavaScript. The `figma` global works like the Figma Plugin A
 ## Query Nodes
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.findAll(n => n.type === 'FRAME' && n.name.includes('Button'))
     .map(b => ({ id: b.id, name: b.name, w: b.width, h: b.height }))
 "
@@ -27,7 +27,7 @@ beresta eval design.fig -c "
 ## Modify and Save
 
 ```sh
-beresta eval design.fig -c "
+norka eval design.fig -c "
   figma.currentPage.children.forEach(n => n.opacity = 0.5)
 " -w
 ```
@@ -39,7 +39,7 @@ beresta eval design.fig -c "
 For longer scripts:
 
 ```sh
-cat transform.js | beresta eval design.fig --stdin -w
+cat transform.js | norka eval design.fig --stdin -w
 ```
 
 ## Live App Mode
@@ -47,7 +47,7 @@ cat transform.js | beresta eval design.fig --stdin -w
 Omit the file to run against the running desktop app:
 
 ```sh
-beresta eval -c "figma.currentPage.name"
+norka eval -c "figma.currentPage.name"
 ```
 
 ## Available API
@@ -66,5 +66,5 @@ This is the same API Figma plugins use, so existing knowledge and code snippets 
 ## JSON Output
 
 ```sh
-beresta eval design.fig -c "..." --json
+norka eval design.fig -c "..." --json
 ```

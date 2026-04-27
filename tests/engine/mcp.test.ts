@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts, parseFigFile } from '@beresta/core'
+import { ALL_TOOLS, FigmaAPI, SceneGraph, computeAllLayouts, parseFigFile } from '@norka/core'
 
 describe('MCP tool execution', () => {
   function setup() {

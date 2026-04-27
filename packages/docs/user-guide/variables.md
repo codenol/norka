@@ -1,6 +1,6 @@
 ---
 title: Variables
-description: Design variables, collections, modes, and fill bindings in Beresta.
+description: Design variables, collections, modes, and fill bindings in Norka.
 ---
 
 # Variables

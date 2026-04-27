@@ -14,7 +14,7 @@ export function createContext<T>(name: string) {
     const value = inject(key)
     if (!value) {
       throw new Error(
-        `[beresta] Injection \`${name}\` not found. Component must be used within the corresponding Root.`
+        `[norka] Injection \`${name}\` not found. Component must be used within the corresponding Root.`
       )
     }
     return value

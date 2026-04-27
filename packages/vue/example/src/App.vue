@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { createEditor, type Tool } from '@beresta/core/editor'
+import { createEditor, type Tool } from '@norka/core/editor'
 import {
-  BerestaProvider,
+  NorkaProvider,
   CanvasRoot,
   CanvasSurface,
   LayerTree,
   ToolbarRoot,
   ToolbarItem,
   NodeProperties
-} from '@beresta/vue'
+} from '@norka/vue'
 
 const editor = createEditor()
 const pages = () => editor.graph.getPages()
@@ -27,7 +27,7 @@ const TOOL_LIST: Tool[] = [
 </script>
 
 <template>
-  <BerestaProvider :editor="editor">
+  <NorkaProvider :editor="editor">
     <div class="layout">
       <ToolbarRoot>
         <div class="toolbar">
@@ -97,7 +97,7 @@ const TOOL_LIST: Tool[] = [
         </div>
       </div>
     </div>
-  </BerestaProvider>
+  </NorkaProvider>
 </template>
 
 <style>

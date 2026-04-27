@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@beresta/core'
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
 export type ExportFormatId = 'png' | 'jpg' | 'webp' | 'svg' | 'fig'
 export type ExportPanelTarget = 'selection' | 'page'

@@ -26,8 +26,8 @@ import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/composables/use-colla
 import { toast } from '@/utils/toast'
 import { useEditorStore } from '@/stores/editor'
 import Tip from '@/components/ui/Tip.vue'
-import { colorToCSS } from '@beresta/core'
-import { useEditorCommands, useI18n } from '@beresta/vue'
+import { colorToCSS } from '@norka/core'
+import { useEditorCommands, useI18n } from '@norka/vue'
 import { toolIcons } from '@/utils/tools'
 import { initials } from '@/utils/text'
 

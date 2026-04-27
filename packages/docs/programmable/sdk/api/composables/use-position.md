@@ -25,7 +25,7 @@ and actions like:
 ## Usage
 
 ```ts
-import { usePosition } from '@beresta/vue'
+import { usePosition } from '@norka/vue'
 
 const position = usePosition()
 ```

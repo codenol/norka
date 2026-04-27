@@ -1,14 +1,14 @@
-# `beresta eval` — Figma-like Plugin API for Headless Scripting
+# `norka eval` — Figma-like Plugin API for Headless Scripting
 
 ## Overview
 
-`bun beresta eval <file> --code '<js>'` executes JavaScript against a `.fig` file with a Figma-compatible `figma` global object. This enables headless scripting, batch operations, AI tool execution, and testing — all without the GUI.
+`bun norka eval <file> --code '<js>'` executes JavaScript against a `.fig` file with a Figma-compatible `figma` global object. This enables headless scripting, batch operations, AI tool execution, and testing — all without the GUI.
 
 The `figma` object mirrors Figma's Plugin API surface as closely as possible, so existing Figma plugin knowledge and code snippets transfer directly.
 
 ```bash
 # Create a frame, set auto-layout, add children
-bun beresta eval design.fig --code '
+bun norka eval design.fig --code '
   const frame = figma.createFrame()
   frame.name = "Card"
   frame.resize(300, 200)
@@ -27,24 +27,24 @@ bun beresta eval design.fig --code '
 '
 
 # Query nodes
-bun beresta eval design.fig --code '
+bun norka eval design.fig --code '
   const buttons = figma.currentPage.findAll(n => n.type === "FRAME" && n.name.includes("Button"))
   return buttons.map(b => ({ id: b.id, name: b.name, w: b.width, h: b.height }))
 '
 
 # Read from stdin (for multiline scripts / piping)
-cat transform.js | bun beresta eval design.fig --stdin
+cat transform.js | bun norka eval design.fig --stdin
 
 # Write changes back
-bun beresta eval design.fig --code '...' --write
-bun beresta eval design.fig --code '...' -o modified.fig
+bun norka eval design.fig --code '...' --write
+bun norka eval design.fig --code '...' -o modified.fig
 ```
 
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  CLI: `beresta eval <file> --code '...'`         │
+│  CLI: `norka eval <file> --code '...'`         │
 │    ↓                                                 │
 │  loadDocument(file) → SceneGraph                     │
 │    ↓                                                 │
@@ -65,7 +65,7 @@ bun beresta eval design.fig --code '...' -o modified.fig
 | `FigmaNode` | `packages/core/src/figma-api.ts` | Proxy wrapping `SceneNode` with Figma-style property access (`.fills`, `.resize()`, `.appendChild()`, etc.) |
 | `eval` command | `packages/cli/src/commands/eval.ts` | CLI command that loads doc, creates API, executes code |
 
-### Why in `@beresta/core`?
+### Why in `@norka/core`?
 
 The `FigmaAPI` class lives in core (not CLI) because:
 - **AI tools reuse it** — the chat panel's `render` tool can execute JSX through the same API
@@ -297,7 +297,7 @@ class FigmaNode {
 ## CLI Command
 
 ```
-bun beresta eval <file> [options]
+bun norka eval <file> [options]
 
 Arguments:
   file            .fig file to operate on
@@ -387,7 +387,7 @@ packages/cli/src/commands/eval.test.ts  # Integration tests
 2. **Create + read** — create a frame, return its properties
 3. **Query nodes** — `findAll` returns correct nodes
 4. **Write back** — `--write` saves changes, reloading shows them
-5. **Stdin** — `echo 'return 42' | bun beresta eval test.fig --stdin` → `42`
+5. **Stdin** — `echo 'return 42' | bun norka eval test.fig --stdin` → `42`
 6. **JSON output** — `--json` returns valid JSON
 7. **Error handling** — syntax errors, runtime errors reported cleanly
 

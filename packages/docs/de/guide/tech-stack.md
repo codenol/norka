@@ -28,7 +28,7 @@
 {
   "canvaskit-wasm": "^0.40.0",
   "vue": "^3.5.29",
-  "yoga-layout": "npm:@beresta/yoga-layout@3.3.0-grid.2",
+  "yoga-layout": "^3.2.1",
   "nanoevents": "^9.1.0",
   "sucrase": "^3.35.1",
   "reka-ui": "^2.8.2",
@@ -64,4 +64,4 @@ Yoga wird von Meta gepflegt, ist auf Milliarden von React-Native-Geräten getest
 
 | Technologie | Zweck | Phase |
 |-----------|---------|-------|
-| CSS Grid in Yoga | Grid-basiertes Auto-Layout | ✅ Unterstützt über [Yoga-Fork](https://github.com/beresta/yoga/tree/grid) (`@beresta/yoga-layout`) |
+| CSS Grid in Yoga | Grid-basiertes Auto-Layout | ✅ Unterstützt über [Yoga-Fork](https://github.com/norka/yoga/tree/grid) (`yoga-layout`) |

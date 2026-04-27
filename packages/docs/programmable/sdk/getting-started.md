@@ -1,6 +1,6 @@
 ---
 title: SDK Getting Started
-description: Set up @beresta/vue with createEditor, provideEditor, and a canvas.
+description: Set up @norka/vue with createEditor, provideEditor, and a canvas.
 ---
 
 # SDK Getting Started
@@ -8,22 +8,22 @@ description: Set up @beresta/vue with createEditor, provideEditor, and a canvas.
 ## Installation
 
 ```bash
-bun add @beresta/core @beresta/vue canvaskit-wasm
+bun add @norka/core @norka/vue canvaskit-wasm
 ```
 
-The SDK lives in the monorepo today and is also published as `@beresta/vue`.
+The SDK lives in the monorepo today and is also published as `@norka/vue`.
 
 ```ts
-import { createEditor } from '@beresta/core/editor'
-import { provideEditor, useCanvas } from '@beresta/vue'
+import { createEditor } from '@norka/core/editor'
+import { provideEditor, useCanvas } from '@norka/vue'
 ```
 
 ## Mental model
 
 There are three layers:
 
-1. `@beresta/core` — framework-agnostic editor engine
-2. `@beresta/vue` — Vue composables and headless primitives
+1. `@norka/core` — framework-agnostic editor engine
+2. `@norka/vue` — Vue composables and headless primitives
 3. your app — styling, routing, file flows, product-specific UI
 
 ## Minimal setup
@@ -31,7 +31,7 @@ There are three layers:
 ### 1. Create an editor
 
 ```ts
-import { createEditor } from '@beresta/core/editor'
+import { createEditor } from '@norka/core/editor'
 
 const editor = createEditor({
   width: 1200,
@@ -43,9 +43,9 @@ const editor = createEditor({
 
 ```vue
 <script setup lang="ts">
-import { provideEditor } from '@beresta/vue'
+import { provideEditor } from '@norka/vue'
 
-import type { Editor } from '@beresta/core/editor'
+import type { Editor } from '@norka/core/editor'
 
 const props = defineProps<{
   editor: Editor
@@ -67,7 +67,7 @@ You can think of this as the provider layer for the editor tree. The docs prefer
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useCanvas, useEditor } from '@beresta/vue'
+import { useCanvas, useEditor } from '@norka/vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const editor = useEditor()
@@ -85,7 +85,7 @@ useCanvas(canvasRef, editor)
 Once the editor is provided, child components can read selection and issue commands:
 
 ```ts
-import { useEditorCommands, useSelectionState } from '@beresta/vue'
+import { useEditorCommands, useSelectionState } from '@norka/vue'
 
 const selection = useSelectionState()
 const commands = useEditorCommands()
@@ -97,7 +97,7 @@ const commands = useEditorCommands()
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useCanvas, useEditor, useSelectionState } from '@beresta/vue'
+import { useCanvas, useEditor, useSelectionState } from '@norka/vue'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const editor = useEditor()

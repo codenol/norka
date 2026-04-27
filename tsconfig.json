@@ -17,10 +17,10 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@beresta/vue": ["./packages/vue/src/index.ts"],
-      "@beresta/vue/*": ["./packages/vue/src/*"],
-      "@beresta/core": ["./packages/core/src/index.ts"],
-      "@beresta/core/*": ["./packages/core/src/*"]
+      "@norka/vue": ["./packages/vue/src/index.ts"],
+      "@norka/vue/*": ["./packages/vue/src/*"],
+      "@norka/core": ["./packages/core/src/index.ts"],
+      "@norka/core/*": ["./packages/core/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],

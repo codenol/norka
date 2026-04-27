@@ -12,6 +12,8 @@ import {
   readComponentMd,
   writeComponentMd,
   exportCoreComponents,
+  readCoreRuntimeManifest,
+  validateCoreRuntimeManifest,
 } from '@/composables/use-workspace-fs'
 import { useLibraries } from '@/composables/use-libraries'
 import { useProjects } from '@/composables/use-projects'
@@ -460,7 +462,9 @@ async function loadComponent(id: string) {
         editComp.value = { ...seed, ...mdToComponent(md, id) }
         return
       }
-    } catch { /* disk read failed, use seed */ }
+    } catch (error) {
+      console.warn('Could not load component markdown, using seed:', error)
+    }
   }
   editComp.value = { ...seed, props: [...seed.props], variants: [...seed.variants], states: [...seed.states] }
 }
@@ -472,7 +476,7 @@ function selectItem(id: string) {
     activeComponentTab.value = 'description'
     void loadComponent(id)
   } else {
-    const item = activeItem.value as Record<string, unknown>
+    const item = activeItem.value as unknown as Record<string, unknown>
     if (item) {
       editName.value = String(item.name ?? '')
       editValue.value = String(item.value ?? item.font ?? item.description ?? '')
@@ -521,6 +525,25 @@ function publish() {
 // ── Export Core ───────────────────────────────────────────────────────────────
 
 const isExportingCore = ref(false)
+const runtimeStatus = ref<Record<string, { available: boolean, hasDefaults: boolean }>>({})
+
+async function refreshRuntimeStatus() {
+  if (!workspacePath.value) {
+    runtimeStatus.value = {}
+    return
+  }
+  const manifest = await readCoreRuntimeManifest(workspacePath.value)
+  if (!manifest) {
+    runtimeStatus.value = {}
+    return
+  }
+  runtimeStatus.value = Object.fromEntries(
+    manifest.components.map(comp => [
+      comp.exportName,
+      { available: true, hasDefaults: Object.keys(comp.previewDefaults ?? {}).length > 0 }
+    ])
+  )
+}
 
 async function exportCore() {
   if (!workspacePath.value) {
@@ -537,7 +560,18 @@ async function exportCore() {
       description: c.description,
       rules: editComp.value?.id === c.id ? (editComp.value.rules ?? c.rules) : c.rules,
     })))
-    toast.success('Core Library экспортирована в core/')
+    const manifest = await readCoreRuntimeManifest(workspacePath.value)
+    if (!manifest) {
+      toast.error('Core exported, but runtime manifest is missing')
+      return
+    }
+    const validation = validateCoreRuntimeManifest(manifest)
+    if (!validation.ok) {
+      toast.error(`Runtime validation failed: ${validation.errors[0] ?? 'Unknown error'}`)
+      return
+    }
+    await refreshRuntimeStatus()
+    toast.success(`Core runtime sync complete (${manifest.components.length} components)`)
   } catch (e) {
     toast.error('Ошибка экспорта')
     console.error(e)
@@ -632,6 +666,7 @@ const filteredEffects = computed(() =>
 
 // Init — load first component
 void loadComponent('btn')
+void refreshRuntimeStatus()
 </script>
 
 <template>
@@ -669,7 +704,7 @@ void loadComponent('btn')
         </button>
       </Tip>
 
-      <Tip label="Экспортировать Core Library как TSX-файлы" side="bottom">
+      <Tip label="Синхронизировать runtime-библиотеку core/* для AI и preview" side="bottom">
         <button
           class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface disabled:opacity-40"
           :disabled="isExportingCore"
@@ -677,7 +712,7 @@ void loadComponent('btn')
         >
           <icon-lucide-package-open v-if="!isExportingCore" class="size-3.5" />
           <icon-lucide-loader-circle v-else class="size-3.5 animate-spin" />
-          Экспорт TSX
+          Sync Runtime
         </button>
       </Tip>
 
@@ -888,7 +923,15 @@ void loadComponent('btn')
                       </div>
                     </div>
                     <div class="px-2 py-1.5 text-left">
-                      <div class="text-xs text-surface">{{ comp.name }}</div>
+                      <div class="flex items-center gap-1.5">
+                        <div class="text-xs text-surface">{{ comp.name }}</div>
+                        <span
+                          class="rounded px-1 py-0.5 text-[9px]"
+                          :class="runtimeStatus[comp.primeReactExport]?.available ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'"
+                        >
+                          {{ runtimeStatus[comp.primeReactExport]?.available ? 'runtime' : 'missing' }}
+                        </span>
+                      </div>
                       <div class="text-[10px] text-muted">{{ comp.usages }} использований</div>
                     </div>
                   </template>
@@ -898,7 +941,15 @@ void loadComponent('btn')
                         {{ comp.name[0] }}
                       </div>
                       <div class="flex-1 text-left">
-                        <div class="text-xs text-surface">{{ comp.name }}</div>
+                        <div class="flex items-center gap-1.5">
+                          <div class="text-xs text-surface">{{ comp.name }}</div>
+                          <span
+                            class="rounded px-1 py-0.5 text-[9px]"
+                            :class="runtimeStatus[comp.primeReactExport]?.available ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'"
+                          >
+                            {{ runtimeStatus[comp.primeReactExport]?.available ? 'runtime' : 'missing' }}
+                          </span>
+                        </div>
                         <div class="text-[10px] text-muted">{{ comp.description }}</div>
                       </div>
                       <span class="text-[10px] text-muted">{{ comp.usages }}</span>

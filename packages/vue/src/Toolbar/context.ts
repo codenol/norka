@@ -1,6 +1,6 @@
 import { type InjectionKey, inject, provide } from 'vue'
 
-import type { Editor, EditorToolDef, Tool } from '@beresta/core/editor'
+import type { Editor, EditorToolDef, Tool } from '@norka/core/editor'
 import type { ComputedRef, Ref } from 'vue'
 
 export interface ToolbarContext {
@@ -21,6 +21,6 @@ export function provideToolbar(ctx: ToolbarContext) {
 
 export function useToolbar(): ToolbarContext {
   const ctx = inject(TOOLBAR_KEY)
-  if (!ctx) throw new Error('[beresta] useToolbar() called outside <ToolbarRoot>')
+  if (!ctx) throw new Error('[norka] useToolbar() called outside <ToolbarRoot>')
   return ctx
 }

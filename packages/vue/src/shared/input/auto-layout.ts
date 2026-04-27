@@ -1,8 +1,8 @@
-import { resolveNodeLayoutDirection } from '@beresta/core'
+import { resolveNodeLayoutDirection } from '@norka/core'
 
 import type { DragMove } from './types'
-import type { SceneNode, Vector } from '@beresta/core'
-import type { Editor } from '@beresta/core/editor'
+import type { SceneNode, Vector } from '@norka/core'
+import type { Editor } from '@norka/core/editor'
 
 function resolveLayoutDirection(parent: SceneNode, editor: Editor): 'LTR' | 'RTL' {
   const ancestor = parent.parentId ? editor.graph.getNode(parent.parentId) : null

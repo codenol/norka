@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 
-import { colorToCSS } from '@beresta/core'
+import { colorToCSS } from '@norka/core'
 
-import type { Fill, GradientStop } from '@beresta/core'
+import type { Fill, GradientStop } from '@norka/core'
 
 type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE'
 

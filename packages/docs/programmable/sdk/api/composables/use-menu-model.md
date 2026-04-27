@@ -12,7 +12,7 @@ It is useful when you want ready-to-render menu groups instead of composing comm
 ## Usage
 
 ```ts
-import { useMenuModel } from '@beresta/vue'
+import { useMenuModel } from '@norka/vue'
 
 const { appMenu, canvasMenu, selectionLabelMenu } = useMenuModel()
 ```

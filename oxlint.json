@@ -26,7 +26,7 @@
         "paths": [
           {
             "name": "@/types",
-            "message": "Import types directly from @beresta/core."
+            "message": "Import types directly from @norka/core."
           }
         ],
         "patterns": [
@@ -34,7 +34,7 @@
             "group": [
               "@/engine/*"
             ],
-            "message": "Import from @beresta/core unless the module adds platform-specific logic.",
+            "message": "Import from @norka/core unless the module adds platform-specific logic.",
             "allowImportNames": [
               "loadFont",
               "listFamilies",
@@ -46,7 +46,7 @@
               "../../packages/*",
               "../../../packages/*"
             ],
-            "message": "Use the workspace package name (e.g. @beresta/core) instead of relative paths to packages/."
+            "message": "Use the workspace package name (e.g. @norka/core) instead of relative paths to packages/."
           }
         ]
       }
@@ -103,7 +103,7 @@
     "vue/define-emits-declaration": "error",
     "vue/define-props-destructuring": "error",
     "vue/require-typed-ref": "error",
-    "beresta/no-inline-named-types": [
+    "norka/no-inline-named-types": [
       "error",
       {
         "Vector": "x:number,y:number",
@@ -113,12 +113,12 @@
         "Matrix": "m00:number,m01:number,m02:number,m10:number,m11:number,m12:number"
       }
     ],
-    "beresta/no-structuredclone-scene-arrays": "error",
-    "beresta/no-math-random": "error",
-    "beresta/no-hand-rolled-color": "error",
-    "beresta/no-raw-console-format": "off",
-    "beresta/no-silent-catch": "error",
-    "beresta/no-typeof-window-check": "error"
+    "norka/no-structuredclone-scene-arrays": "error",
+    "norka/no-math-random": "error",
+    "norka/no-hand-rolled-color": "error",
+    "norka/no-raw-console-format": "off",
+    "norka/no-silent-catch": "error",
+    "norka/no-typeof-window-check": "error"
   },
   "overrides": [
     {
@@ -129,7 +129,7 @@
       "rules": {
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off",
-        "beresta/no-silent-catch": "off"
+        "norka/no-silent-catch": "off"
       }
     },
     {
@@ -199,7 +199,7 @@
         "packages/cli/src/commands/**"
       ],
       "rules": {
-        "beresta/no-raw-console-format": "error"
+        "norka/no-raw-console-format": "error"
       }
     }
   ],

@@ -5,7 +5,7 @@ import {
   parseFigFile,
   initCodec,
   SceneGraph,
-} from '@beresta/core'
+} from '@norka/core'
 
 beforeAll(async () => {
   await initCodec()

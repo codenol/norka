@@ -1,13 +1,13 @@
 # MCP Server
 
-Beresta includes an MCP (Model Context Protocol) server that lets AI coding tools — Claude Code, Cursor, Windsurf, etc. — read and modify `.fig` files headlessly.
+Norka includes an MCP (Model Context Protocol) server that lets AI coding tools — Claude Code, Cursor, Windsurf, etc. — read and modify `.fig` files headlessly.
 
 Two transports: **stdio** for MCP clients, **HTTP** for everything else.
 
 ## Install
 
 ```sh
-bun add -g @beresta/mcp
+bun add -g @norka/mcp
 ```
 
 ## Stdio (Claude Code, Cursor, etc.)
@@ -17,8 +17,8 @@ Add to your MCP config (e.g. `~/.claude/settings.json` or `.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "beresta": {
-      "command": "beresta-mcp"
+    "norka": {
+      "command": "norka-mcp"
     }
   }
 }
@@ -30,9 +30,9 @@ Or run from source without installing:
 ```json [Bun]
 {
   "mcpServers": {
-    "beresta": {
+    "norka": {
       "command": "bun",
-      "args": ["/path/to/beresta/packages/mcp/src/index.ts"]
+      "args": ["/path/to/norka/packages/mcp/src/index.ts"]
     }
   }
 }
@@ -40,9 +40,9 @@ Or run from source without installing:
 ```json [Node.js]
 {
   "mcpServers": {
-    "beresta": {
+    "norka": {
       "command": "npx",
-      "args": ["tsx", "/path/to/beresta/packages/mcp/src/index.ts"]
+      "args": ["tsx", "/path/to/norka/packages/mcp/src/index.ts"]
     }
   }
 }
@@ -54,7 +54,7 @@ Or run from source without installing:
 For browser extensions, scripts, CI, or any HTTP client:
 
 ```sh
-beresta-mcp-http
+norka-mcp-http
 ```
 
 Or from source: `bun packages/mcp/src/http.ts` / `npx tsx packages/mcp/src/http.ts`
@@ -63,9 +63,9 @@ Security defaults (HTTP transport):
 
 - Binds to `127.0.0.1` by default (`HOST` to override)
 - `eval` tool is disabled
-- File operations are limited to `OPENPENCIL_MCP_ROOT` (defaults to current working directory)
-- CORS is disabled by default; set `OPENPENCIL_MCP_CORS_ORIGIN` to allow one origin
-- Optional auth token: `OPENPENCIL_MCP_AUTH_TOKEN` (client sends `Authorization: Bearer <token>` or `x-mcp-token`)
+- File operations are limited to `NORKA_MCP_ROOT` (defaults to current working directory)
+- CORS is disabled by default; set `NORKA_MCP_CORS_ORIGIN` to allow one origin
+- Optional auth token: `NORKA_MCP_AUTH_TOKEN` (client sends `Authorization: Bearer <token>` or `x-mcp-token`)
 
 Server starts on port 3100 (override with `PORT` env var). Endpoints:
 
@@ -83,10 +83,10 @@ Server starts on port 3100 (override with `PORT` env var). Endpoints:
 
 ## AI Agent Skill
 
-Teach your AI coding agent to use Beresta tools:
+Teach your AI coding agent to use Norka tools:
 
 ```sh
-npx skills add beresta/skills@beresta
+npx skills add norka/skills@norka
 ```
 
 Works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports [skills](https://skills.sh). The skill covers the CLI, MCP tools, JSX rendering, eval, and the running app's automation bridge.

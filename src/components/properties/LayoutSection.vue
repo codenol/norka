@@ -10,7 +10,7 @@ import {
   SelectViewport
 } from 'reka-ui'
 
-import { LayoutControlsRoot, useI18n } from '@beresta/vue'
+import { LayoutControlsRoot, useI18n } from '@norka/vue'
 
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ScrubInput from '@/components/ScrubInput.vue'
@@ -18,7 +18,7 @@ import Tip from '@/components/ui/Tip.vue'
 import { useSelectUI } from '@/components/ui/select'
 import { useSectionUI } from '@/components/ui/section'
 
-import type { LayoutSizing } from '@beresta/core'
+import type { LayoutSizing } from '@norka/core'
 
 const { panels } = useI18n()
 const sectionCls = useSectionUI()

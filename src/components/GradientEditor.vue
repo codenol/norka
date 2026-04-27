@@ -3,15 +3,15 @@ import AppSelect from './ui/AppSelect.vue'
 import Tip from './ui/Tip.vue'
 import ColorPickerPanel from './ColorPickerPanel.vue'
 import ScrubInput from './ScrubInput.vue'
-import { colorToCSS } from '@beresta/core'
+import { colorToCSS } from '@norka/core'
 import {
   GradientEditorRoot,
   GradientEditorBar,
   GradientEditorStop,
   useI18n
-} from '@beresta/vue'
+} from '@norka/vue'
 
-import type { Fill } from '@beresta/core'
+import type { Fill } from '@norka/core'
 
 const { fill } = defineProps<{ fill: Fill }>()
 const emit = defineEmits<{ update: [fill: Fill] }>()

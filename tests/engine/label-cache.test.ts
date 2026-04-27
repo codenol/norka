@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { SceneGraph, LabelCache } from '@beresta/core'
+import { SceneGraph, LabelCache } from '@norka/core'
 
 function buildGraph() {
   const g = new SceneGraph()

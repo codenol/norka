@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { TextEditor, type SceneNode } from '@beresta/core'
+import { TextEditor, type SceneNode } from '@norka/core'
 
 const mockCk = {} as any
 

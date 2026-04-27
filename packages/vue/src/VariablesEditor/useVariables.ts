@@ -1,10 +1,10 @@
 import { ref, computed, watch } from 'vue'
 
-import { colorToHexRaw, parseColor, randomHex } from '@beresta/core'
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
+import { colorToHexRaw, parseColor, randomHex } from '@norka/core'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
 
-import type { Color, Variable, VariableCollection, VariableValue } from '@beresta/core'
+import type { Color, Variable, VariableCollection, VariableValue } from '@norka/core'
 
 export function useVariables() {
   const editor = useEditor()

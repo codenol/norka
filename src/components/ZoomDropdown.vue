@@ -9,7 +9,7 @@ import {
 } from 'reka-ui'
 import { nextTick, ref, watch } from 'vue'
 
-import { useEditorCommands, useI18n } from '@beresta/vue'
+import { useEditorCommands, useI18n } from '@norka/vue'
 import { menuItem, useMenuUI } from '@/components/ui/menu'
 import { useEditorStore } from '@/stores/editor'
 

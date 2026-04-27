@@ -1,10 +1,10 @@
 # Vergleich mit Penpot
 
-Beresta und Penpot sind beides Open-Source-Design-Tools, aber sie unterscheiden sich grundlegend in Architektur, Rendering und Dateiformaten.
+Norka und Penpot sind beides Open-Source-Design-Tools, aber sie unterscheiden sich grundlegend in Architektur, Rendering und Dateiformaten.
 
 ## 1. Auf einen Blick
 
-| Metrik | Beresta | Penpot |
+| Metrik | Norka | Penpot |
 |--------|-------------|--------|
 | Total LOC | **~26.000** | **~299.000** |
 | Quelldateien | ~143 | ~2.900 |
@@ -14,11 +14,11 @@ Beresta und Penpot sind beides Open-Source-Design-Tools, aber sie unterscheiden 
 | Backend | Keines (local-first) | 32.600 LOC + 151 SQL-Dateien |
 | LOC-Verhältnis | **1×** | **~11×** |
 
-Beresta ist **~11× kleiner** — und das ist der Punkt. Es ist keine Vereinfachung; es ist eine grundlegend andere Architektur.
+Norka ist **~11× kleiner** — und das ist der Punkt. Es ist keine Vereinfachung; es ist eine grundlegend andere Architektur.
 
 ## 2. Architektur
 
-| Aspekt | Beresta | Penpot |
+| Aspekt | Norka | Penpot |
 |--------|-------------|--------|
 | Rendering | Skia CanvasKit (GPU, WASM) | Skia Rust/WASM (render-wasm v1) |
 | Layout | Yoga WASM (CSS-Flexbox) | Eigene CLJS-Engine |
@@ -29,14 +29,14 @@ Beresta ist **~11× kleiner** — und das ist der Punkt. Es ist keine Vereinfach
 
 ## 3. Rendering
 
-Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementierungen unterscheiden sich:
+Norka und Penpot verwenden beide Skia für das Rendering, aber die Implementierungen unterscheiden sich:
 
-- **Beresta**: CanvasKit WASM — bewährt, GPU-beschleunigt, dieselbe Engine wie Figma
+- **Norka**: CanvasKit WASM — bewährt, GPU-beschleunigt, dieselbe Engine wie Figma
 - **Penpot**: Eigener Rust/Skia-WASM-Renderer (render-wasm), ersetzt den früheren SVG-Renderer
 
 ## 4. Dateiformat
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Native-Format | .fig (Kiwi-Binär) | .penpot (SVG + Metadaten) |
 | Figma-Import | Nativ | Plugin/Konverter |
@@ -46,7 +46,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 5. Layout
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Engine | Yoga WASM (CSS-Flexbox) | Eigene CLJS-Implementierung |
 | CSS Grid | Nicht unterstützt | Unterstützt |
@@ -55,7 +55,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 6. Kollaboration
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Modell | P2P (Trystero + Yjs CRDT) | Client-Server |
 | Cursor | ✅ Echtzeit | ✅ Echtzeit |
@@ -64,7 +64,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 7. Entwicklererlebnis
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Beitragsumfang | ~143 TS-Dateien | 2.900+ Dateien, 4 Sprachen |
 | Build-System | Vite + Bun (Sekunden) | Shadow-CLJS + Docker (Minuten) |
@@ -74,7 +74,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 8. Programmierbarkeit
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | CLI | ✅ Headless .fig-Operationen | ❌ Kein CLI |
 | AI-Werkzeuge | **87 Werkzeuge** + MCP-Server | Plugin-System |
@@ -84,7 +84,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 9. Desktop
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Native App | ✅ Tauri v2 (~5 MB) | ❌ |
 | Offline | ✅ Vollständig | Erfordert Server |
@@ -94,7 +94,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 10. KI-Integration
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Integrierter Chat | ✅ OpenRouter-Integration | ❌ |
 | Werkzeugnutzung | 87 Design-Werkzeuge | ❌ |
@@ -103,7 +103,7 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 ## 11. Skripting & Erweiterbarkeit
 
-| | Beresta | Penpot |
+| | Norka | Penpot |
 |---|-------------|--------|
 | Headless CLI | ✅ 12 Befehle | ❌ |
 | Plugin API | Figma-kompatibel | Eigene Plugin API |
@@ -115,14 +115,14 @@ Beresta und Penpot verwenden beide Skia für das Rendering, aber die Implementie
 
 | Stärke | Gewinner | Grund |
 |--------|----------|-------|
-| **Figma-Kompatibilität** | Beresta | Natives .fig + Zwischenablage |
-| **Programmierbarkeit** | Beresta | CLI, eval, JSX, MCP-Server |
-| **Desktop-Erlebnis** | Beresta | Native Tauri-App, ~5 MB |
-| **KI-Integration** | Beresta | 90 Werkzeuge, MCP, integrierter Chat |
-| **Codebasis-Einfachheit** | Beresta | 11× weniger Code, 1 Sprache |
+| **Figma-Kompatibilität** | Norka | Natives .fig + Zwischenablage |
+| **Programmierbarkeit** | Norka | CLI, eval, JSX, MCP-Server |
+| **Desktop-Erlebnis** | Norka | Native Tauri-App, ~5 MB |
+| **KI-Integration** | Norka | 90 Werkzeuge, MCP, integrierter Chat |
+| **Codebasis-Einfachheit** | Norka | 11× weniger Code, 1 Sprache |
 | **CSS Grid** | Penpot | Yoga unterstützt es noch nicht |
 | **SVG-native** | Penpot | SVG ist die Muttersprache |
 | **Self-Hosting** | Penpot | Docker-bereit vs. Desktop-only |
 | **Ökosystem-Reife** | Penpot | Jahre der Produktion vs. frühe Phase |
 
-Beresta ist architektonisch schlanker — ein Single-Process-CanvasKit-Renderer in ~26K LOC TypeScript, Figma-kompatibel by Design. Penpot ist eine Full-Stack-Plattform mit ~299K LOC über Clojure, ClojureScript, Rust und SCSS, plus eine Docker-Service-Flotte. Beide bieten jetzt Echtzeit-Kollaboration (unterschiedliche Architekturen: P2P vs. Server). Penpot hat ein Plugin-Ökosystem und serverseitigen PDF-Export; Beresta hat Figma-kompatibles Headless-Scripting, **90 KI/MCP-Werkzeuge**, SVG-Export und eine native Desktop-App.
+Norka ist architektonisch schlanker — ein Single-Process-CanvasKit-Renderer in ~26K LOC TypeScript, Figma-kompatibel by Design. Penpot ist eine Full-Stack-Plattform mit ~299K LOC über Clojure, ClojureScript, Rust und SCSS, plus eine Docker-Service-Flotte. Beide bieten jetzt Echtzeit-Kollaboration (unterschiedliche Architekturen: P2P vs. Server). Penpot hat ein Plugin-Ökosystem und serverseitigen PDF-Export; Norka hat Figma-kompatibles Headless-Scripting, **90 KI/MCP-Werkzeuge**, SVG-Export und eine native Desktop-App.

@@ -25,7 +25,7 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'beresta',
+      name: 'norka',
       testDir: './tests/e2e',
       fullyParallel: false
     },

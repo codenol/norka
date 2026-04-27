@@ -1,6 +1,6 @@
 ---
 title: Components
-description: Creating reusable components, instances, component sets, overrides, and live sync in Beresta.
+description: Creating reusable components, instances, component sets, overrides, and live sync in Norka.
 ---
 
 # Components

@@ -35,7 +35,7 @@ async function getLayerNames(): Promise<string[]> {
 
 async function getSceneTree() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__
+    const store = window.__NORKA_STORE__
     if (!store) return null
 
     function nodeTree(id: string): { name: string; type: string; children: unknown[] } | null {
@@ -53,7 +53,7 @@ async function getSceneTree() {
 
 async function getSelectedCount(): Promise<number> {
   return page.evaluate(() => {
-    return window.__OPEN_PENCIL_STORE__!.state.selectedIds.size
+    return window.__NORKA_STORE__!.state.selectedIds.size
   })
 }
 

@@ -2,8 +2,8 @@
 defineOptions({ inheritAttrs: false })
 import { ref } from 'vue'
 
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useCanvas, type UseCanvasOptions } from '@beresta/vue'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useCanvas, type UseCanvasOptions } from '@norka/vue'
 import { provideCanvas } from './context'
 
 const props = withDefaults(defineProps<UseCanvasOptions>(), {

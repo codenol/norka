@@ -7,7 +7,7 @@ import 'vue-stream-markdown/index.css'
 import type { PropType } from 'vue'
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
-const props = defineProps({
+const { message } = defineProps({
   message: { type: Object as PropType<UIMessage>, required: true }
 })
 
@@ -43,13 +43,13 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
 <template>
   <div
-    v-if="props.message?.role"
-    :data-test-id="`chat-message-${props.message.role}`"
-    :class="props.message.role === 'user' ? 'flex justify-end' : ''"
+    v-if="message?.role"
+    :data-test-id="`chat-message-${message.role}`"
+    :class="message.role === 'user' ? 'flex justify-end' : ''"
   >
-    <div class="min-w-0 space-y-1.5" :class="props.message.role === 'user' ? 'max-w-[85%]' : ''">
-      <template v-if="props.message.role === 'assistant'">
-        <template v-for="(part, i) in props.message.parts" :key="partKey(part, i)">
+    <div class="min-w-0 space-y-1.5" :class="message.role === 'user' ? 'max-w-[85%]' : ''">
+      <template v-if="message.role === 'assistant'">
+        <template v-for="(part, i) in message.parts" :key="partKey(part, i)">
           <!-- Tool call -->
           <div v-if="isToolUIPart(part)" class="rounded-lg border border-border bg-canvas p-2">
             <CollapsibleRoot>
@@ -116,12 +116,12 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
       <!-- User message -->
       <div
-        v-else-if="props.message.role === 'user'"
+        v-else-if="message.role === 'user'"
         data-test-id="chat-text-bubble"
         class="rounded-xl rounded-br-md bg-accent px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-white"
       >
         {{
-          props.message.parts
+          message.parts
             .filter(isTextUIPart)
             .map((p) => p.text)
             .join('')

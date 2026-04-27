@@ -11,7 +11,7 @@ import {
   styleToWeight,
   weightToStyle,
   SceneGraph,
-} from '@beresta/core'
+} from '@norka/core'
 
 function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id

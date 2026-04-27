@@ -44,7 +44,7 @@ function effectsSection() {
 
 function getNode(id: string) {
   return page.evaluate((nodeId) => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     const n = store.graph.getNode(nodeId)
     if (!n) return null
     return { fills: n.fills, strokes: n.strokes, effects: n.effects, opacity: n.opacity, visible: n.visible, x: n.x, y: n.y, width: n.width, height: n.height, rotation: n.rotation }
@@ -53,7 +53,7 @@ function getNode(id: string) {
 
 function getSelectedId() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return [...store.state.selectedIds][0] ?? null
   })
 }

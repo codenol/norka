@@ -293,7 +293,7 @@
 
     "libPublishHosting": "Хостинг",
     "libPublishTokenPlaceholder": "GitHub Personal Access Token…",
-    "libPublishRepoPlaceholder": "Название репозитория (например, beresta-libraries)",
+    "libPublishRepoPlaceholder": "Название репозитория (например, norka-libraries)",
     "libPublishTokenHint": "Токен нужен с правом repo. Хранится только локально.",
     "libPublishConnect": "Подключить",
     "libPublishConnecting": "Подключаю…",

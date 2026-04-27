@@ -18,7 +18,7 @@ import {
   Section,
   isTreeNode,
   node
-} from '@beresta/core'
+} from '@norka/core'
 
 function createGraph(): SceneGraph {
   const g = new SceneGraph()

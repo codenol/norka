@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../app-client'
 import { bold, fmtList, entity } from '../format'
 import { loadDocument } from '../headless'
 
-import type { PageItem } from '@beresta/core'
+import type { PageItem } from '@norka/core'
 
 async function getData(file?: string): Promise<PageItem[]> {
   if (isAppMode(file)) return rpc<PageItem[]>('pages')

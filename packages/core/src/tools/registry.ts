@@ -134,6 +134,7 @@ export const CORE_TOOLS: ToolDef[] = [
   getNode,
   findNodes,
   getJsx,
+  getComponents,
   // Create
   render,
   createInstance,
@@ -171,7 +172,6 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   listPages,
   selectNodes,
   queryNodes,
-  getComponents,
   switchPage,
   pageBounds,
   listFonts,

@@ -1,6 +1,6 @@
 ---
 title: Selection & Manipulation
-description: Selecting, moving, resizing, rotating, duplicating, and organizing nodes in Beresta.
+description: Selecting, moving, resizing, rotating, duplicating, and organizing nodes in Norka.
 ---
 
 # Selection & Manipulation

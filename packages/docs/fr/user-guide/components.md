@@ -1,6 +1,6 @@
 ---
 title: Composants
-description: Composants réutilisables, instances, surcharges et synchronisation live dans Beresta.
+description: Composants réutilisables, instances, surcharges et synchronisation live dans Norka.
 ---
 # Composants
 

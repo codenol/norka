@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 
 import Tip from '@/components/ui/Tip.vue'
-import { useTabsStore, createTab } from '@/stores/tabs'
+import { useTabsStore } from '@/stores/tabs'
 
 const { tabs, activeTabId, switchTab, closeTab } = useTabsStore()
 
@@ -57,15 +57,5 @@ function onClose(e: MouseEvent, tabId: string) {
         </Tip>
       </TabsTrigger>
     </TabsList>
-    <Tip label="New tab">
-      <button
-        data-test-id="tabbar-new"
-        class="flex size-9 shrink-0 cursor-pointer items-center justify-center text-muted transition-colors hover:text-surface"
-        aria-label="New tab"
-        @click="createTab()"
-      >
-        <icon-lucide-plus class="size-3.5" />
-      </button>
-    </Tip>
   </TabsRoot>
 </template>

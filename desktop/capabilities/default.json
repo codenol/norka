@@ -25,7 +25,7 @@
         { "name": "binaries/claude-agent-acp", "sidecar": true, "args": true },
         { "name": "codex-acp", "cmd": "codex-acp", "args": true },
         { "name": "gemini", "cmd": "gemini", "args": true },
-        { "name": "binaries/beresta-mcp", "sidecar": true, "args": true },
+        { "name": "binaries/norka-mcp", "sidecar": true, "args": true },
         { "name": "npm", "cmd": "npm", "args": true },
         { "name": "lsof", "cmd": "lsof", "args": true },
         { "name": "kill", "cmd": "kill", "args": true }

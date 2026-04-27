@@ -14,7 +14,7 @@ import type { Locale } from './locale'
 import type { Ref } from 'vue'
 
 /**
- * Reactive i18n composable for Beresta Vue components.
+ * Reactive i18n composable for Norka Vue components.
  *
  * Returns reactive translation objects grouped by domain, plus locale
  * controls. All values update automatically when the locale changes.

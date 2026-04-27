@@ -7,7 +7,7 @@ import {
   useI18n,
   useInlineRename,
   useLayerDrag
-} from '@beresta/vue'
+} from '@norka/vue'
 import { useEditorStore } from '@/stores/editor'
 import { nodeIcon, COMPONENT_TYPES } from '@/utils/layer-icons'
 import CanvasMenu from './CanvasMenu.vue'

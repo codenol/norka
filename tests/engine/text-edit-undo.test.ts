@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, TextEditor, UndoManager } from '@beresta/core'
-import { createTextActions } from '@beresta/core/editor'
+import { SceneGraph, TextEditor, UndoManager } from '@norka/core'
+import { createTextActions } from '@norka/core/editor'
 
-import type { StyleRun } from '@beresta/core'
-import type { EditorContext, EditorState } from '@beresta/core/editor'
+import type { StyleRun } from '@norka/core'
+import type { EditorContext, EditorState } from '@norka/core/editor'
 
 function setup() {
   const graph = new SceneGraph()

@@ -8,7 +8,7 @@ const isEnHome = page.value.relativePath === 'index.md'
 const schema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'Beresta',
+  name: 'Norka',
   applicationCategory: 'DesignApplication',
   operatingSystem: 'Windows, macOS, Linux, Web',
   offers: {
@@ -16,13 +16,13 @@ const schema = JSON.stringify({
     price: '0',
     priceCurrency: 'USD',
   },
-  url: 'https://app.beresta.dev',
+  url: 'https://app.norka.dev',
   description:
     'Open-source, AI-native design editor. Figma-compatible with full .fig file support.',
   softwareVersion: '0.8.0',
   license: 'https://opensource.org/licenses/MIT',
-  screenshot: 'https://beresta.dev/screenshot.png',
-  downloadUrl: 'https://github.com/beresta/beresta/releases/latest',
+  screenshot: 'https://norka.dev/screenshot.png',
+  downloadUrl: 'https://github.com/norka/norka/releases/latest',
   featureList: [
     'Open .fig files natively',
     'AI chat with 78 design tools',

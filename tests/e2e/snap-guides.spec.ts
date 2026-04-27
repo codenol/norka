@@ -22,7 +22,7 @@ test.afterAll(async () => {
 async function createRects() {
   await canvas.clearCanvas()
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     store.createShape('RECTANGLE', 100, 100, 80, 80)
     const b = store.createShape('RECTANGLE', 300, 100, 80, 80)
     store.select([b])

@@ -4,7 +4,7 @@
 
 Abre y guarda archivos nativos de Figma directamente. El pipeline de importación/exportación usa el mismo códec binario Kiwi que Figma — 194 definiciones de esquema, ~390 campos por nodo. Guardar con <kbd>⌘</kbd><kbd>S</kbd>, Guardar como con <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd>.
 
-**Copiar y pegar con Figma** — selecciona nodos en Figma, <kbd>⌘</kbd><kbd>C</kbd>, cambia a Beresta, <kbd>⌘</kbd><kbd>V</kbd>. Rellenos, trazos, auto-layout, texto, efectos, radios de esquina y redes vectoriales se preservan. Funciona en ambas direcciones.
+**Copiar y pegar con Figma** — selecciona nodos en Figma, <kbd>⌘</kbd><kbd>C</kbd>, cambia a Norka, <kbd>⌘</kbd><kbd>V</kbd>. Rellenos, trazos, auto-layout, texto, efectos, radios de esquina y redes vectoriales se preservan. Funciona en ambas direcciones.
 
 ## Dibujo y edición
 
@@ -61,7 +61,7 @@ Abre múltiples documentos en pestañas. <kbd>⌘</kbd><kbd>T</kbd> nueva pesta�
 - **Tailwind JSX** — HTML con clases de utilidad Tailwind v4, listo para React o Vue
 - **Copiar como** — texto, SVG, PNG (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd>), o JSX vía menú contextual
 
-CLI: `beresta export design.fig -f jsx --style tailwind`
+CLI: `norka export design.fig -f jsx --style tailwind`
 
 ## Chat IA
 
@@ -76,14 +76,14 @@ Ver [Chat IA](/programmable/ai-chat) para configuración y detalles de proveedor
 Conecta Claude Code, Cursor, Windsurf, o cualquier cliente MCP para leer y escribir archivos `.fig` de forma headless. 90+ herramientas. Dos transportes: stdio y HTTP.
 
 ```sh
-bun add -g @beresta/mcp
+bun add -g @norka/mcp
 ```
 
 ```json
 {
   "mcpServers": {
-    "beresta": {
-      "command": "beresta-mcp"
+    "norka": {
+      "command": "norka-mcp"
     }
   }
 }
@@ -96,22 +96,22 @@ Consulta la [referencia de herramientas MCP](/programmable/mcp-server) para la l
 Inspecciona, exporta y analiza archivos `.fig` desde el terminal:
 
 ```sh
-beresta tree design.fig          # Árbol de nodos
-beresta find design.fig --type TEXT  # Buscar
-beresta export design.fig -f png     # Renderizar
-beresta analyze colors design.fig    # Auditoría de colores
-beresta analyze clusters design.fig  # Patrones repetidos
-beresta eval design.fig -c "..."     # Figma Plugin API
+norka tree design.fig          # Árbol de nodos
+norka find design.fig --type TEXT  # Buscar
+norka export design.fig -f png     # Renderizar
+norka analyze colors design.fig    # Auditoría de colores
+norka analyze clusters design.fig  # Patrones repetidos
+norka eval design.fig -c "..."     # Figma Plugin API
 ```
 
 Cuando la app de escritorio está en ejecución, omite el archivo para controlar el editor en vivo vía RPC:
 
 ```sh
-beresta tree                     # Documento en vivo
-beresta export -f png            # Captura del canvas
+norka tree                     # Documento en vivo
+norka export -f png            # Captura del canvas
 ```
 
-Todos los comandos soportan `--json`. Instalar: `bun add -g @beresta/cli`
+Todos los comandos soportan `--json`. Instalar: `bun add -g @norka/cli`
 
 ## Colaboración en tiempo real
 
@@ -127,14 +127,14 @@ P2P vía WebRTC — sin servidor requerido. Comparte un enlace y edita junto.
 
 **Escritorio** — Tauri v2, ~7 MB. macOS (firmado y notarizado), Windows, Linux. Menús nativos, offline, autoguardado.
 
-**Web** — funciona en [app.beresta.dev](https://app.beresta.dev), instalable como PWA en móvil con interfaz optimizada para táctil.
+**Web** — funciona en [app.norka.dev](https://app.norka.dev), instalable como PWA en móvil con interfaz optimizada para táctil.
 
 **Homebrew:**
 
 ```sh
-brew install beresta/tap/beresta
+brew install norka/tap/norka
 ```
 
 ## Fallback de Google Fonts
 
-Cuando una fuente no está disponible localmente, Beresta la carga automáticamente desde Google Fonts. No requiere instalación manual al abrir archivos .fig con fuentes desconocidas.
+Cuando una fuente no está disponible localmente, Norka la carga automáticamente desde Google Fonts. No requiere instalación manual al abrir archivos .fig con fuentes desconocidas.

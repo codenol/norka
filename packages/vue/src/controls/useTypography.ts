@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 
-import { FONT_WEIGHT_NAMES, weightToStyle } from '@beresta/core'
-import { useEditor } from '@beresta/vue/context/editorContext'
-import { useSceneComputed } from '@beresta/vue/internal/useSceneComputed'
-import { useNodeFontStatus } from '@beresta/vue/shared/useFontStatus'
+import { FONT_WEIGHT_NAMES, weightToStyle } from '@norka/core'
+import { useEditor } from '@norka/vue/context/editorContext'
+import { useSceneComputed } from '@norka/vue/internal/useSceneComputed'
+import { useNodeFontStatus } from '@norka/vue/shared/useFontStatus'
 
-import type { SceneNode, TextDecoration } from '@beresta/core'
+import type { SceneNode, TextDecoration } from '@norka/core'
 
 type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
 type TextDirection = SceneNode['textDirection']

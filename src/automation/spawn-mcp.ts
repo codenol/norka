@@ -1,7 +1,7 @@
 import type { Command as ShellCommand } from '@tauri-apps/plugin-shell'
 
 import { decodeTauriStderr } from '@/utils/tauri'
-import { AUTOMATION_HTTP_PORT, IS_TAURI, randomHex } from '@beresta/core'
+import { AUTOMATION_HTTP_PORT, IS_TAURI, randomHex } from '@norka/core'
 
 interface AutomationHealth {
   status: 'ok' | 'no_app'
@@ -14,7 +14,7 @@ export interface AutomationServerHandle {
   authToken: string | null
 }
 
-const DEV_AUTOMATION_AUTH_TOKEN = import.meta.env.DEV ? __BERESTA_LOCAL_AUTOMATION_TOKEN__ : null
+const DEV_AUTOMATION_AUTH_TOKEN = import.meta.env.DEV ? __NORKA_LOCAL_AUTOMATION_TOKEN__ : null
 const noop = () => undefined
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN
@@ -87,10 +87,10 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
 
   const authToken = randomHex(32)
   runtimeAutomationAuthToken = authToken
-  const command = Command.sidecar('binaries/beresta-mcp', [], {
+  const command = Command.sidecar('binaries/norka-mcp', [], {
     env: {
-      OPENPENCIL_MCP_AUTH_TOKEN: authToken,
-      OPENPENCIL_MCP_CORS_ORIGIN: window.location.origin
+      NORKA_MCP_AUTH_TOKEN: authToken,
+      NORKA_MCP_CORS_ORIGIN: window.location.origin
     }
   })
 

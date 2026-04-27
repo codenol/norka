@@ -20,18 +20,18 @@ test.afterAll(async () => {
 
 function getPages() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getPages().map((p) => ({ id: p.id, name: p.name }))
   })
 }
 
 function getCurrentPageId() {
-  return page.evaluate(() => window.__OPEN_PENCIL_STORE__!.state.currentPageId)
+  return page.evaluate(() => window.__NORKA_STORE__!.state.currentPageId)
 }
 
 function getPageChildCount() {
   return page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     return store.graph.getChildren(store.state.currentPageId).length
   })
 }
@@ -120,7 +120,7 @@ test('delete current page switches to adjacent', async () => {
   const deletingId = await getCurrentPageId()
 
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     store.deletePage(store.state.currentPageId)
   })
   await canvas.waitForRender()
@@ -139,7 +139,7 @@ test('rename page via store', async () => {
 
   await page.evaluate(
     ([id, name]) => {
-      window.__OPEN_PENCIL_STORE__!.renamePage(id, name)
+      window.__NORKA_STORE__!.renamePage(id, name)
     },
     [currentId, 'Renamed Page'] as [string, string]
   )
@@ -191,7 +191,7 @@ test('cannot delete the last page', async () => {
   let pages = await getPages()
   while (pages.length > 1) {
     await page.evaluate(() => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       store.deletePage(store.state.currentPageId)
     })
     await canvas.waitForRender()
@@ -202,7 +202,7 @@ test('cannot delete the last page', async () => {
 
   // Try deleting the last one — should be a no-op
   await page.evaluate(() => {
-    const store = window.__OPEN_PENCIL_STORE__!
+    const store = window.__NORKA_STORE__!
     store.deletePage(store.state.currentPageId)
   })
   await canvas.waitForRender()

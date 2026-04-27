@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI, SceneGraph, type Fill } from '@beresta/core'
+import { FigmaAPI, SceneGraph, type Fill } from '@norka/core'
 
 function createAPI(): FigmaAPI {
   return new FigmaAPI(new SceneGraph())

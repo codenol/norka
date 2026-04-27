@@ -12,7 +12,7 @@ import type {
   RequestPermissionRequest,
   RequestPermissionResponse
 } from '@agentclientprotocol/sdk'
-import type { ACPAgentDef } from '@beresta/core'
+import type { ACPAgentDef } from '@norka/core'
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai'
 
 type TauriChild = {
@@ -330,7 +330,7 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
         mcpServers: [
           {
             type: 'http' as const,
-            name: 'beresta',
+            name: 'norka',
             url: 'http://127.0.0.1:7600/mcp',
             headers: automationAuthToken
               ? [{ name: 'Authorization', value: `Bearer ${automationAuthToken}` }]

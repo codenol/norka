@@ -3,14 +3,14 @@ import { renderText } from '../../packages/core/src/canvas/scene'
 import type { SceneNode } from '../../packages/core/src/scene-graph'
 import type { SkiaRenderer } from '../../packages/core/src/canvas/renderer'
 import { initCanvasKit } from '../../packages/cli/src/headless'
-import { SceneGraph, SkiaRenderer as SkiaRendererClass } from '@beresta/core'
+import { SceneGraph, SkiaRenderer as SkiaRendererClass } from '@norka/core'
 import {
   initFontService,
   setArabicFallbackFamily,
   setCJKFallbackFamily,
   markFontLoaded
 } from '../../packages/core/src/text/fonts'
-import { detectTextDirection, resolveTextDirection } from '@beresta/core'
+import { detectTextDirection, resolveTextDirection } from '@norka/core'
 
 function createMockCanvas() {
   return {

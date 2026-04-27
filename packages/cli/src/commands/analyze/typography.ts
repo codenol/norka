@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 
-import { executeRpcCommand } from '@beresta/core'
+import { executeRpcCommand } from '@norka/core'
 
 import { isAppMode, requireFile, rpc } from '../../app-client'
 import { bold, fmtHistogram, fmtSummary } from '../../format'
 import { loadDocument } from '../../headless'
 
-import type { AnalyzeTypographyResult } from '@beresta/core'
+import type { AnalyzeTypographyResult } from '@norka/core'
 
 function weightName(w: number): string {
   if (w <= 100) return 'Thin'

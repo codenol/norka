@@ -61,8 +61,10 @@ function scheduleProductSave(productId: string) {
   if (!workspacePath.value) return
   if (productSaveTimer) clearTimeout(productSaveTimer)
   productSaveTimer = setTimeout(async () => {
+    const root = workspacePath.value
+    if (!root) return
     productMdSaving.value = true
-    await writeProjectMd(workspacePath.value!, productId, productMdContent.value)
+    await writeProjectMd(root, productId, productMdContent.value)
     productMdSaving.value = false
   }, 800)
 }
@@ -88,8 +90,10 @@ function scheduleScreenSave(productId: string, screenId: string) {
   if (!workspacePath.value) return
   if (screenSaveTimer) clearTimeout(screenSaveTimer)
   screenSaveTimer = setTimeout(async () => {
+    const root = workspacePath.value
+    if (!root) return
     screenMdSaving.value = true
-    await writeScreenMd(workspacePath.value!, productId, screenId, screenMdContent.value)
+    await writeScreenMd(root, productId, screenId, screenMdContent.value)
     screenMdSaving.value = false
   }, 800)
 }
@@ -122,15 +126,13 @@ const expandedProducts = ref<Set<string>>(new Set(products.value.map(p => p.id))
 const expandedScreens  = ref<Set<string>>(new Set(products.value.flatMap(p => p.screens.map(s => s.id))))
 
 function toggleProduct(id: string) {
-  expandedProducts.value.has(id)
-    ? expandedProducts.value.delete(id)
-    : expandedProducts.value.add(id)
+  if (expandedProducts.value.has(id)) expandedProducts.value.delete(id)
+  else expandedProducts.value.add(id)
   expandedProducts.value = new Set(expandedProducts.value)
 }
 function toggleScreen(id: string) {
-  expandedScreens.value.has(id)
-    ? expandedScreens.value.delete(id)
-    : expandedScreens.value.add(id)
+  if (expandedScreens.value.has(id)) expandedScreens.value.delete(id)
+  else expandedScreens.value.add(id)
   expandedScreens.value = new Set(expandedScreens.value)
 }
 
@@ -142,6 +144,12 @@ const newProductTitle = ref('')
 interface Creating { productId: string; screenId?: string }
 const creatingIn = ref<Creating | null>(null)
 const newTitle   = ref('')
+const featureMetaDraft = ref({
+  jiraIssueKey: '',
+  jiraUrl: '',
+  designerFullName: '',
+  confluenceUrl: '',
+})
 
 function startCreateScreen(productId: string) {
   creatingIn.value = { productId }
@@ -152,6 +160,12 @@ function startCreateScreen(productId: string) {
 function startCreateFeature(productId: string, screenId: string) {
   creatingIn.value = { productId, screenId }
   newTitle.value = ''
+  featureMetaDraft.value = {
+    jiraIssueKey: '',
+    jiraUrl: '',
+    designerFullName: '',
+    confluenceUrl: '',
+  }
   expandedScreens.value.add(screenId)
   expandedScreens.value = new Set(expandedScreens.value)
 }
@@ -161,7 +175,12 @@ function confirmCreate() {
   if (!title || !creatingIn.value) { creatingIn.value = null; return }
   const { productId, screenId } = creatingIn.value
   if (screenId) {
-    addFeature(productId, screenId, title)
+    addFeature(productId, screenId, title, {
+      jiraIssueKey: featureMetaDraft.value.jiraIssueKey.trim(),
+      jiraUrl: featureMetaDraft.value.jiraUrl.trim(),
+      designerFullName: featureMetaDraft.value.designerFullName.trim(),
+      confluenceUrl: featureMetaDraft.value.confluenceUrl.trim(),
+    })
   } else {
     const screen = addScreen(productId, title)
     if (screen) {
@@ -171,6 +190,12 @@ function confirmCreate() {
   }
   creatingIn.value = null
   newTitle.value = ''
+  featureMetaDraft.value = {
+    jiraIssueKey: '',
+    jiraUrl: '',
+    designerFullName: '',
+    confluenceUrl: '',
+  }
 }
 
 function confirmNewProduct() {
@@ -498,19 +523,43 @@ function stepColor(feature: Feature): string {
                   <!-- New feature input -->
                   <div
                     v-if="creatingIn?.productId === product.id && creatingIn.screenId === screen.id"
-                    class="flex items-center gap-2 border-t border-border/40 px-4 py-2.5"
+                    class="border-t border-border/40 px-4 py-2.5"
                   >
-                    <div class="w-8 shrink-0" />
-                    <icon-lucide-git-branch class="size-3.5 shrink-0 text-accent/70" />
-                    <input
-                      v-model="newTitle"
-                      autofocus
-                      placeholder="Название фичи…"
-                      class="flex-1 bg-transparent text-xs text-surface outline-none placeholder:text-muted"
-                      @keydown.enter="confirmCreate"
-                      @keydown.escape="creatingIn = null"
-                    />
-                    <button class="text-xs text-accent hover:underline" @click="confirmCreate">ОК</button>
+                    <div class="mb-2 flex items-center gap-2">
+                      <div class="w-8 shrink-0" />
+                      <icon-lucide-git-branch class="size-3.5 shrink-0 text-accent/70" />
+                      <input
+                        v-model="newTitle"
+                        autofocus
+                        placeholder="Название фичи…"
+                        class="flex-1 bg-transparent text-xs text-surface outline-none placeholder:text-muted"
+                        @keydown.enter="confirmCreate"
+                        @keydown.escape="creatingIn = null"
+                      />
+                      <button class="text-xs text-accent hover:underline" @click="confirmCreate">ОК</button>
+                    </div>
+                    <div class="ml-10 grid grid-cols-2 gap-2">
+                      <input
+                        v-model="featureMetaDraft.jiraIssueKey"
+                        placeholder="Jira key (например APP-123)"
+                        class="rounded border border-border bg-canvas px-2 py-1 text-[11px] text-surface outline-none"
+                      />
+                      <input
+                        v-model="featureMetaDraft.designerFullName"
+                        placeholder="ФИО дизайнера"
+                        class="rounded border border-border bg-canvas px-2 py-1 text-[11px] text-surface outline-none"
+                      />
+                      <input
+                        v-model="featureMetaDraft.jiraUrl"
+                        placeholder="Jira URL"
+                        class="rounded border border-border bg-canvas px-2 py-1 text-[11px] text-surface outline-none"
+                      />
+                      <input
+                        v-model="featureMetaDraft.confluenceUrl"
+                        placeholder="Confluence URL"
+                        class="rounded border border-border bg-canvas px-2 py-1 text-[11px] text-surface outline-none"
+                      />
+                    </div>
                   </div>
 
                   <!-- Features -->
@@ -524,6 +573,9 @@ function stepColor(feature: Feature): string {
                       <div class="w-8 shrink-0" />
                       <icon-lucide-git-branch class="size-3.5 shrink-0 text-muted/60" />
                       <span class="flex-1 text-xs text-surface">{{ feature.title }}</span>
+                      <span v-if="feature.jiraIssueKey" class="rounded bg-hover px-1.5 py-0.5 text-[10px] text-muted">
+                        {{ feature.jiraIssueKey }}
+                      </span>
 
                       <!-- Progress -->
                       <div class="flex items-center gap-2">

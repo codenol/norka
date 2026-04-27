@@ -12,6 +12,7 @@ const { isDesktop } = useWorkspaceFs()
 // ── Concept code preview ──────────────────────────────────────────────────────
 
 const conceptCode = ref('')
+const finalExport = ref('')
 
 async function loadConceptCode() {
   if (!workspacePath.value || !context.value) return
@@ -49,6 +50,53 @@ async function saveHandoffMd() {
   const { productId, screenId, featureId } = context.value
   await writeFeatureFile(workspacePath.value, productId, screenId, featureId, 'handoff.md', lines.join('\n'))
   toast.success('handoff.md сохранён')
+}
+
+async function generateFinalExportMd() {
+  if (!workspacePath.value || !context.value) {
+    toast.error('Нет рабочей папки или контекста фичи')
+    return
+  }
+  const { productId, screenId, featureId } = context.value
+  const [sourceAnalytics, implementationReady, previewLayout, commentsRaw] = await Promise.all([
+    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics-source.md'),
+    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'implementation-ready.md'),
+    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'preview-layout.json'),
+    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'comments.json'),
+  ])
+  const lines: string[] = [
+    '# Final Prototype Export',
+    '',
+    '## Source Analytics',
+    sourceAnalytics || '(not provided)',
+    '',
+    '## Implementation Ready',
+    implementationReady || '(not generated)',
+    '',
+    '## Prototype Snapshot',
+    '```json',
+    previewLayout || '{}',
+    '```',
+    '',
+    '## Review Summary',
+    commentsRaw || '[]',
+    '',
+    '## Auto Screenshots',
+    '- ![Main state](./screenshots/main.png)',
+    '- ![Empty state](./screenshots/empty.png)',
+    '- ![Error state](./screenshots/error.png)',
+    '',
+  ]
+  finalExport.value = lines.join('\n')
+  await writeFeatureFile(
+    workspacePath.value,
+    productId,
+    screenId,
+    featureId,
+    'final-export.md',
+    finalExport.value,
+  )
+  toast.success('final-export.md сохранён')
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -146,7 +194,7 @@ async function handleCta() {
     currentStep.value = 3
     toast.info('Документация утверждена')
   } else {
-    toast.info('Ссылка скопирована: beresta.app/handoff/abc123')
+    toast.info('Ссылка скопирована: norka.app/handoff/abc123')
   }
 }
 
@@ -160,7 +208,12 @@ const progressWidth = computed(() => {
   return map[currentStep.value]
 })
 
-onMounted(loadConceptCode)
+onMounted(async () => {
+  await loadConceptCode()
+  if (!workspacePath.value || !context.value) return
+  const { productId, screenId, featureId } = context.value
+  finalExport.value = await readFeatureFile(workspacePath.value, productId, screenId, featureId, 'final-export.md')
+})
 </script>
 
 <template>
@@ -222,6 +275,13 @@ onMounted(loadConceptCode)
         >
           <icon-lucide-save class="size-3.5" />
           handoff.md
+        </button>
+        <button
+          class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
+          @click="generateFinalExportMd"
+        >
+          <icon-lucide-file-down class="size-3.5" />
+          final-export.md
         </button>
       </template>
     </header>
@@ -355,7 +415,7 @@ onMounted(loadConceptCode)
           >
             <icon-lucide-check-circle class="size-12 text-emerald-400" />
             <p class="text-sm font-medium text-surface">Документация опубликована</p>
-            <p class="text-xs text-muted">beresta.app/handoff/abc123</p>
+            <p class="text-xs text-muted">norka.app/handoff/abc123</p>
           </div>
         </div>
       </SplitterPanel>
@@ -369,7 +429,7 @@ onMounted(loadConceptCode)
         <TabsRoot v-model="activeDocTab" class="flex h-full flex-col overflow-hidden">
           <TabsList class="flex shrink-0 border-b border-border">
             <TabsTrigger
-              v-for="(label, value) in { documentation: 'Документация', specifications: 'Спецификации', links: 'Ссылки', code: 'Код' }"
+              v-for="(label, value) in { documentation: 'Документация', specifications: 'Спецификации', links: 'Ссылки', code: 'Код', export: 'Экспорт' }"
               :key="value"
               :value="value"
               class="flex-1 border-b-2 border-transparent px-2 py-2 text-[11px] transition-colors data-[state=active]:border-accent data-[state=active]:text-accent"
@@ -461,7 +521,7 @@ onMounted(loadConceptCode)
                 <div v-if="currentStep === 3" class="mb-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
                   <p class="mb-1.5 text-[11px] font-medium text-emerald-400">Ссылка для разработчика</p>
                   <div class="flex items-center gap-2 rounded border border-border bg-canvas px-2 py-1.5">
-                    <span class="flex-1 truncate font-mono text-[11px] text-surface/80">beresta.app/handoff/abc123</span>
+                    <span class="flex-1 truncate font-mono text-[11px] text-surface/80">norka.app/handoff/abc123</span>
                     <button
                       class="text-muted hover:text-surface transition-colors"
                       @click="toast.info('Ссылка скопирована!')"
@@ -502,6 +562,21 @@ onMounted(loadConceptCode)
             <ScrollAreaRoot v-else class="flex-1">
               <ScrollAreaViewport class="h-full">
                 <pre class="p-3 font-mono text-[11px] leading-relaxed text-surface/80 whitespace-pre-wrap break-words">{{ conceptCode }}</pre>
+              </ScrollAreaViewport>
+              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
+                <ScrollAreaThumb class="rounded-full bg-border" />
+              </ScrollAreaScrollbar>
+            </ScrollAreaRoot>
+          </TabsContent>
+
+          <TabsContent value="export" class="flex flex-1 flex-col overflow-hidden">
+            <div v-if="!finalExport" class="flex flex-1 flex-col items-center justify-center gap-3 text-muted">
+              <icon-lucide-file-down class="size-8 opacity-30" />
+              <p class="text-center text-xs px-4">Сгенерируйте final-export.md</p>
+            </div>
+            <ScrollAreaRoot v-else class="flex-1">
+              <ScrollAreaViewport class="h-full">
+                <pre class="p-3 font-mono text-[11px] leading-relaxed text-surface/80 whitespace-pre-wrap break-words">{{ finalExport }}</pre>
               </ScrollAreaViewport>
               <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
                 <ScrollAreaThumb class="rounded-full bg-border" />

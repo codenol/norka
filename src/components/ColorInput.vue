@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ColorInputRoot } from '@beresta/vue'
+import { ColorInputRoot } from '@norka/vue'
 
 import ColorPicker from './ColorPicker.vue'
 
-import type { Color } from '@beresta/core'
-import type { OkHCLControls } from '@beresta/vue/ColorPicker/types'
+import type { Color } from '@norka/core'
+import type { OkHCLControls } from '@norka/vue/ColorPicker/types'
 
 const {
   editable = false,

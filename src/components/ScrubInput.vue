@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ScrubInputRoot, ScrubInputField, ScrubInputDisplay } from '@beresta/vue'
+import { ScrubInputRoot, ScrubInputField, ScrubInputDisplay } from '@norka/vue'
 
 const { modelValue, min, max, step, icon, label, suffix, sensitivity, placeholder } = defineProps<{
   modelValue: number | symbol

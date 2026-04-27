@@ -39,7 +39,7 @@ import type {
 import type { Color, Matrix, Vector } from '../types'
 import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
 
-const BERESTA_PLUGIN_ID = 'open-pencil'
+const NORKA_PLUGIN_ID = 'norka'
 const TEXT_DIRECTION_PLUGIN_KEY = 'textDirection'
 const LAYOUT_DIRECTION_PLUGIN_KEY = 'layoutDirection'
 
@@ -501,9 +501,9 @@ function extractPluginData(nc: NodeChange): PluginDataEntry[] {
   }))
 }
 
-function getBerestaPluginValue(nc: NodeChange, key: string): string | null {
+function getNorkaPluginValue(nc: NodeChange, key: string): string | null {
   return (
-    nc.pluginData?.find((entry) => entry.pluginID === BERESTA_PLUGIN_ID && entry.key === key)
+    nc.pluginData?.find((entry) => entry.pluginID === NORKA_PLUGIN_ID && entry.key === key)
       ?.value ?? null
   )
 }
@@ -620,7 +620,7 @@ function convertTextProps(
     styleRuns: importStyleRuns(nc),
     textTruncation: (nc.textTruncation as string) === 'ENDING' ? 'ENDING' : 'DISABLED',
     textDirection:
-      (getBerestaPluginValue(nc, TEXT_DIRECTION_PLUGIN_KEY) as
+      (getNorkaPluginValue(nc, TEXT_DIRECTION_PLUGIN_KEY) as
         | SceneNode['textDirection']
         | null) || 'AUTO'
   }
@@ -679,7 +679,7 @@ function convertLayoutProps(
     itemReverseZIndex: (nc.stackReverseZIndex ?? false) as boolean,
     strokesIncludedInLayout: (nc.strokesIncludedInLayout ?? false) as boolean,
     layoutDirection:
-      (getBerestaPluginValue(nc, LAYOUT_DIRECTION_PLUGIN_KEY) as
+      (getNorkaPluginValue(nc, LAYOUT_DIRECTION_PLUGIN_KEY) as
         | SceneNode['layoutDirection']
         | null) || 'AUTO'
   }

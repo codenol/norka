@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useI18n } from '@beresta/vue'
+import { useI18n } from '@norka/vue'
 
 import { useLibraryUrlStore, previewUrl } from '@/stores/library-url'
 import { useLibraryStore } from '@/stores/library'

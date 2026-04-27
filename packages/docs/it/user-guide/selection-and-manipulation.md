@@ -1,6 +1,6 @@
 ---
 title: Selezione e manipolazione
-description: Selezionare, spostare, ridimensionare, ruotare e organizzare nodi in Beresta.
+description: Selezionare, spostare, ridimensionare, ruotare e organizzare nodi in Norka.
 ---
 # Selezione e manipolazione
 

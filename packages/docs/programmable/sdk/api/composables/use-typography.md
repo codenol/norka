@@ -19,7 +19,7 @@ It exposes:
 ## Usage
 
 ```ts
-import { useTypography } from '@beresta/vue'
+import { useTypography } from '@norka/vue'
 
 const typography = useTypography()
 ```

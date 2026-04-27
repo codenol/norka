@@ -1,6 +1,6 @@
 ---
 title: Exportieren
-description: Bilder exportieren (PNG, JPG, WEBP) und .fig-Dateien speichern/öffnen in Beresta.
+description: Bilder exportieren (PNG, JPG, WEBP) und .fig-Dateien speichern/öffnen in Norka.
 ---
 
 # Exportieren
@@ -40,7 +40,7 @@ Das Kontextmenü bietet **Als kopieren** mit mehreren Zwischenablage-Formaten:
 
 ## .fig-Dateioperationen
 
-Beresta verwendet das .fig-Format — kompatibel mit Figma. Gespeicherte Dateien werden komprimiert und enthalten ein Vorschaubild.
+Norka verwendet das .fig-Format — kompatibel mit Figma. Gespeicherte Dateien werden komprimiert und enthalten ein Vorschaubild.
 
 ### Dateien öffnen
 
@@ -60,7 +60,7 @@ Beresta verwendet das .fig-Format — kompatibel mit Figma. Gespeicherte Dateien
 
 ### Round-Trip-Kompatibilität
 
-Aus Beresta exportierte Dateien können in Figma geöffnet werden und umgekehrt.
+Aus Norka exportierte Dateien können in Figma geöffnet werden und umgekehrt.
 
 ## Tastenkürzel
 

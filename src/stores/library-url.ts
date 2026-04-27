@@ -9,11 +9,11 @@
 
 import { shallowRef, computed } from 'vue'
 
-import { parseFigFile, libraryRegistry } from '@beresta/core'
+import { parseFigFile, libraryRegistry } from '@norka/core'
 
 import { useLibraryStore } from './library'
 
-import type { SceneGraph } from '@beresta/core'
+import type { SceneGraph } from '@norka/core'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,7 +39,7 @@ export interface LibraryUpdateInfo {
 // Persistence
 // ---------------------------------------------------------------------------
 
-const STORAGE_KEY = 'beresta:lib-url'
+const STORAGE_KEY = 'norka:lib-url'
 
 function loadMetas(): LibraryUrlMeta[] {
   try {

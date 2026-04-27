@@ -12,10 +12,10 @@ import {
   ROOM_ID_CHARS,
   YJS_JSON_FIELDS
 } from '@/constants'
-import { randomIndex } from '@beresta/core'
+import { randomIndex } from '@norka/core'
 
 import type { EditorStore } from '@/stores/editor'
-import type { Color, SceneNode } from '@beresta/core'
+import type { Color, SceneNode } from '@norka/core'
 import type { Room } from 'trystero'
 
 export interface RemotePeer {

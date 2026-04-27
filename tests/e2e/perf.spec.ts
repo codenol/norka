@@ -14,7 +14,7 @@ test.describe('Render performance', () => {
     await helper.waitForInit()
 
     await page.evaluate((count: number) => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const arr = new Uint8Array(count * 3)
       crypto.getRandomValues(arr)
       const cols = Math.ceil(Math.sqrt(count))
@@ -77,7 +77,7 @@ test.describe('Render performance', () => {
 
   test('benchmark: synchronous render throughput', async () => {
     const results = await helper.page.evaluate((iterations: number) => {
-      const store = window.__OPEN_PENCIL_STORE__!
+      const store = window.__NORKA_STORE__!
       const renderer = store.renderer!
 
       function setupRenderer() {
@@ -155,7 +155,7 @@ test.describe('Render performance', () => {
 
     const results = await helper.page.evaluate(
       ({ count, iterations }) => {
-        const store = window.__OPEN_PENCIL_STORE__!
+        const store = window.__NORKA_STORE__!
         const renderer = store.renderer!
         const graph = store.graph
         const pageId = store.state.currentPageId

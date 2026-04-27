@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI, SceneGraph, matchByXPath, queryByXPath } from '@beresta/core'
+import { FigmaAPI, SceneGraph, matchByXPath, queryByXPath } from '@norka/core'
 
 function setup() {
   const graph = new SceneGraph()

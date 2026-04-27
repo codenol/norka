@@ -1,6 +1,6 @@
 import { type InjectionKey, inject, provide } from 'vue'
 
-import type { SceneNode } from '@beresta/core'
+import type { SceneNode } from '@norka/core'
 import type { Ref } from 'vue'
 
 export interface CanvasContext {
@@ -20,6 +20,6 @@ export function provideCanvas(ctx: CanvasContext) {
 
 export function useCanvasContext(): CanvasContext {
   const ctx = inject(CANVAS_KEY)
-  if (!ctx) throw new Error('[beresta] useCanvasContext() called outside <CanvasRoot>')
+  if (!ctx) throw new Error('[norka] useCanvasContext() called outside <CanvasRoot>')
   return ctx
 }

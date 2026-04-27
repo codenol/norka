@@ -4,19 +4,19 @@
 
 ```
 packages/
-  core/              @beresta/core — движок (без DOM-зависимостей)
+  core/              @norka/core — движок (без DOM-зависимостей)
     src/             Граф сцены, отрисовщик, компоновка, кодек, kiwi, типы
-  cli/               @beresta/cli — headless CLI для операций с .fig
+  cli/               @norka/cli — headless CLI для операций с .fig
     src/commands/    info, tree, find, export, eval, analyze
-  mcp/               @beresta/mcp — MCP-сервер для AI-инструментов
+  mcp/               @norka/mcp — MCP-сервер для AI-инструментов
     src/             stdio + HTTP (Hono) транспорты, 87 инструментов
 src/
   components/        Vue SFC (холст, панели, панель инструментов, палитра цветов)
     properties/      Секции панели свойств (Внешний вид, Заливка, Обводка и др.)
   composables/       Ввод на холсте, сочетания клавиш, хуки отрисовки
   stores/            Состояние редактора (реактивность Vue)
-  engine/            Шимы реэкспорта из @beresta/core
-  kiwi/              Шимы реэкспорта из @beresta/core
+  engine/            Шимы реэкспорта из @norka/core
+  kiwi/              Шимы реэкспорта из @norka/core
   types.ts           Общие типы (реэкспорт из core)
   constants.ts       Цвета UI, значения по умолчанию, пороги
 desktop/             Tauri v2 (Rust + конфигурация)
@@ -62,7 +62,7 @@ bun run check
 
 ### Соглашения для AI-агентов
 
-Разработчики и AI-агенты, работающие с кодовой базой, должны прочитать `AGENTS.md` в корне репозитория ([посмотреть на GitHub](https://github.com/beresta/beresta/blob/master/AGENTS.md)). Файл охватывает отрисовку, граф сцены, компоненты и экземпляры, компоновку, UI, формат файлов, соглашения Tauri и известные проблемы.
+Разработчики и AI-агенты, работающие с кодовой базой, должны прочитать `AGENTS.md` в корне репозитория ([посмотреть на GitHub](https://github.com/norka/norka/blob/master/AGENTS.md)). Файл охватывает отрисовку, граф сцены, компоненты и экземпляры, компоновку, UI, формат файлов, соглашения Tauri и известные проблемы.
 
 ## Внесение изменений
 

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { selectionToJSX } from '@beresta/core'
+import { selectionToJSX } from '@norka/core'
 
 import { useAIChat } from '@/composables/use-chat'
 import { getActiveEditorStore } from '@/stores/editor'

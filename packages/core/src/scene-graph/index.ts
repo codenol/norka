@@ -19,6 +19,13 @@ import {
 export type { GUID, Color } from '../types'
 import type { Matrix, Vector, Color, Rect } from '../types'
 import type { Emitter } from 'nanoevents'
+import type {
+  ArchetypeCodeBinding,
+  ArchetypeDesignBinding,
+  ArchetypeTokenBinding,
+  ComponentArchetype,
+  ComponentRule
+} from '../components/archetypes'
 
 export interface SceneGraphEvents {
   'node:created': (node: SceneNode) => void
@@ -596,19 +603,19 @@ export class SceneGraph {
   // ---------------------------------------------------------------------------
 
   /** Bindings: archetype → design COMPONENT node (in this or a library graph) */
-  archetypeDesignBindings: import('../components/archetypes').ArchetypeDesignBinding[] = []
+  archetypeDesignBindings: ArchetypeDesignBinding[] = []
 
   /** Bindings: archetype → production code (import, usage example) */
-  archetypeCodeBindings: import('../components/archetypes').ArchetypeCodeBinding[] = []
+  archetypeCodeBindings: ArchetypeCodeBinding[] = []
 
   /** Bindings: archetype prop variants → design variable IDs */
-  archetypeTokenBindings: import('../components/archetypes').ArchetypeTokenBinding[] = []
+  archetypeTokenBindings: ArchetypeTokenBinding[] = []
 
   /** User-written rules for design + code usage of each archetype */
-  componentRules: import('../components/archetypes').ComponentRule[] = []
+  componentRules: ComponentRule[] = []
 
   /** User-created archetypes (extends BUILT_IN_ARCHETYPES) */
-  customArchetypes: import('../components/archetypes').ComponentArchetype[] = []
+  customArchetypes: ComponentArchetype[] = []
 
   constructor() {
     const root = createDefaultNode('FRAME', {

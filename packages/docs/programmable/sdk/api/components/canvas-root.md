@@ -1,11 +1,11 @@
 ---
 title: CanvasRoot
-description: Headless canvas primitive for Beresta rendering surfaces.
+description: Headless canvas primitive for Norka rendering surfaces.
 ---
 
 # CanvasRoot
 
-`CanvasRoot` is the structural canvas primitive in `@beresta/vue`.
+`CanvasRoot` is the structural canvas primitive in `@norka/vue`.
 
 Use it when you want SDK-provided canvas structure and context with app-owned layout and styling.
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
 
-import { parsePenFile } from '@beresta/core'
+import { parsePenFile } from '@norka/core'
 
 const FIXTURE_DIR = join(import.meta.dir, '..', 'fixtures')
 

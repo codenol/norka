@@ -1,6 +1,6 @@
 ---
 title: Kontextmenü
-description: Rechtsklick-Kontextmenü-Aktionen in Beresta — Zwischenablage, Z-Reihenfolge, Gruppierung, Komponenten und mehr.
+description: Rechtsklick-Kontextmenü-Aktionen in Norka — Zwischenablage, Z-Reihenfolge, Gruppierung, Komponenten und mehr.
 ---
 
 # Kontextmenü
