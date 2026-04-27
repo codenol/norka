@@ -208,6 +208,8 @@ function createModel(): LanguageModel {
   }
 }
 
+export { createModel }
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test-only mock transports don't implement full generics
 let overrideTransport: (() => any) | null = null
 

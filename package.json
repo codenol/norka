@@ -1,7 +1,7 @@
 {
   "name": "beresta-app",
   "private": true,
-  "version": "0.11.6",
+  "version": "0.12.0",
   "license": "MIT",
   "type": "module",
   "workspaces": [
@@ -27,7 +27,8 @@
     "docs:dev": "bun --filter @beresta/docs dev",
     "docs:build": "bun --filter @beresta/docs build",
     "docs:preview": "bun --filter @beresta/docs preview",
-    "visual-compare": "bun scripts/visual-compare.ts"
+    "visual-compare": "bun scripts/visual-compare.ts",
+    "release": "bun scripts/bump-version.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",

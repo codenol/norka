@@ -591,6 +591,25 @@ export class SceneGraph {
   private absPosCache = new Map<string, Vector>()
   instanceIndex = new Map<string, Set<string>>()
 
+  // ---------------------------------------------------------------------------
+  // Component Archetype data (per-document)
+  // ---------------------------------------------------------------------------
+
+  /** Bindings: archetype → design COMPONENT node (in this or a library graph) */
+  archetypeDesignBindings: import('../components/archetypes').ArchetypeDesignBinding[] = []
+
+  /** Bindings: archetype → production code (import, usage example) */
+  archetypeCodeBindings: import('../components/archetypes').ArchetypeCodeBinding[] = []
+
+  /** Bindings: archetype prop variants → design variable IDs */
+  archetypeTokenBindings: import('../components/archetypes').ArchetypeTokenBinding[] = []
+
+  /** User-written rules for design + code usage of each archetype */
+  componentRules: import('../components/archetypes').ComponentRule[] = []
+
+  /** User-created archetypes (extends BUILT_IN_ARCHETYPES) */
+  customArchetypes: import('../components/archetypes').ComponentArchetype[] = []
+
   constructor() {
     const root = createDefaultNode('FRAME', {
       name: 'Document',
