@@ -135,7 +135,6 @@ function createProtoStore() {
     }
     nodes.push(node)
     syncAllChildrenRefs()
-    selectedId.value = node.id
     return node
   }
 

@@ -21,8 +21,6 @@ const idToContainer = new Map<string, HTMLDivElement>()
 const moduleCache = new Map<string, Record<string, unknown> | null>()
 
 // Drag-and-drop state
-const dragFromIndex = ref<number | null>(null)
-const dragOverIndex = ref<number | null>(null)
 const dragOverNodeId = ref<string | null>(null)
 const dragOverPosition = ref<'before' | 'inside' | 'after' | null>(null)
 
@@ -93,7 +91,8 @@ async function createReactSubtree(nodeId: string): Promise<unknown | null> {
     .filter((v): v is unknown => v !== null)
 
   if (!def?.acceptsChildren || childElements.length === 0) {
-    return createElement(Comp as never, props as never)
+    const element = createElement(Comp as never, props as never)
+    return createElement('div', { 'data-proto-node-id': node.id, style: { display: 'contents' } }, element)
   }
 
   if (def.slots && def.slots.some((slot) => slot !== 'default')) {
@@ -113,10 +112,12 @@ async function createReactSubtree(nodeId: string): Promise<unknown | null> {
       props[slotName] = () => createElement('div', {}, ...(slotElements as never[]))
     }
     const defaultChildren = bySlot.get('default') ?? []
-    return createElement(Comp as never, props as never, ...(defaultChildren as never[]))
+    const element = createElement(Comp as never, props as never, ...(defaultChildren as never[]))
+    return createElement('div', { 'data-proto-node-id': node.id, style: { display: 'contents' } }, element)
   }
 
-  return createElement(Comp as never, props as never, ...(childElements as never[]))
+  const element = createElement(Comp as never, props as never, ...(childElements as never[]))
+  return createElement('div', { 'data-proto-node-id': node.id, style: { display: 'contents' } }, element)
 }
 
 async function rerenderMountedNodes() {
@@ -180,19 +181,7 @@ function onNodeRef(node: ProtoNode, el: Element | null) {
 }
 
 // Drag handlers
-function onDragStart(index: number) {
-  dragFromIndex.value = index
-}
-function onDragOver(e: DragEvent, index: number) {
-  e.preventDefault()
-  dragOverIndex.value = index
-}
 function onDragEnd() {
-  if (dragFromIndex.value !== null && dragOverIndex.value !== null && dragFromIndex.value !== dragOverIndex.value) {
-    store.reorder(dragFromIndex.value, dragOverIndex.value)
-  }
-  dragFromIndex.value = null
-  dragOverIndex.value = null
   dragOverNodeId.value = null
   dragOverPosition.value = null
 }
@@ -265,7 +254,6 @@ function onNodeDrop(event: DragEvent, nodeId: string) {
   }
   dragOverNodeId.value = null
   dragOverPosition.value = null
-  dragOverIndex.value = null
 }
 
 function onCanvasDrop(event: DragEvent) {
@@ -281,7 +269,6 @@ function onCanvasDrop(event: DragEvent) {
   }
   dragOverNodeId.value = null
   dragOverPosition.value = null
-  dragOverIndex.value = null
 }
 
 function onCanvasDragOver(event: DragEvent) {
@@ -292,7 +279,6 @@ function onCanvasDragLeave(event: DragEvent) {
   if (event.currentTarget !== event.target) return
   dragOverNodeId.value = null
   dragOverPosition.value = null
-  dragOverIndex.value = null
 }
 
 function onNodeDragLeave(event: DragEvent, nodeId: string) {
@@ -304,16 +290,41 @@ function onNodeDragLeave(event: DragEvent, nodeId: string) {
   }
 }
 
-function nodeClass(nodeId: string, index: number) {
+function onNodeClick(event: MouseEvent, fallbackId: string) {
+  if (!isEditor.value) return
+  const target = event.target
+  const el = target instanceof HTMLElement ? target : null
+  const hit = el?.closest<HTMLElement>('[data-proto-node-id]')
+  const selectedNodeId = hit?.dataset.protoNodeId
+  if (selectedNodeId) {
+    store.selectNode(selectedNodeId)
+    return
+  }
+  if (fallbackId) store.selectNode(null)
+}
+
+function onCanvasClick(event: MouseEvent) {
+  if (!isEditor.value) return
+  const target = event.target
+  const el = target instanceof HTMLElement ? target : null
+  const hit = el?.closest<HTMLElement>('[data-proto-node-id]')
+  if (!hit) {
+    store.selectNode(null)
+  }
+}
+
+function nodeClass(nodeId: string) {
+  const standalone = shouldRenderMount(nodeId)
   return [
     isEditor.value ? 'cursor-pointer' : '',
-    selectedId.value === nodeId && isEditor.value
+    standalone && selectedId.value === nodeId && isEditor.value
       ? 'border-accent/60 shadow-sm shadow-accent/10'
-      : 'border-border/50 hover:border-border',
-    dragOverIndex.value === index ? 'ring-2 ring-accent/40' : '',
-    dragOverNodeId.value === nodeId && dragOverPosition.value === 'inside' ? 'ring-2 ring-accent/30' : '',
-    dragOverNodeId.value === nodeId && dragOverPosition.value === 'before' ? 'border-t-2 border-t-accent' : '',
-    dragOverNodeId.value === nodeId && dragOverPosition.value === 'after' ? 'border-b-2 border-b-accent' : '',
+      : standalone
+        ? 'border-border/50 hover:border-border'
+        : 'border-transparent',
+    standalone && dragOverNodeId.value === nodeId && dragOverPosition.value === 'inside' ? 'ring-2 ring-accent/30' : '',
+    standalone && dragOverNodeId.value === nodeId && dragOverPosition.value === 'before' ? 'border-t-2 border-t-accent' : '',
+    standalone && dragOverNodeId.value === nodeId && dragOverPosition.value === 'after' ? 'border-b-2 border-b-accent' : '',
   ]
 }
 </script>
@@ -349,6 +360,7 @@ function nodeClass(nodeId: string, index: number) {
 
         <div
           class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto"
+          @click="onCanvasClick"
           @dragover="onCanvasDragOver"
           @dragleave="onCanvasDragLeave"
           @drop="onCanvasDrop"
@@ -371,55 +383,27 @@ function nodeClass(nodeId: string, index: number) {
               const node = store.getNode(entry.id)
               if (node) onNodeRef(node, el as Element | null)
             }"
-            class="group relative rounded-lg border transition-all"
-            :class="nodeClass(entry.id, index)"
+            class="group relative mt-3 rounded-lg border transition-all"
+            :class="nodeClass(entry.id)"
             :style="{ marginLeft: `${entry.depth * 16}px` }"
             :draggable="isEditor"
-            @click="isEditor && store.selectNode(entry.id)"
-            @dragstart="onDragStart(index)"
-            @dragstart.capture="onNodeDragStart($event, entry.id)"
-            @dragover="onDragOver($event, index)"
+            @click="onNodeClick($event, entry.id)"
+            @dragstart="onNodeDragStart($event, entry.id)"
             @dragover.capture="onNodeDragOver($event, entry.id)"
             @dragleave.capture="onNodeDragLeave($event, entry.id)"
             @dragend="onDragEnd"
             @drop="onNodeDrop($event, entry.id)"
           >
-            <!-- Editor drag handle + label + delete -->
-            <template v-if="isEditor">
-              <div
-                class="absolute left-0 top-0 z-10 flex h-6 w-full items-center justify-between rounded-t-lg bg-panel/90 px-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
-                :class="selectedId === entry.id ? 'opacity-100' : ''"
-              >
-                <div class="flex items-center gap-1.5">
-                  <icon-lucide-grip-vertical class="size-3.5 cursor-grab text-muted active:cursor-grabbing" />
-                <span class="text-[11px] text-muted">{{ store.getNode(entry.id)?.componentName }}</span>
-                </div>
-                <button
-                  class="flex size-4 items-center justify-center rounded text-muted hover:bg-red-500/20 hover:text-red-400"
-                  title="Удалить"
-                  @click.stop="store.removeNode(entry.id)"
-                >
-                  <icon-lucide-x class="size-3" />
-                </button>
-              </div>
-            </template>
-
             <!-- React mount container -->
             <div
               v-if="shouldRenderMount(entry.id)"
               data-react-mount
-              class="p-4"
-              :class="[
-                isEditor ? 'pointer-events-none' : 'pointer-events-auto',
-                isEditor && selectedId === entry.id ? 'pt-8' : '',
-              ]"
+              class="pointer-events-auto"
             />
             <div
               v-else
-              class="px-4 py-2 text-[11px] text-muted/80"
-            >
-              Вложенный элемент: {{ store.getNode(entry.id)?.componentName }}
-            </div>
+              class="h-0"
+            />
           </div>
         </div>
       </section>
