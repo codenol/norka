@@ -20,6 +20,67 @@ import { createAITools } from '@/ai/tools'
 
 import type { EditorStore } from '@/stores/editor'
 
+export interface AnalyticsDesignSources {
+  analyticsMd: string
+  analyticsSourceMd: string
+  implementationReadyMd: string
+}
+
+interface AnalyticsDesignSourceValidationOk {
+  ok: true
+}
+
+interface AnalyticsDesignSourceValidationError {
+  ok: false
+  missing: string[]
+  message: string
+}
+
+export type AnalyticsDesignSourceValidation =
+  | AnalyticsDesignSourceValidationOk
+  | AnalyticsDesignSourceValidationError
+
+export function validateAnalyticsDesignSources(
+  sources: AnalyticsDesignSources,
+): AnalyticsDesignSourceValidation {
+  const missing: string[] = []
+  if (!sources.analyticsMd.trim()) missing.push('analytics.md')
+  if (!sources.analyticsSourceMd.trim()) missing.push('analytics-source.md')
+  if (!sources.implementationReadyMd.trim()) missing.push('implementation-ready.md')
+  if (missing.length === 0) return { ok: true }
+
+  return {
+    ok: false,
+    missing,
+    message: `Недостаточно данных для генерации дизайна. Заполните: ${missing.join(', ')}`,
+  }
+}
+
+export function buildAnalyticsDesignPrompt(sources: AnalyticsDesignSources): string {
+  return [
+    'Собери макет экрана на канвасе на основе текущей аналитики.',
+    'Используй ТОЛЬКО данные ниже как source of truth.',
+    'Обязательно выполни инструменты в порядке:',
+    '1) get_components()',
+    '2) render(...) для внешнего контейнера',
+    '3) create_instance(...) для компонентов',
+    '4) set_layout/batch_update для компоновки',
+    '5) describe(...) и исправление критичных проблем',
+    '6) save_preview_layout({ screen, frame, nodes })',
+    '7) open_design()',
+    'После инструментов ответь кратко по-русски: какой экран собран, какие блоки и состояния покрыты.',
+    '',
+    '# analytics.md',
+    sources.analyticsMd,
+    '',
+    '# analytics-source.md',
+    sources.analyticsSourceMd,
+    '',
+    '# implementation-ready.md',
+    sources.implementationReadyMd,
+  ].join('\n')
+}
+
 /**
  * Returns the currently active EditorStore, or creates a new tab if none exists.
  * This ensures the Analytics AI always has a document to write to.
@@ -123,7 +184,7 @@ When the user asks for a mockup, wireframe, or screen design:
 4. Use \`set_layout\` and \`batch_update\` to align, add spacing, and polish the hierarchy
 5. Call \`describe({ id })\` on the root frame and fix critical issues from the report
 6. Call \`save_preview_layout({ screen, frame, nodes })\` with resolved core component names and props
-7. Call \`open_design()\` to open the Design workspace and show the result
+7. Call \`open_design()\` exactly once to open the Design workspace and show the result
 8. Reply with a brief summary: screen name, main components used, frame size
 
 Available PrimeReact components: Button, InputText, Dropdown, DataTable, Card,

@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
 import AISettingsDialog from '@/components/AISettingsDialog.vue'
 import WorkspaceBar from '@/components/WorkspaceBar.vue'
 import { useProjects, type PipelineStep } from '@/composables/use-projects'
 
 const route = useRoute()
-const { context, PIPELINE_STEPS, markStepVisited } = useProjects()
+const {
+  context,
+  currentFeature,
+  currentProduct,
+  currentScreen,
+  PIPELINE_STEPS,
+  markStepVisited,
+} = useProjects()
 
 const currentStep = computed(() => {
   const segment = route.path.split('/workspace/')[1]?.split('/')[0]
   if (!segment) return null
   return PIPELINE_STEPS.find(s => s.key === segment) ?? null
 })
+
+const isWorkspaceRoute = computed(() => route.path.startsWith('/workspace/'))
 
 // Record step visits automatically when route changes
 watch(
@@ -31,7 +40,62 @@ watch(
   <div class="flex h-screen w-screen overflow-hidden">
     <WorkspaceBar />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <RouterView />
+      <header
+        class="flex h-10 shrink-0 items-center gap-1 border-b border-border bg-panel px-3"
+      >
+        <RouterLink
+          to="/projects"
+          class="rounded px-1.5 py-0.5 text-[11px] text-muted transition-colors hover:bg-hover hover:text-surface"
+        >
+          Проекты
+        </RouterLink>
+        <icon-lucide-chevron-right class="size-3 text-muted/60" />
+
+        <span class="max-w-[24ch] truncate rounded px-1.5 py-0.5 text-[11px] text-surface">
+          {{ currentProduct?.title ?? 'Проект не выбран' }}
+        </span>
+        <icon-lucide-chevron-right class="size-3 text-muted/60" />
+
+        <span class="max-w-[24ch] truncate rounded px-1.5 py-0.5 text-[11px] text-surface">
+          {{ currentScreen?.title ?? 'Экран не выбран' }}
+        </span>
+        <icon-lucide-chevron-right class="size-3 text-muted/60" />
+
+        <span class="max-w-[28ch] truncate rounded px-1.5 py-0.5 text-[11px] text-surface">
+          {{ currentFeature?.title ?? 'Фича не выбрана' }}
+        </span>
+
+        <div class="ml-2 h-4 w-px bg-border" />
+
+        <template v-for="step in PIPELINE_STEPS" :key="step.key">
+          <span
+            v-if="currentStep?.key === step.key"
+            class="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent"
+          >
+            {{ step.label }}
+          </span>
+          <RouterLink
+            v-else
+            :to="`/workspace/${step.key}`"
+            class="rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted transition-colors hover:bg-hover hover:text-surface"
+          >
+            {{ step.label }}
+          </RouterLink>
+        </template>
+
+        <div class="flex-1" />
+
+        <RouterLink
+          v-if="!context && isWorkspaceRoute"
+          to="/projects"
+          class="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-300 transition-colors hover:bg-amber-500/20"
+        >
+          Выбрать проект и фичу
+        </RouterLink>
+      </header>
+      <div class="min-h-0 flex-1">
+        <RouterView />
+      </div>
     </div>
     <AISettingsDialog />
   </div>

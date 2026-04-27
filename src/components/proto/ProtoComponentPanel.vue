@@ -17,10 +17,13 @@ const searchQuery = ref('')
 
 const filteredDefs = computed<PrimePreviewDef[]>(() => {
   const q = searchQuery.value.toLowerCase().trim()
-  if (!q) return PRIME_PREVIEW_DEFS
-  return PRIME_PREVIEW_DEFS.filter((d) =>
-    d.name.toLowerCase().includes(q) || d.exportName.toLowerCase().includes(q),
-  )
+  const defs = !q
+    ? PRIME_PREVIEW_DEFS
+    : PRIME_PREVIEW_DEFS.filter((d) =>
+        d.name.toLowerCase().includes(q) || d.exportName.toLowerCase().includes(q),
+      )
+
+  return [...defs].sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
 })
 
 function handleInsert(def: PrimePreviewDef) {
@@ -71,7 +74,7 @@ function handleDragStart(def: PrimePreviewDef, event: DragEvent) {
       </div>
 
       <TooltipProvider :delay-duration="600" :skip-delay-duration="100">
-        <div class="grid grid-cols-2 gap-1.5 px-2 py-1">
+        <div class="grid grid-cols-2 gap-2 px-2.5 py-1.5">
           <TooltipRoot v-for="def in filteredDefs" :key="def.name">
             <TooltipTrigger as-child>
               <ComponentPreviewItem
