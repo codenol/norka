@@ -196,9 +196,24 @@ export interface EnterpriseQualitySignals {
   jsonStructureMatch?: boolean
 }
 
-function normalizeComponentName(name: string): string {
-  if (name === 'Breadcrum' || name === 'BreadCrumb') return 'Breadcrumb'
-  return name
+export const DESIGN_SYSTEM_COMPONENT_IDS = [
+  'DesignSystemBreadcrumb',
+  'DesignSystemDataTable',
+  'DesignSystemSidebarPanel',
+  'DesignSystemStatusBadge'
+] as const
+
+export function normalizeComponentName(name: string): string {
+  const normalized = name.trim()
+  const lowered = normalized.toLowerCase()
+  if (lowered === 'breadcrum' || lowered === 'breadcrumb' || lowered === 'bread-crumb') return 'DesignSystemBreadcrumb'
+  if (name === 'BreadCrumbs' || name === 'CustomBreadCrumb') return 'DesignSystemBreadcrumb'
+  if (name === 'DataTableDynamic') return 'DesignSystemDataTable'
+  if (name === 'StatusBadge') return 'DesignSystemStatusBadge'
+  if (lowered === 'page_header' || lowered === 'page-header' || lowered === 'pageheader') {
+    return 'DesignSystemPageHeader'
+  }
+  return normalized
 }
 
 function normalizeAssemblySteps(raw: Array<Record<string, unknown>>): AssemblyStep[] {
@@ -300,7 +315,7 @@ export function normalizeRenderPlan(input: unknown): NormalizeRenderPlanResult {
       sectionId: 'sidebar',
       kind: 'summaryPanel',
       title: 'Navigation',
-      component: 'Card',
+      component: 'DesignSystemSidebarPanel',
       props: { title: 'Navigation' }
     })
     diagnostics.push('sidebar content synthesized')
@@ -311,7 +326,7 @@ export function normalizeRenderPlan(input: unknown): NormalizeRenderPlanResult {
       sectionId: 'breadcrumbs',
       kind: 'breadcrumbTrail',
       title: 'Home / Screen',
-      component: 'Breadcrumb',
+      component: 'DesignSystemBreadcrumb',
       props: { model: [{ label: 'Home' }, { label: 'Screen' }] }
     })
     diagnostics.push('breadcrumbs content synthesized')
@@ -322,7 +337,7 @@ export function normalizeRenderPlan(input: unknown): NormalizeRenderPlanResult {
       sectionId: 'main',
       kind: 'entityTable',
       title: 'Data Table',
-      component: 'DataTable',
+      component: 'DesignSystemDataTable',
       props: { paginator: true, rows: 10, stripedRows: true }
     })
     diagnostics.push('main content synthesized')
@@ -419,12 +434,12 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
         items: [
           {
             id: 'sidebar-genom-title',
-            component: 'Card',
+            component: 'DesignSystemSidebarPanel',
             props: { title: 'Геном 2.0', subTitle: 'Обзор' }
           },
           {
             id: 'sidebar-genom-nav',
-            component: 'Panel',
+            component: 'DesignSystemSidebarPanel',
             props: { header: 'Навигация' }
           }
         ]
@@ -437,7 +452,7 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
         items: [
           {
             id: 'breadcrumbs-genom',
-            component: 'Breadcrumb',
+            component: 'DesignSystemBreadcrumb',
             props: {
               model: [{ label: 'Геном 2.0' }, { label: 'Отчёт о прошивках' }]
             }
@@ -472,7 +487,7 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
         sectionId: 'header',
         kind: 'pageHeader',
         title: 'Отчёт о прошивках',
-        component: 'Card',
+        component: 'page_header',
         props: { title: 'Отчёт о прошивках' }
       },
       {
@@ -512,7 +527,7 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
         sectionId: 'main',
         kind: 'entityTable',
         title: 'Firmware table',
-        component: 'DataTable',
+        component: 'DesignSystemDataTable',
         props: { paginator: false, rows: 12, stripedRows: true, size: 'small' }
       },
       {
@@ -596,7 +611,7 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
       sectionId: 'header',
       kind: 'pageHeader',
       title: 'Page Title',
-      component: 'Card',
+      component: 'page_header',
       props: { title: 'Page Title' }
     },
     {
@@ -666,7 +681,7 @@ export function enterprisePlanToScreenPlan(plan: EnterpriseScreenPlanV1): Screen
   const blockDefaults: Record<EnterpriseBlockKind, { archetypeId: string; preferredComponent: string }> = {
     summaryPanel: { archetypeId: 'navigation', preferredComponent: 'Card' },
     breadcrumbTrail: { archetypeId: 'navigation', preferredComponent: 'Breadcrumb' },
-    pageHeader: { archetypeId: 'header', preferredComponent: 'Card' },
+    pageHeader: { archetypeId: 'header', preferredComponent: 'page_header' },
     filtersBar: { archetypeId: 'filters', preferredComponent: 'Dropdown' },
     kpiRow: { archetypeId: 'metric', preferredComponent: 'Toolbar' },
     kpiCard: { archetypeId: 'metric', preferredComponent: 'Card' },
@@ -785,7 +800,14 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
       .join(' ')
   const resolveComponent = (
     preferred: string | undefined,
-    fallback: 'Card' | 'Toolbar' | 'Dropdown' | 'DataTable' | 'Button' | 'Breadcrumb'
+    fallback:
+      | 'Card'
+      | 'Toolbar'
+      | 'Dropdown'
+      | 'DataTable'
+      | 'Button'
+      | 'Breadcrumb'
+      | 'DesignSystemPageHeader'
   ) => (preferred ? normalizeComponentName(preferred) : fallback)
   const buildRowsFromSchema = (count: number): Array<Record<string, unknown>> =>
     Array.from({ length: count }, (_, index) => {
@@ -839,6 +861,10 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
     }
 
     if (block.kind === 'entityTable') {
+      const columns =
+        tableSpec?.columns && tableSpec.columns.length > 0
+          ? tableSpec.columns
+          : fields.map((field) => ({ key: field.key, label: field.label }))
       steps.push({
         id: block.id,
         section: block.sectionId,
@@ -850,14 +876,11 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
           stripedRows: true,
           rows: Math.min(10, rowCountTarget),
           value: dataRows,
+          columns,
           ...(block.props ?? {})
         },
         expectedChecks: [`${block.id}-created`]
       })
-      const columns =
-        tableSpec?.columns && tableSpec.columns.length > 0
-          ? tableSpec.columns
-          : fields.map((field) => ({ key: field.key, label: field.label }))
       for (const column of columns) {
         steps.push({
           id: `${block.id}-col-${column.key}`,
@@ -888,6 +911,19 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
         component_id: resolveComponent(block.component, 'Breadcrumb'),
         parent_section_id: block.sectionId,
         props: breadcrumbProps,
+        expectedChecks: [`${block.id}-created`]
+      })
+      continue
+    }
+
+    if (block.kind === 'pageHeader') {
+      steps.push({
+        id: block.id,
+        section: block.sectionId,
+        intent: `Create block ${block.id}`,
+        component_id: resolveComponent(block.component, 'DesignSystemPageHeader'),
+        parent_section_id: block.sectionId,
+        props: block.props ?? { title: block.title },
         expectedChecks: [`${block.id}-created`]
       })
       continue

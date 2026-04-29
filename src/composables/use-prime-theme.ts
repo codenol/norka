@@ -37,6 +37,8 @@ export function usePrimeTheme() {
     if (!link) return
     link.href = `https://unpkg.com/primereact@10/resources/themes/${themeId}/theme.css`
     document.documentElement.dataset.primeTheme = themeId
+    document.body.classList.remove('layout-theme-light', 'layout-theme-dark')
+    document.body.classList.add(themeId.includes('light') ? 'layout-theme-light' : 'layout-theme-dark')
 
     const canvasColor = PRIME_THEME_CANVAS_COLORS[themeId]
     getActiveEditorStore().setPageColor(canvasColor)

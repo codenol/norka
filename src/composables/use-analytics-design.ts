@@ -427,7 +427,7 @@ export function useAnalyticsDesign() {
  * Prepended to the skill-specific prompt when building a mockup.
  */
 export const ANALYTICS_DESIGN_INSTRUCTIONS = `
-## Mockup assembly (PrimeReact Core Library)
+## Mockup assembly (Design System + PrimeReact)
 
 Return only JSON payload that matches the render contract.
 Do not return markdown explanations.
@@ -443,6 +443,11 @@ Hybrid assumptions policy (MANDATORY):
 - Build immediately, no blocking questionnaire.
 - Any guessed value MUST be marked in \`assumptions[]\`.
 - Ensure output contains only real components and explicit diagnostics for gaps.
-- Use standard PrimeReact components as the first choice for generated UI.
+- Prefer local design-system component_id values when applicable:
+  - DesignSystemBreadcrumb
+  - DesignSystemSidebarPanel
+  - DesignSystemDataTable
+  - DesignSystemStatusBadge
+- If no design-system component fits, use standard PrimeReact components.
 - Do not alter workspace shell or component sidebar; fill only the main content area.
 `.trim()

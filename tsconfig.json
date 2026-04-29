@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@design-system/*": ["./src/design-system/*"],
       "@norka/vue": ["./packages/vue/src/index.ts"],
       "@norka/vue/*": ["./packages/vue/src/*"],
       "@norka/core": ["./packages/core/src/index.ts"],

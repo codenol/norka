@@ -1,9 +1,9 @@
 import { createHead } from '@unhead/vue/client'
 import { createApp } from 'vue'
 
-import './app.css'
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
+import './app.css'
 import { IS_TAURI } from '@/constants'
 import { preloadFonts } from '@/engine/fonts'
 import { initBuiltinLibraries } from '@/stores/builtin-library'

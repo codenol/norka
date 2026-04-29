@@ -1,0 +1,202 @@
+{
+  "meta": {
+    "possibleIcons": [
+      "layout-grid",
+      "blocks",
+      "network",
+      "settings-2",
+      "circle",
+      "file-text",
+      "server",
+      "git-fork",
+      "trash-2",
+      "download",
+      "search"
+    ],
+    "fallbackIcon": "circle",
+    "miniBar": [
+      { "id": "mini-circle", "icon": "circle", "state": "default", "visible": true },
+      { "id": "mini-layout-grid", "icon": "layout-grid", "state": "default", "visible": true }
+    ]
+  },
+  "sidebar": [
+    {
+      "id": "sidebar-main",
+      "section": "sidebar",
+      "component_id": "DesignSystemSidebarPanel",
+      "props": {
+        "title": "геном 2.0",
+        "subTitle": "Обзор",
+        "activeId": "fw-report",
+        "items": [
+          { "id": "overview", "label": "Обзор", "icon": "layout-grid" },
+          { "id": "servers", "label": "Сервера", "icon": "server" },
+          { "id": "switches", "label": "Коммутаторы", "icon": "git-fork" },
+          { "id": "network", "label": "Сети", "icon": "network" },
+          { "id": "fw-report", "label": "Отчет о прошивках", "icon": "file-text" },
+          { "id": "team", "label": "Команда (1 строка)", "icon": "circle" }
+        ]
+      }
+    }
+  ],
+  "breadcrumbs": [
+    {
+      "id": "breadcrumbs-main",
+      "section": "breadcrumbs",
+      "component_id": "DesignSystemBreadcrumb",
+      "props": {
+        "model": [{ "label": "Label" }, { "label": "Label" }]
+      }
+    }
+  ],
+  "main": [
+    {
+      "id": "page-main-frame",
+      "section": "main",
+      "component_id": "Frame",
+      "props": { "layout": "vertical", "gap": 12, "width": "100%" },
+      "children": [
+        {
+          "id": "header-title",
+          "section": "main",
+          "component_id": "page_header",
+          "props": {
+            "title": "Отчет о прошивках",
+            "subTitle": ""
+          }
+        },
+        {
+          "id": "tabs-frame",
+          "section": "main",
+          "component_id": "Frame",
+          "props": { "layout": "horizontal", "gap": 8, "alignItems": "center" },
+          "children": [
+            {
+              "id": "tab-report",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Отчеты", "severity": "secondary" }
+            },
+            {
+              "id": "tab-topology",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Топики", "severity": "secondary" }
+            },
+            {
+              "id": "tab-systems",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Системы", "severity": "secondary" }
+            }
+          ]
+        },
+        {
+          "id": "filters-frame",
+          "section": "main",
+          "component_id": "Frame",
+          "props": { "layout": "horizontal", "gap": 8, "alignItems": "center" },
+          "children": [
+            {
+              "id": "filter-search",
+              "section": "main",
+              "component_id": "InputText",
+              "props": { "placeholder": "Input", "iconLeft": "search" }
+            },
+            {
+              "id": "filter-zone",
+              "section": "main",
+              "component_id": "Dropdown",
+              "props": {
+                "placeholder": "Text",
+                "options": [
+                  { "label": "Text", "value": "text" },
+                  { "label": "Type", "value": "type" }
+                ]
+              }
+            },
+            {
+              "id": "filter-system",
+              "section": "main",
+              "component_id": "Dropdown",
+              "props": {
+                "placeholder": "Text",
+                "options": [
+                  { "label": "Text", "value": "text" },
+                  { "label": "Model", "value": "model" }
+                ]
+              }
+            },
+            {
+              "id": "filter-trash",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Del", "severity": "secondary", "iconLeft": "trash-2" }
+            },
+            {
+              "id": "filter-toggle",
+              "section": "main",
+              "component_id": "Checkbox",
+              "props": { "checked": true }
+            },
+            {
+              "id": "action-apply",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Button", "severity": "info" }
+            },
+            {
+              "id": "action-more",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Button", "severity": "secondary" }
+            },
+            {
+              "id": "action-download",
+              "section": "main",
+              "component_id": "Button",
+              "props": { "label": "Download", "severity": "secondary", "iconLeft": "download" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "firmware-table",
+      "section": "main",
+      "component_id": "DesignSystemDataTable",
+      "props": {
+        "selectionMode": "multiple",
+        "dataKey": "id",
+        "paginator": false,
+        "rows": 20,
+        "stripedRows": true,
+        "columns": [
+          { "key": "version", "label": "Версия ПО" },
+          { "key": "componentType", "label": "Компонент: тип" },
+          { "key": "componentModel", "label": "Компонент: модель" },
+          { "key": "componentSerial", "label": "Компонент: серийный номер" },
+          { "key": "nodeName", "label": "Узел: имя" },
+          { "key": "nodeModel", "label": "Узел: модель" },
+          { "key": "module", "label": "Модуль" },
+          { "key": "pak", "label": "ПАК" },
+          { "key": "status", "label": "STATUS" }
+        ],
+        "value": [
+          { "id": "r1", "version": "Сервер BIOS", "componentType": "Сервер BIOS", "componentModel": "VADRO Vegman R220 G2", "componentSerial": "VALUE", "nodeName": "mbd-p15vvl-r1.int.skala-ru", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r2", "version": "Сервер BMC", "componentType": "Сервер BMC", "componentModel": "VADRO Vegman R220 G2", "componentSerial": "VALUE", "nodeName": "mbd-p15vvl-r1.int.skala-ru", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r3", "version": "NIC FW", "componentType": "NIC FW", "componentModel": "B4Com SN12100", "componentSerial": "VALUE", "nodeName": "mbd-p15bvl-r1.int.skala-ru", "nodeModel": "mbd-p15bvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r4", "version": "HW RAID FW", "componentType": "HW RAID FW", "componentModel": "AVAGO MegaRAID SAS 9460-8i", "componentSerial": "VALUE", "nodeName": "mbd-p15bvl-r2.int.skala-ru", "nodeModel": "mbd-p15bvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r5", "version": "HW RAID BIOS", "componentType": "HW RAID BIOS", "componentModel": "AVAGO MegaRAID SAS 9460-8i", "componentSerial": "VALUE", "nodeName": "mbd-p15bvl-r2.int.skala-ru", "nodeModel": "mbd-p15bvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r6", "version": "HBA controller FW", "componentType": "HBA controller FW", "componentModel": "Broadcom / LSI HBA 9400-16i", "componentSerial": "VALUE", "nodeName": "mbd-p15spvl-r1.int.skala-ru", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r7", "version": "HBA controller BIOS", "componentType": "HBA controller BIOS", "componentModel": "Broadcom / LSI HBA 9400-16i", "componentSerial": "VALUE", "nodeName": "mbd-p15spvl-r1.int.skala-ru", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r8", "version": "CXD FW", "componentType": "CXD FW", "componentModel": "Gen2/FatLin_UNIFIED", "componentSerial": "VALUE", "nodeName": "mbd-p15vvl-r1.int.skala-ru", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r9", "version": "коммутатор FW", "componentType": "коммутатор FW", "componentModel": "BCOM.S4132U", "componentSerial": "VALUE", "nodeName": "MS-MSK49-SNE1036", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r10", "version": "коммутатор FW", "componentType": "коммутатор FW", "componentModel": "MESS3048 BTF 52-port 1G/10G Managed Switch", "componentSerial": "VALUE", "nodeName": "MS-MSK49-SNE1037", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" },
+          { "id": "r11", "version": "коммутатор FW", "componentType": "коммутатор FW", "componentModel": "DEPO NGN-OS,4184VD", "componentSerial": "VALUE", "nodeName": "MS-MSK49-SNE1038", "nodeModel": "mbd-p15vvl-r1.int.skala-ru", "module": "", "pak": "MSK49-MB.PX-INT-15-M.BXX", "status": "STATUS" }
+        ]
+      }
+    }
+  ],
+  "actions": []
+}

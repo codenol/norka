@@ -57,6 +57,9 @@ export const PRIME_PREVIEW_DEFS: PrimePreviewDef[] = [
     previewProps: { label: 'Button' },
     propSchema: {
       label: { type: 'string' },
+      icon: { type: 'string' },
+      iconLeft: { type: 'string' },
+      iconRight: { type: 'string' },
       disabled: { type: 'boolean' },
       loading: { type: 'boolean' },
       severity: {
@@ -84,6 +87,10 @@ export const PRIME_PREVIEW_DEFS: PrimePreviewDef[] = [
     importPath: 'primereact/dropdown',
     exportName: 'Dropdown',
     previewProps: { placeholder: 'Select' },
+    safeDefaults: {
+      options: [],
+      value: null
+    },
     propSchema: {
       placeholder: { type: 'string' },
       disabled: { type: 'boolean' }
@@ -316,6 +323,42 @@ export const PRIME_PREVIEW_DEFS: PrimePreviewDef[] = [
     exportName: 'Avatar',
     previewProps: { label: 'A' },
     llm: { category: 'feedback', layout: 'leaf', fallbackComponent: 'Tag' }
+  },
+  {
+    name: 'DesignSystemBreadcrumb',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemBreadcrumb',
+    previewProps: { model: [{ label: 'Home' }, { label: 'Page' }] },
+    llm: { category: 'navigation', layout: 'leaf', fallbackComponent: 'Breadcrumb' }
+  },
+  {
+    name: 'DesignSystemSidebarPanel',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemSidebarPanel',
+    previewProps: { title: 'Геном 2.0', subTitle: 'Обзор' },
+    llm: { category: 'layout', layout: 'container', fallbackComponent: 'Card' }
+  },
+  {
+    name: 'DesignSystemDataTable',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemDataTable',
+    previewProps: { rows: 10, stripedRows: true, paginator: true },
+    llm: { category: 'data', layout: 'container', fallbackComponent: 'DataTable' }
+  },
+  {
+    name: 'DesignSystemStatusBadge',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemStatusBadge',
+    previewProps: { code: 'ok', name: 'STATUS' },
+    llm: { category: 'feedback', layout: 'leaf', fallbackComponent: 'Badge' }
+  },
+  {
+    name: 'DesignSystemPageHeader',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemPageHeader',
+    previewProps: { title: 'Page Title' },
+    propSchema: { title: { type: 'string' } },
+    llm: { category: 'layout', layout: 'leaf', fallbackComponent: 'Panel' }
   }
 ]
 
@@ -525,6 +568,8 @@ async function loadPrimeModuleB(path: string): Promise<Record<string, unknown> |
       return import('primereact/divider')
     case 'primereact/avatar':
       return import('primereact/avatar')
+    case '@/design-system/runtime':
+      return import('@/design-system/runtime')
     case 'primereact/multiselect':
       return import('primereact/multiselect')
     case 'primereact/inputtextarea':

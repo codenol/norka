@@ -7,6 +7,7 @@ import {
   buildEnterpriseScreenPlan,
   buildRenderTree,
   evaluateQualityGate,
+  normalizeComponentName,
   normalizeRenderPlan,
   RENDER_CONTRACT_VERSION
 } from '@/ai/screen-pipeline'
@@ -68,6 +69,14 @@ describe('screen pipeline contracts', () => {
     expect(tree.sidebar.length).toBeGreaterThan(0)
     expect(tree.breadcrumbs.length).toBeGreaterThan(0)
     expect(tree.main.length + tree.actions.length).toBeGreaterThan(0)
+  })
+
+  it('normalizes legacy component aliases to design-system ids', () => {
+    expect(normalizeComponentName('BreadCrumbs')).toBe('DesignSystemBreadcrumb')
+    expect(normalizeComponentName('Breadcrum')).toBe('DesignSystemBreadcrumb')
+    expect(normalizeComponentName('Breadcrumb')).toBe('DesignSystemBreadcrumb')
+    expect(normalizeComponentName('DataTableDynamic')).toBe('DesignSystemDataTable')
+    expect(normalizeComponentName('StatusBadge')).toBe('DesignSystemStatusBadge')
   })
 })
 

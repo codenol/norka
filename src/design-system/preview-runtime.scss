@@ -1,0 +1,192 @@
+@import './tokens/imported/indexTokens';
+
+.ds-preview-root {
+  --ds-surface: var(--surface-card, var(--sidebar-background-default));
+  --ds-border: var(--surface-border, var(--sidebar-border-default));
+  --ds-text: var(--text-color, var(--sidebar-text-default));
+  --ds-muted: var(--text-color-secondary, var(--icon-action-icon-default));
+  --ds-accent: var(--primary-color, var(--button-filled-accent-background-default));
+  color: var(--ds-text);
+  background: var(--layout-background-default);
+}
+
+.ds-preview-root .p-breadcrumb {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.ds-preview-root .p-breadcrumb .p-breadcrumb-list li .p-menuitem-text {
+  color: var(--breadcrumbs-text-secondary);
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+}
+
+.ds-preview-root .p-breadcrumb .p-breadcrumb-list li:last-child .p-menuitem-text {
+  color: var(--breadcrumbs-text-default);
+}
+
+.ds-preview-root .ds-breadcrumbs-shell {
+  background: var(--breadcrumbs-background-default);
+  border-color: var(--breadcrumbs-border-default);
+}
+
+.ds-preview-root .p-card,
+.ds-preview-root .p-panel {
+  border: 1px solid var(--ds-border);
+  box-shadow: none;
+  background: var(--ds-surface);
+}
+
+.ds-preview-root .p-datatable {
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ds-preview-root .p-datatable .p-datatable-thead > tr > th {
+  background: color-mix(in oklab, var(--ds-surface) 90%, var(--ds-border) 10%);
+  color: var(--ds-text);
+}
+
+.ds-preview-root .p-datatable .p-datatable-tbody > tr > td {
+  color: var(--ds-text);
+}
+
+.ds-preview-root .p-button {
+  border-color: var(--ds-accent);
+}
+
+.ds-preview-root .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--ds-accent) 15%, transparent);
+  color: var(--ds-text);
+}
+
+.ds-preview-root .ds-page-header {
+  padding: 0;
+  background: transparent;
+}
+
+.ds-preview-root .ds-page-header__title {
+  margin: 0;
+  color: var(--content-text-primary);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: 0;
+}
+
+.ds-preview-root .ds-sidebar-content {
+  background: var(--sidebar-background-default);
+}
+
+.ds-preview-root .ds-sidebar-shell {
+  border-color: var(--sidebar-border-default);
+}
+
+.ds-preview-root .ds-fixed-minibar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: 8px 0;
+  border-radius: 16px 0 0 16px;
+  border-color: var(--sidebar-border-default);
+  background: var(--sidebar-background-default);
+}
+
+.ds-preview-root .ds-fixed-minibar__content {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ds-preview-root .ds-fixed-minibar__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ds-preview-root .ds-fixed-minibar__fixed-bottom {
+  display: flex;
+  margin-top: auto;
+  margin-bottom: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-menubutton-icon-default);
+  border: 1px solid var(--sidebar-menubutton-border-default);
+  border-radius: 8px;
+  background: transparent;
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn:hover {
+  color: var(--sidebar-menubutton-icon-hover);
+  border-color: var(--sidebar-menubutton-border-hover);
+  background: var(--sidebar-menubutton-background-hover);
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn:active {
+  color: var(--sidebar-menubutton-icon-active);
+  border-color: var(--sidebar-menubutton-border-active);
+  background: var(--sidebar-menubutton-background-active);
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn.is-hover {
+  color: var(--sidebar-menubutton-icon-hover);
+  border-color: var(--sidebar-menubutton-border-hover);
+  background: var(--sidebar-menubutton-background-hover);
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn.is-active {
+  color: var(--sidebar-menubutton-icon-active);
+  border-color: var(--sidebar-menubutton-border-active);
+  background: var(--sidebar-menubutton-background-active);
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn.is-hover-active {
+  color: var(--sidebar-menubutton-icon-active-hover);
+  border-color: var(--sidebar-menubutton-border-active-hover);
+  background: var(--sidebar-menubutton-background-active-hover);
+}
+
+.ds-preview-root .ds-fixed-minibar__avatar {
+  display: flex;
+  height: 32px;
+  width: 32px;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-avatar-text-default);
+  border: 0;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--sidebar-avatar-background-default);
+}
+
+.ds-preview-root .ds-fixed-minibar__icon-btn svg {
+  height: 22px;
+  width: 22px;
+}

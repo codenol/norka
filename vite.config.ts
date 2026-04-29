@@ -26,6 +26,7 @@ export default defineConfig(async ({ command }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@design-system': resolve(__dirname, 'src/design-system'),
       '@norka/vue': resolve(__dirname, 'packages/vue/src'),
       '@norka/core': resolve(__dirname, 'packages/core/src'),
       'opentype.js': resolve(__dirname, 'node_modules/opentype.js/dist/opentype.module.js'),

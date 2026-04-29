@@ -25,6 +25,7 @@ import {
 } from '@/composables/use-analytics-design'
 import {
   buildAssemblyPlanFromEnterprisePlan,
+  buildRenderTree,
   buildEnterpriseScreenPlan,
   enterprisePlanToScreenPlan,
   evaluateQualityGate,
@@ -468,6 +469,7 @@ async function updateBriefFromChat() {
 }
 
 const isGeneratingDesign = ref(false)
+const isGeneratingJsonScreen = ref(false)
 const DEFAULT_SCENE_ID = 'overview-dashboard'
 const analyticsPlanBlocks = computed(() => {
   const rows: Array<{ title: string; description: string }> = []
@@ -610,6 +612,40 @@ async function generateDesignFromAnalytics() {
   }
 }
 
+async function generateJsonScreenFromAnalytics() {
+  if (isGeneratingJsonScreen.value) return
+  if (!projectContext.value) {
+    toast.error('Контекст фичи не выбран')
+    return
+  }
+  isGeneratingJsonScreen.value = true
+  try {
+    const enterpriseScreenPlan = buildEnterpriseScreenPlan(briefToMd(), analyticsSource.value)
+    const assemblyPlan = buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
+    const renderTree = buildRenderTree(enterpriseScreenPlan, assemblyPlan)
+    const payload = {
+      meta: {
+        miniBar: [
+          { icon: 'layout-grid', active: false },
+          { icon: 'blocks', active: false },
+          { icon: 'network', active: false },
+          { icon: 'settings-2', active: true }
+        ]
+      },
+      sidebar: renderTree.sidebar,
+      breadcrumbs: renderTree.breadcrumbs,
+      main: renderTree.main,
+      actions: renderTree.actions
+    }
+    await writeToClipboard(JSON.stringify(payload, null, 2))
+    toast.info('JSON создан и скопирован')
+  } catch {
+    toast.error('Не удалось создать JSON')
+  } finally {
+    isGeneratingJsonScreen.value = false
+  }
+}
+
 const canSaveBrief = computed(
   () => Boolean(projectContext.value && getFeatureStorageRoot()) && !savingBrief.value
 )
@@ -683,7 +719,25 @@ async function applyDemoBrief() {
 }
 
 async function copyBriefMarkdown() {
-  await navigator.clipboard.writeText(briefToMd())
+  await writeToClipboard(briefToMd())
+}
+
+async function writeToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  if (!copied) throw new Error('Clipboard write failed')
 }
 </script>
 
@@ -728,6 +782,16 @@ async function copyBriefMarkdown() {
         <icon-lucide-loader-circle v-if="isGeneratingDesign" class="size-3.5 animate-spin" />
         <icon-lucide-wand-sparkles v-else class="size-3.5" />
         {{ isGeneratingDesign ? 'Собираю экран…' : 'Собрать экран' }}
+      </button>
+      <button
+        :disabled="isGeneratingJsonScreen || isGeneratingDesign || !projectContext"
+        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        :class="isGeneratingJsonScreen ? 'text-accent' : 'text-muted hover:bg-hover hover:text-surface'"
+        @click="generateJsonScreenFromAnalytics"
+      >
+        <icon-lucide-loader-circle v-if="isGeneratingJsonScreen" class="size-3.5 animate-spin" />
+        <icon-lucide-file-json v-else class="size-3.5" />
+        {{ isGeneratingJsonScreen ? 'Создаю JSON…' : 'Создать JSON-экран' }}
       </button>
       <span class="text-[10px] text-muted">
         {{

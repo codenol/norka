@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { buildRenderTree, normalizeRenderPlan } from '@/ai/screen-pipeline'
+import JsonContractDialog from '@/components/design/JsonContractDialog.vue'
 import JsonDesignCanvas from '@/components/design/JsonDesignCanvas.vue'
 import { usePrimeTheme } from '@/composables/use-prime-theme'
 import { useProjects } from '@/composables/use-projects'
@@ -17,6 +18,7 @@ const { context } = useProjects()
 const route = useRoute()
 const pipelineStatus = ref<'ready' | 'partial' | 'invalid-contract' | 'empty'>('empty')
 const showDebug = ref(false)
+const jsonDialogOpen = ref(false)
 const debugPayload = ref<string>('')
 const renderTree = ref<RenderTree>({
   sidebar: [],
@@ -26,6 +28,13 @@ const renderTree = ref<RenderTree>({
   diagnostics: []
 })
 const treePayload = ref('{}')
+const manualTreePayload = ref<string | null>(null)
+const manualTreeRevision = ref(0)
+const activeTreePayload = computed(() => manualTreePayload.value ?? treePayload.value)
+const activeTreeInput = computed(() => ({
+  value: activeTreePayload.value,
+  revision: manualTreeRevision.value
+}))
 const rootNodeCount = computed(
   () =>
     renderTree.value.sidebar.length +
@@ -110,6 +119,11 @@ async function loadPipelineStatus() {
   }
 }
 
+function applyTreeJson(raw: string) {
+  manualTreePayload.value = raw
+  manualTreeRevision.value += 1
+}
+
 onMounted(() => {
   void loadPipelineStatus()
   window.addEventListener(PREVIEW_LAYOUT_UPDATED_EVENT, loadPipelineStatus)
@@ -147,6 +161,12 @@ onUnmounted(() => {
       </span>
       <button
         class="rounded border border-border px-2 py-0.5 text-[10px] text-muted transition-colors hover:bg-hover hover:text-surface"
+        @click="jsonDialogOpen = true"
+      >
+        JSON
+      </button>
+      <button
+        class="rounded border border-border px-2 py-0.5 text-[10px] text-muted transition-colors hover:bg-hover hover:text-surface"
         @click="showDebug = !showDebug"
       >
         {{ showDebug ? 'Hide debug' : 'Debug' }}
@@ -162,9 +182,14 @@ onUnmounted(() => {
       </div>
       <div class="h-full overflow-auto">
         <JsonDesignCanvas
-          :treeJson="treePayload"
+          :treeJson="activeTreeInput"
         />
       </div>
     </div>
+    <JsonContractDialog
+      v-model:open="jsonDialogOpen"
+      :initial-value="activeTreePayload"
+      @apply="applyTreeJson"
+    />
   </div>
 </template>
