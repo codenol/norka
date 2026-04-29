@@ -11,10 +11,9 @@ import {
   makeDocumentNodeChange,
   makeCanvasNodeChange
 } from '../../../kiwi/serialize'
+import { weightToStyle } from '../../../text/fonts'
 import { renderThumbnail } from '../raster'
 import { compressFigDataSync } from './compress'
-
-import { weightToStyle } from '../../../text/fonts'
 
 import type { SkiaRenderer } from '../../../canvas'
 import type { NodeChange } from '../../../kiwi/codec'
@@ -106,7 +105,11 @@ function serializeVariables(
       if (!variable) continue
       const varGuid = { sessionID: 0, localID: localIdCounter.value++ }
       varIdToGuid.set(varId, varGuid)
-      const typeMap: Record<string, string> = { COLOR: 'COLOR', BOOLEAN: 'BOOLEAN', STRING: 'STRING' }
+      const typeMap: Record<string, string> = {
+        COLOR: 'COLOR',
+        BOOLEAN: 'BOOLEAN',
+        STRING: 'STRING'
+      }
       const resolvedType = typeMap[variable.type] ?? 'FLOAT'
       const entries = Object.entries(variable.valuesByMode).map(([modeId, value]) => ({
         modeID: modeIdToGuid.get(modeId) ?? stringToGuid(modeId),

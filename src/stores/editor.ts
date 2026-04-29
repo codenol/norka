@@ -3,6 +3,7 @@ import { shallowReactive, shallowRef, computed, watch, triggerRef } from 'vue'
 
 import { IS_TAURI } from '@/constants'
 import { loadFont } from '@/engine/fonts'
+import { useLibraryStore } from '@/stores/library'
 import { toast } from '@/utils/toast'
 import {
   breakAtVertex,
@@ -25,7 +26,6 @@ import {
   splitSegmentAt,
   prefetchFigmaSchema
 } from '@norka/core'
-import { useLibraryStore } from '@/stores/library'
 
 import type {
   EditorState,

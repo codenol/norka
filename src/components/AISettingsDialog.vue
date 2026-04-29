@@ -10,7 +10,7 @@ import {
   TabsContent,
   TabsList,
   TabsRoot,
-  TabsTrigger,
+  TabsTrigger
 } from 'reka-ui'
 
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
@@ -34,7 +34,7 @@ const {
   maxOutputTokens,
   pexelsApiKey,
   unsplashAccessKey,
-  isConfigured,
+  isConfigured
 } = useAIChat()
 
 const isACP = computed(() => providerID.value.startsWith('acp:'))
@@ -165,7 +165,12 @@ function clearUnsplashKey() {
               <TabsRoot
                 :model-value="customAPIType"
                 class="flex flex-col"
-                @update:model-value="(v: string) => { customAPIType = v as 'completions' | 'responses'; save() }"
+                @update:model-value="
+                  (v: string) => {
+                    customAPIType = v as 'completions' | 'responses'
+                    save()
+                  }
+                "
               >
                 <TabsList class="flex rounded bg-canvas">
                   <TabsTrigger
@@ -201,7 +206,11 @@ function clearUnsplashKey() {
               <input
                 v-model="keyInput"
                 type="password"
-                :placeholder="hasExistingKey ? 'Ключ сохранён — введите новый для замены' : providerDef.keyPlaceholder"
+                :placeholder="
+                  hasExistingKey
+                    ? 'Ключ сохранён — введите новый для замены'
+                    : providerDef.keyPlaceholder
+                "
                 :class="useInputUI({ size: 'sm' }).base"
                 @change="save"
               />

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
+import {
+  ScrollAreaRoot,
+  ScrollAreaScrollbar,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+  SplitterGroup,
+  SplitterPanel,
+  SplitterResizeHandle
+} from 'reka-ui'
 import { generateText } from 'ai'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -13,28 +21,28 @@ import {
   writeComponentMd,
   exportCoreComponents,
   readCoreRuntimeManifest,
-  validateCoreRuntimeManifest,
+  validateCoreRuntimeManifest
 } from '@/composables/use-workspace-fs'
 import { useLibraries } from '@/composables/use-libraries'
 import { useProjects } from '@/composables/use-projects'
 
 const { workspacePath, writeDesignMd } = useWorkspaceFs()
 
-const route  = useRoute()
+const route = useRoute()
 const router = useRouter()
 const { libraries } = useLibraries()
-const { products }  = useProjects()
+const { products } = useProjects()
 
 const currentLibrary = computed(() => {
   const id = typeof route.params.id === 'string' ? route.params.id : undefined
   return id
-    ? (libraries.value.find(l => l.id === id) ?? libraries.value[0] ?? null)
+    ? (libraries.value.find((l) => l.id === id) ?? libraries.value[0] ?? null)
     : (libraries.value[0] ?? null)
 })
 
 const connectedProjects = computed(() =>
   currentLibrary.value
-    ? products.value.filter(p => p.connectedLibraryIds.includes(currentLibrary.value!.id))
+    ? products.value.filter((p) => p.connectedLibraryIds.includes(currentLibrary.value!.id))
     : []
 )
 
@@ -43,10 +51,31 @@ const connectedProjects = computed(() =>
 type Section = 'Colors' | 'Typography' | 'Effects' | 'Components' | 'Icons'
 type ComponentTab = 'description' | 'props' | 'variants' | 'code' | 'rules'
 
-interface ColorToken { id: string; name: string; value: string; group: string }
-interface TypographyToken { id: string; name: string; font: string; size: string; weight: string; lineHeight: string }
-interface EffectToken { id: string; name: string; description: string; value: string }
-interface IconItem { id: string; name: string; icon: string }
+interface ColorToken {
+  id: string
+  name: string
+  value: string
+  group: string
+}
+interface TypographyToken {
+  id: string
+  name: string
+  font: string
+  size: string
+  weight: string
+  lineHeight: string
+}
+interface EffectToken {
+  id: string
+  name: string
+  description: string
+  value: string
+}
+interface IconItem {
+  id: string
+  name: string
+  icon: string
+}
 
 export interface ComponentProp {
   name: string
@@ -93,22 +122,74 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     states: ['default', 'hover', 'focus', 'disabled', 'loading'],
     props: [
       { name: 'label', type: 'string', default: '', required: false, description: 'Текст кнопки' },
-      { name: 'icon', type: 'string', default: '', required: false, description: 'Иконка (pi pi-*)' },
-      { name: 'severity', type: 'primary|secondary|success|info|warning|danger', default: 'primary', required: false, description: 'Визуальный стиль' },
+      {
+        name: 'icon',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Иконка (pi pi-*)'
+      },
+      {
+        name: 'severity',
+        type: 'primary|secondary|success|info|warning|danger',
+        default: 'primary',
+        required: false,
+        description: 'Визуальный стиль'
+      },
       { name: 'size', type: 'small|large', default: '', required: false, description: 'Размер' },
-      { name: 'loading', type: 'boolean', default: 'false', required: false, description: 'Спиннер загрузки' },
-      { name: 'disabled', type: 'boolean', default: 'false', required: false, description: 'Заблокирован' },
-      { name: 'outlined', type: 'boolean', default: 'false', required: false, description: 'Только обводка' },
-      { name: 'text', type: 'boolean', default: 'false', required: false, description: 'Без фона и обводки' },
+      {
+        name: 'loading',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Спиннер загрузки'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Заблокирован'
+      },
+      {
+        name: 'outlined',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Только обводка'
+      },
+      {
+        name: 'text',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Без фона и обводки'
+      }
     ],
     variants: [
-      { name: 'primary', description: 'Главное действие на странице', code: '<Button label="Сохранить" severity="primary" />' },
-      { name: 'secondary', description: 'Вторичное действие или отмена', code: '<Button label="Отмена" severity="secondary" />' },
-      { name: 'danger', description: 'Деструктивное действие', code: '<Button label="Удалить" severity="danger" outlined />' },
-      { name: 'loading', description: 'Состояние загрузки', code: '<Button label="Сохранение..." loading={true} />' },
+      {
+        name: 'primary',
+        description: 'Главное действие на странице',
+        code: '<Button label="Сохранить" severity="primary" />'
+      },
+      {
+        name: 'secondary',
+        description: 'Вторичное действие или отмена',
+        code: '<Button label="Отмена" severity="secondary" />'
+      },
+      {
+        name: 'danger',
+        description: 'Деструктивное действие',
+        code: '<Button label="Удалить" severity="danger" outlined />'
+      },
+      {
+        name: 'loading',
+        description: 'Состояние загрузки',
+        code: '<Button label="Сохранение..." loading={true} />'
+      }
     ],
     usageExample: `import { Button } from 'primereact/button'\n\n<Button label="Создать" icon="pi pi-plus" severity="primary" />\n<Button label="Отмена" severity="secondary" />\n<Button label="Удалить" severity="danger" outlined />`,
-    rules: `- Максимум один primary-button на блок действий\n- Destructive-действия: severity="danger", желательно outlined\n- Кнопки-действия всегда правее кнопки отмены\n- loading=true при отправке формы — не давать кликнуть повторно\n- Не использовать icon без label, если нет Tip-подсказки`,
+    rules: `- Максимум один primary-button на блок действий\n- Destructive-действия: severity="danger", желательно outlined\n- Кнопки-действия всегда правее кнопки отмены\n- loading=true при отправке формы — не давать кликнуть повторно\n- Не использовать icon без label, если нет Tip-подсказки`
   },
   {
     id: 'input',
@@ -122,17 +203,43 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     states: ['default', 'focus', 'filled', 'disabled', 'error'],
     props: [
       { name: 'value', type: 'string', default: '', required: false, description: 'Значение поля' },
-      { name: 'placeholder', type: 'string', default: '', required: false, description: 'Плейсхолдер' },
-      { name: 'disabled', type: 'boolean', default: 'false', required: false, description: 'Заблокировано' },
-      { name: 'invalid', type: 'boolean', default: 'false', required: false, description: 'Состояние ошибки' },
-      { name: 'size', type: 'small|large', default: '', required: false, description: 'Размер' },
+      {
+        name: 'placeholder',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Плейсхолдер'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Заблокировано'
+      },
+      {
+        name: 'invalid',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Состояние ошибки'
+      },
+      { name: 'size', type: 'small|large', default: '', required: false, description: 'Размер' }
     ],
     variants: [
-      { name: 'default', description: 'Обычное поле', code: '<InputText placeholder="Введите текст" />' },
-      { name: 'error', description: 'Поле с ошибкой', code: '<InputText invalid placeholder="Обязательное поле" />' },
+      {
+        name: 'default',
+        description: 'Обычное поле',
+        code: '<InputText placeholder="Введите текст" />'
+      },
+      {
+        name: 'error',
+        description: 'Поле с ошибкой',
+        code: '<InputText invalid placeholder="Обязательное поле" />'
+      }
     ],
     usageExample: `import { InputText } from 'primereact/inputtext'\n\n<InputText value={value} onChange={(e) => setValue(e.target.value)} placeholder="Введите текст" />`,
-    rules: `- Всегда добавляй label или placeholder для accessibility\n- Состояние invalid сопровождается текстом ошибки под полем\n- Не блокируй поле без явной причины — показывай объяснение\n- Для числовых значений используй InputNumber, а не InputText`,
+    rules: `- Всегда добавляй label или placeholder для accessibility\n- Состояние invalid сопровождается текстом ошибки под полем\n- Не блокируй поле без явной причины — показывай объяснение\n- Для числовых значений используй InputNumber, а не InputText`
   },
   {
     id: 'card',
@@ -145,17 +252,49 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 54,
     states: ['default', 'hover'],
     props: [
-      { name: 'title', type: 'string', default: '', required: false, description: 'Заголовок карточки' },
-      { name: 'subTitle', type: 'string', default: '', required: false, description: 'Подзаголовок' },
-      { name: 'header', type: 'ReactNode', default: '', required: false, description: 'Header-слот (изображение и т.д.)' },
-      { name: 'footer', type: 'ReactNode', default: '', required: false, description: 'Footer-слот (кнопки действий)' },
+      {
+        name: 'title',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Заголовок карточки'
+      },
+      {
+        name: 'subTitle',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Подзаголовок'
+      },
+      {
+        name: 'header',
+        type: 'ReactNode',
+        default: '',
+        required: false,
+        description: 'Header-слот (изображение и т.д.)'
+      },
+      {
+        name: 'footer',
+        type: 'ReactNode',
+        default: '',
+        required: false,
+        description: 'Footer-слот (кнопки действий)'
+      }
     ],
     variants: [
-      { name: 'basic', description: 'Простая карточка с заголовком', code: '<Card title="Название" subTitle="Подзаголовок">\n  Контент карточки\n</Card>' },
-      { name: 'with-footer', description: 'Карточка с кнопками в подвале', code: '<Card title="Название" footer={<Button label="Действие" />}>\n  Контент\n</Card>' },
+      {
+        name: 'basic',
+        description: 'Простая карточка с заголовком',
+        code: '<Card title="Название" subTitle="Подзаголовок">\n  Контент карточки\n</Card>'
+      },
+      {
+        name: 'with-footer',
+        description: 'Карточка с кнопками в подвале',
+        code: '<Card title="Название" footer={<Button label="Действие" />}>\n  Контент\n</Card>'
+      }
     ],
     usageExample: `import { Card } from 'primereact/card'\n\n<Card title="Заголовок" subTitle="Подзаголовок">\n  Содержимое карточки\n</Card>`,
-    rules: `- Используй Card для группировки логически связанного контента\n- Не вкладывай карточки друг в друга глубже одного уровня\n- Footer — только для действий, относящихся ко всей карточке\n- Избегай перегруженных карточек — выноси детали на отдельный экран`,
+    rules: `- Используй Card для группировки логически связанного контента\n- Не вкладывай карточки друг в друга глубже одного уровня\n- Footer — только для действий, относящихся ко всей карточке\n- Избегай перегруженных карточек — выноси детали на отдельный экран`
   },
   {
     id: 'modal',
@@ -168,18 +307,58 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 31,
     states: ['closed', 'open', 'loading'],
     props: [
-      { name: 'visible', type: 'boolean', default: 'false', required: true, description: 'Показать/скрыть' },
-      { name: 'onHide', type: '() => void', default: '', required: true, description: 'Callback закрытия' },
-      { name: 'header', type: 'string', default: '', required: false, description: 'Заголовок диалога' },
-      { name: 'footer', type: 'ReactNode', default: '', required: false, description: 'Кнопки действий' },
-      { name: 'modal', type: 'boolean', default: 'true', required: false, description: 'Затемнить фон' },
-      { name: 'draggable', type: 'boolean', default: 'true', required: false, description: 'Можно перетаскивать' },
+      {
+        name: 'visible',
+        type: 'boolean',
+        default: 'false',
+        required: true,
+        description: 'Показать/скрыть'
+      },
+      {
+        name: 'onHide',
+        type: '() => void',
+        default: '',
+        required: true,
+        description: 'Callback закрытия'
+      },
+      {
+        name: 'header',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Заголовок диалога'
+      },
+      {
+        name: 'footer',
+        type: 'ReactNode',
+        default: '',
+        required: false,
+        description: 'Кнопки действий'
+      },
+      {
+        name: 'modal',
+        type: 'boolean',
+        default: 'true',
+        required: false,
+        description: 'Затемнить фон'
+      },
+      {
+        name: 'draggable',
+        type: 'boolean',
+        default: 'true',
+        required: false,
+        description: 'Можно перетаскивать'
+      }
     ],
     variants: [
-      { name: 'confirmation', description: 'Диалог подтверждения действия', code: '<Dialog visible={visible} onHide={() => setVisible(false)} header="Подтверждение">\n  Вы уверены?\n</Dialog>' },
+      {
+        name: 'confirmation',
+        description: 'Диалог подтверждения действия',
+        code: '<Dialog visible={visible} onHide={() => setVisible(false)} header="Подтверждение">\n  Вы уверены?\n</Dialog>'
+      }
     ],
     usageExample: `import { Dialog } from 'primereact/dialog'\n\n<Dialog visible={visible} onHide={() => setVisible(false)} header="Заголовок">\n  Содержимое\n</Dialog>`,
-    rules: `- Диалог только для действий, требующих концентрации пользователя\n- Всегда добавляй кнопку закрытия или отмены\n- Заголовок обязателен — описывает суть диалога\n- Не используй диалог для простых уведомлений — используй Toast\n- Деструктивные действия: кнопка Confirm severity="danger"`,
+    rules: `- Диалог только для действий, требующих концентрации пользователя\n- Всегда добавляй кнопку закрытия или отмены\n- Заголовок обязателен — описывает суть диалога\n- Не используй диалог для простых уведомлений — используй Toast\n- Деструктивные действия: кнопка Confirm severity="danger"`
   },
   {
     id: 'badge',
@@ -192,16 +371,42 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 67,
     states: ['default'],
     props: [
-      { name: 'value', type: 'string|number', default: '', required: false, description: 'Значение внутри бейджа' },
-      { name: 'severity', type: 'info|success|warning|danger', default: '', required: false, description: 'Цветовой стиль' },
-      { name: 'size', type: 'normal|large|xlarge', default: 'normal', required: false, description: 'Размер' },
+      {
+        name: 'value',
+        type: 'string|number',
+        default: '',
+        required: false,
+        description: 'Значение внутри бейджа'
+      },
+      {
+        name: 'severity',
+        type: 'info|success|warning|danger',
+        default: '',
+        required: false,
+        description: 'Цветовой стиль'
+      },
+      {
+        name: 'size',
+        type: 'normal|large|xlarge',
+        default: 'normal',
+        required: false,
+        description: 'Размер'
+      }
     ],
     variants: [
-      { name: 'counter', description: 'Счётчик уведомлений', code: '<Badge value={5} severity="danger" />' },
-      { name: 'status', description: 'Статусная метка', code: '<Badge value="Активен" severity="success" />' },
+      {
+        name: 'counter',
+        description: 'Счётчик уведомлений',
+        code: '<Badge value={5} severity="danger" />'
+      },
+      {
+        name: 'status',
+        description: 'Статусная метка',
+        code: '<Badge value="Активен" severity="success" />'
+      }
     ],
     usageExample: `import { Badge } from 'primereact/badge'\n\n<Badge value={3} severity="danger" />\n<Badge value="Новый" severity="info" />`,
-    rules: `- Используй severity для смысловых статусов (success/warning/danger)\n- Счётчик > 99 отображай как "99+"\n- Не используй Badge для действий — только для информации\n- Не перегружай интерфейс Badge — только ключевые статусы`,
+    rules: `- Используй severity для смысловых статусов (success/warning/danger)\n- Счётчик > 99 отображай как "99+"\n- Не используй Badge для действий — только для информации\n- Не перегружай интерфейс Badge — только ключевые статусы`
   },
   {
     id: 'avatar',
@@ -214,18 +419,56 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 28,
     states: ['default'],
     props: [
-      { name: 'image', type: 'string', default: '', required: false, description: 'URL изображения' },
-      { name: 'label', type: 'string', default: '', required: false, description: 'Инициалы (если нет фото)' },
-      { name: 'icon', type: 'string', default: '', required: false, description: 'Иконка (если нет фото и инициалов)' },
-      { name: 'size', type: 'normal|large|xlarge', default: 'normal', required: false, description: 'Размер' },
-      { name: 'shape', type: 'square|circle', default: 'circle', required: false, description: 'Форма' },
+      {
+        name: 'image',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'URL изображения'
+      },
+      {
+        name: 'label',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Инициалы (если нет фото)'
+      },
+      {
+        name: 'icon',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Иконка (если нет фото и инициалов)'
+      },
+      {
+        name: 'size',
+        type: 'normal|large|xlarge',
+        default: 'normal',
+        required: false,
+        description: 'Размер'
+      },
+      {
+        name: 'shape',
+        type: 'square|circle',
+        default: 'circle',
+        required: false,
+        description: 'Форма'
+      }
     ],
     variants: [
-      { name: 'image', description: 'Аватар с фото', code: '<Avatar image="/user.jpg" shape="circle" />' },
-      { name: 'initials', description: 'Аватар с инициалами', code: '<Avatar label="АП" style={{ backgroundColor: "#3b82f6", color: "#fff" }} />' },
+      {
+        name: 'image',
+        description: 'Аватар с фото',
+        code: '<Avatar image="/user.jpg" shape="circle" />'
+      },
+      {
+        name: 'initials',
+        description: 'Аватар с инициалами',
+        code: '<Avatar label="АП" style={{ backgroundColor: "#3b82f6", color: "#fff" }} />'
+      }
     ],
     usageExample: `import { Avatar } from 'primereact/avatar'\n\n<Avatar image="/user.jpg" shape="circle" size="large" />\n<Avatar label="АП" style={{ backgroundColor: '#3b82f6', color: '#fff' }} />`,
-    rules: `- Приоритет: image > label > icon\n- Для списков пользователей используй AvatarGroup\n- Размер large/xlarge только в profile-секциях, не в таблицах`,
+    rules: `- Приоритет: image > label > icon\n- Для списков пользователей используй AvatarGroup\n- Размер large/xlarge только в profile-секциях, не в таблицах`
   },
   {
     id: 'tabs',
@@ -238,14 +481,30 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 19,
     states: ['default', 'active', 'disabled'],
     props: [
-      { name: 'activeIndex', type: 'number', default: '0', required: false, description: 'Индекс активной вкладки' },
-      { name: 'onTabChange', type: '(e: TabChangeEvent) => void', default: '', required: false, description: 'Callback смены вкладки' },
+      {
+        name: 'activeIndex',
+        type: 'number',
+        default: '0',
+        required: false,
+        description: 'Индекс активной вкладки'
+      },
+      {
+        name: 'onTabChange',
+        type: '(e: TabChangeEvent) => void',
+        default: '',
+        required: false,
+        description: 'Callback смены вкладки'
+      }
     ],
     variants: [
-      { name: 'basic', description: 'Базовые вкладки', code: '<TabView>\n  <TabPanel header="Вкладка 1">Контент 1</TabPanel>\n  <TabPanel header="Вкладка 2">Контент 2</TabPanel>\n</TabView>' },
+      {
+        name: 'basic',
+        description: 'Базовые вкладки',
+        code: '<TabView>\n  <TabPanel header="Вкладка 1">Контент 1</TabPanel>\n  <TabPanel header="Вкладка 2">Контент 2</TabPanel>\n</TabView>'
+      }
     ],
     usageExample: `import { TabView, TabPanel } from 'primereact/tabview'\n\n<TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>\n  <TabPanel header="Общее">...</TabPanel>\n  <TabPanel header="Настройки">...</TabPanel>\n</TabView>`,
-    rules: `- Используй TabView для переключения между связанными разделами\n- Не более 5–7 вкладок — иначе используй навигацию или Accordion\n- Активная вкладка должна быть видна без прокрутки\n- Не скрывай вкладки условно — используй disabled если нужно`,
+    rules: `- Используй TabView для переключения между связанными разделами\n- Не более 5–7 вкладок — иначе используй навигацию или Accordion\n- Активная вкладка должна быть видна без прокрутки\n- Не скрывай вкладки условно — используй disabled если нужно`
   },
   {
     id: 'dropdown',
@@ -258,21 +517,71 @@ const PRIME_CORE_COMPONENTS: LibraryComponent[] = [
     usages: 44,
     states: ['default', 'focus', 'open', 'disabled'],
     props: [
-      { name: 'value', type: 'any', default: '', required: false, description: 'Выбранное значение' },
-      { name: 'options', type: 'any[]', default: '[]', required: true, description: 'Массив вариантов' },
-      { name: 'onChange', type: '(e: DropdownChangeEvent) => void', default: '', required: true, description: 'Callback изменения' },
-      { name: 'optionLabel', type: 'string', default: '', required: false, description: 'Поле для отображения' },
-      { name: 'placeholder', type: 'string', default: '', required: false, description: 'Плейсхолдер' },
-      { name: 'filter', type: 'boolean', default: 'false', required: false, description: 'Поиск по вариантам' },
-      { name: 'disabled', type: 'boolean', default: 'false', required: false, description: 'Заблокирован' },
+      {
+        name: 'value',
+        type: 'any',
+        default: '',
+        required: false,
+        description: 'Выбранное значение'
+      },
+      {
+        name: 'options',
+        type: 'any[]',
+        default: '[]',
+        required: true,
+        description: 'Массив вариантов'
+      },
+      {
+        name: 'onChange',
+        type: '(e: DropdownChangeEvent) => void',
+        default: '',
+        required: true,
+        description: 'Callback изменения'
+      },
+      {
+        name: 'optionLabel',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Поле для отображения'
+      },
+      {
+        name: 'placeholder',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'Плейсхолдер'
+      },
+      {
+        name: 'filter',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Поиск по вариантам'
+      },
+      {
+        name: 'disabled',
+        type: 'boolean',
+        default: 'false',
+        required: false,
+        description: 'Заблокирован'
+      }
     ],
     variants: [
-      { name: 'basic', description: 'Простой выпадающий список', code: '<Dropdown value={city} options={cities} onChange={(e) => setCity(e.value)} placeholder="Выберите..." />' },
-      { name: 'with-filter', description: 'С поиском по значениям', code: '<Dropdown value={value} options={options} onChange={(e) => setValue(e.value)} filter placeholder="Поиск..." />' },
+      {
+        name: 'basic',
+        description: 'Простой выпадающий список',
+        code: '<Dropdown value={city} options={cities} onChange={(e) => setCity(e.value)} placeholder="Выберите..." />'
+      },
+      {
+        name: 'with-filter',
+        description: 'С поиском по значениям',
+        code: '<Dropdown value={value} options={options} onChange={(e) => setValue(e.value)} filter placeholder="Поиск..." />'
+      }
     ],
     usageExample: `import { Dropdown } from 'primereact/dropdown'\n\nconst options = [{ label: 'Опция 1', value: 1 }, { label: 'Опция 2', value: 2 }]\n\n<Dropdown value={value} options={options} onChange={(e) => setValue(e.value)} optionLabel="label" placeholder="Выберите..." />`,
-    rules: `- При > 7 вариантах включай filter=true\n- При > 15 вариантах рассмотри AutoComplete или MultiSelect\n- Всегда задавай placeholder — он объясняет назначение поля\n- Не используй Dropdown для boolean-выборов — используй Checkbox`,
-  },
+    rules: `- При > 7 вариантах включай filter=true\n- При > 15 вариантах рассмотри AutoComplete или MultiSelect\n- Всегда задавай placeholder — он объясняет назначение поля\n- Не используй Dropdown для boolean-выборов — используй Checkbox`
+  }
 ]
 
 // ── Mock data (non-component sections) ───────────────────────────────────────
@@ -286,23 +595,40 @@ const MOCK_COLORS: ColorToken[] = [
   { id: 'c6', name: 'Neutral/100', value: '#f3f4f6', group: 'Neutral' },
   { id: 'c7', name: 'Success/500', value: '#10b981', group: 'Semantic' },
   { id: 'c8', name: 'Error/500', value: '#ef4444', group: 'Semantic' },
-  { id: 'c9', name: 'Warning/500', value: '#f59e0b', group: 'Semantic' },
+  { id: 'c9', name: 'Warning/500', value: '#f59e0b', group: 'Semantic' }
 ]
 
 const MOCK_TYPOGRAPHY: TypographyToken[] = [
   { id: 't1', name: 'Heading/H1', font: 'Inter', size: '32px', weight: '700', lineHeight: '40px' },
   { id: 't2', name: 'Heading/H2', font: 'Inter', size: '24px', weight: '600', lineHeight: '32px' },
   { id: 't3', name: 'Heading/H3', font: 'Inter', size: '20px', weight: '600', lineHeight: '28px' },
-  { id: 't4', name: 'Body/Regular', font: 'Inter', size: '14px', weight: '400', lineHeight: '22px' },
+  {
+    id: 't4',
+    name: 'Body/Regular',
+    font: 'Inter',
+    size: '14px',
+    weight: '400',
+    lineHeight: '22px'
+  },
   { id: 't5', name: 'Body/Small', font: 'Inter', size: '12px', weight: '400', lineHeight: '18px' },
-  { id: 't6', name: 'Label/Medium', font: 'Inter', size: '13px', weight: '500', lineHeight: '20px' },
+  { id: 't6', name: 'Label/Medium', font: 'Inter', size: '13px', weight: '500', lineHeight: '20px' }
 ]
 
 const MOCK_EFFECTS: EffectToken[] = [
   { id: 'e1', name: 'Shadow/SM', description: 'Малая тень', value: '0 1px 2px rgba(0,0,0,0.12)' },
-  { id: 'e2', name: 'Shadow/MD', description: 'Средняя тень', value: '0 4px 12px rgba(0,0,0,0.18)' },
-  { id: 'e3', name: 'Shadow/LG', description: 'Большая тень', value: '0 8px 24px rgba(0,0,0,0.24)' },
-  { id: 'e4', name: 'Blur/Background', description: 'Размытие фона', value: 'blur(12px)' },
+  {
+    id: 'e2',
+    name: 'Shadow/MD',
+    description: 'Средняя тень',
+    value: '0 4px 12px rgba(0,0,0,0.18)'
+  },
+  {
+    id: 'e3',
+    name: 'Shadow/LG',
+    description: 'Большая тень',
+    value: '0 8px 24px rgba(0,0,0,0.24)'
+  },
+  { id: 'e4', name: 'Blur/Background', description: 'Размытие фона', value: 'blur(12px)' }
 ]
 
 const MOCK_ICONS: IconItem[] = [
@@ -317,7 +643,7 @@ const MOCK_ICONS: IconItem[] = [
   { id: 'i9', name: 'heart', icon: 'heart' },
   { id: 'i10', name: 'home', icon: 'home' },
   { id: 'i11', name: 'mail', icon: 'mail' },
-  { id: 'i12', name: 'phone', icon: 'phone' },
+  { id: 'i12', name: 'phone', icon: 'phone' }
 ]
 
 const SECTIONS: Section[] = ['Colors', 'Typography', 'Effects', 'Components', 'Icons']
@@ -326,15 +652,15 @@ const SECTION_LABELS: Record<Section, string> = {
   Typography: 'Типографика',
   Effects: 'Эффекты',
   Components: 'Компоненты',
-  Icons: 'Иконки',
+  Icons: 'Иконки'
 }
 
 const COMPONENT_TABS: { id: ComponentTab; label: string }[] = [
   { id: 'description', label: 'Описание' },
-  { id: 'props',       label: 'Пропсы' },
-  { id: 'variants',    label: 'Варианты' },
-  { id: 'code',        label: 'Код' },
-  { id: 'rules',       label: 'Правила' },
+  { id: 'props', label: 'Пропсы' },
+  { id: 'variants', label: 'Варианты' },
+  { id: 'code', label: 'Код' },
+  { id: 'rules', label: 'Правила' }
 ]
 
 // ── Markdown serialization ─────────────────────────────────────────────────────
@@ -343,11 +669,13 @@ function componentToMd(c: LibraryComponent): string {
   const propsTable = [
     '| name | type | default | required | description |',
     '|------|------|---------|----------|-------------|',
-    ...c.props.map(p => `| ${p.name} | ${p.type} | ${p.default || '—'} | ${p.required} | ${p.description} |`),
+    ...c.props.map(
+      (p) => `| ${p.name} | ${p.type} | ${p.default || '—'} | ${p.required} | ${p.description} |`
+    )
   ].join('\n')
 
   const variantsSection = c.variants
-    .map(v => `### ${v.name}\n${v.description}\n\`\`\`tsx\n${v.code}\n\`\`\``)
+    .map((v) => `### ${v.name}\n${v.description}\n\`\`\`tsx\n${v.code}\n\`\`\``)
     .join('\n\n')
 
   return [
@@ -375,7 +703,7 @@ function componentToMd(c: LibraryComponent): string {
     '```',
     '',
     `## Правила`,
-    c.rules,
+    c.rules
   ].join('\n')
 }
 
@@ -384,9 +712,12 @@ function mdToComponent(md: string, id: string): Partial<LibraryComponent> {
 
   const lines = md.split('\n')
   for (const line of lines.slice(1, 10)) {
-    if (line.startsWith('category:')) result.category = line.split(':')[1].trim() as LibraryComponent['category']
-    if (line.startsWith('primeReact:')) result.primeReactImport = line.split(':').slice(1).join(':').trim()
-    if (line.startsWith('component:')) result.primeReactExport = line.split(':').slice(1).join(':').trim()
+    if (line.startsWith('category:'))
+      result.category = line.split(':')[1].trim() as LibraryComponent['category']
+    if (line.startsWith('primeReact:'))
+      result.primeReactImport = line.split(':').slice(1).join(':').trim()
+    if (line.startsWith('component:'))
+      result.primeReactExport = line.split(':').slice(1).join(':').trim()
     if (line.startsWith('color:')) result.color = line.split(':').slice(1).join(':').trim()
   }
 
@@ -400,25 +731,45 @@ function mdToComponent(md: string, id: string): Partial<LibraryComponent> {
   result.rules = extractSection('Правила')
 
   const statesRaw = extractSection('Состояния')
-  result.states = statesRaw ? statesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
+  result.states = statesRaw
+    ? statesRaw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : []
 
   const exampleMatch = md.match(/## Пример\s*\n```tsx\n([\s\S]*?)```/)
   result.usageExample = exampleMatch ? exampleMatch[1].trim() : ''
 
   const propsSection = extractSection('Пропсы')
-  const propLines = propsSection.split('\n').filter(l => l.startsWith('|') && !l.includes('---'))
+  const propLines = propsSection.split('\n').filter((l) => l.startsWith('|') && !l.includes('---'))
   const props: ComponentProp[] = []
   for (const line of propLines.slice(1)) {
-    const cells = line.split('|').filter(Boolean).map(c => c.trim())
+    const cells = line
+      .split('|')
+      .filter(Boolean)
+      .map((c) => c.trim())
     if (cells.length >= 5) {
-      props.push({ name: cells[0], type: cells[1], default: cells[2] === '—' ? '' : cells[2], required: cells[3] === 'true', description: cells[4] })
+      props.push({
+        name: cells[0],
+        type: cells[1],
+        default: cells[2] === '—' ? '' : cells[2],
+        required: cells[3] === 'true',
+        description: cells[4]
+      })
     }
   }
   result.props = props
 
   const variantsSection = extractSection('Варианты')
-  const variantMatches = [...variantsSection.matchAll(/### (\w[\w-]*)\n([\s\S]*?)```tsx\n([\s\S]*?)```/g)]
-  result.variants = variantMatches.map(m => ({ name: m[1], description: m[2].trim(), code: m[3].trim() }))
+  const variantMatches = [
+    ...variantsSection.matchAll(/### (\w[\w-]*)\n([\s\S]*?)```tsx\n([\s\S]*?)```/g)
+  ]
+  result.variants = variantMatches.map((m) => ({
+    name: m[1],
+    description: m[2].trim(),
+    code: m[3].trim()
+  }))
 
   return result
 }
@@ -443,17 +794,23 @@ const editComp = ref<LibraryComponent | null>(null)
 const activeItem = computed(() => {
   if (!activeItemId.value) return null
   switch (activeSection.value) {
-    case 'Colors':     return MOCK_COLORS.find(c => c.id === activeItemId.value) ?? null
-    case 'Typography': return MOCK_TYPOGRAPHY.find(t => t.id === activeItemId.value) ?? null
-    case 'Effects':    return MOCK_EFFECTS.find(e => e.id === activeItemId.value) ?? null
-    case 'Components': return PRIME_CORE_COMPONENTS.find(c => c.id === activeItemId.value) ?? null
-    case 'Icons':      return MOCK_ICONS.find(i => i.id === activeItemId.value) ?? null
-    default: return null
+    case 'Colors':
+      return MOCK_COLORS.find((c) => c.id === activeItemId.value) ?? null
+    case 'Typography':
+      return MOCK_TYPOGRAPHY.find((t) => t.id === activeItemId.value) ?? null
+    case 'Effects':
+      return MOCK_EFFECTS.find((e) => e.id === activeItemId.value) ?? null
+    case 'Components':
+      return PRIME_CORE_COMPONENTS.find((c) => c.id === activeItemId.value) ?? null
+    case 'Icons':
+      return MOCK_ICONS.find((i) => i.id === activeItemId.value) ?? null
+    default:
+      return null
   }
 })
 
 async function loadComponent(id: string) {
-  const seed = PRIME_CORE_COMPONENTS.find(c => c.id === id)
+  const seed = PRIME_CORE_COMPONENTS.find((c) => c.id === id)
   if (!seed) return
   if (workspacePath.value) {
     try {
@@ -466,7 +823,12 @@ async function loadComponent(id: string) {
       console.warn('Could not load component markdown, using seed:', error)
     }
   }
-  editComp.value = { ...seed, props: [...seed.props], variants: [...seed.variants], states: [...seed.states] }
+  editComp.value = {
+    ...seed,
+    props: [...seed.props],
+    variants: [...seed.variants],
+    states: [...seed.states]
+  }
 }
 
 function selectItem(id: string) {
@@ -503,8 +865,12 @@ async function saveChanges() {
   if (activeSection.value === 'Components' && editComp.value) {
     if (workspacePath.value) {
       try {
-        await writeComponentMd(workspacePath.value, editComp.value.id, componentToMd(editComp.value))
-        toast.success(`${editComp.value.name} сохранён`)
+        await writeComponentMd(
+          workspacePath.value,
+          editComp.value.id,
+          componentToMd(editComp.value)
+        )
+        toast.info(`${editComp.value.name} сохранён`)
       } catch (e) {
         toast.error('Ошибка сохранения компонента')
         console.error(e)
@@ -522,10 +888,14 @@ function publish() {
   toast.info('Библиотека опубликована v1.5.0')
 }
 
+async function copyUsageExample(text: string) {
+  await navigator.clipboard.writeText(text)
+}
+
 // ── Export Core ───────────────────────────────────────────────────────────────
 
 const isExportingCore = ref(false)
-const runtimeStatus = ref<Record<string, { available: boolean, hasDefaults: boolean }>>({})
+const runtimeStatus = ref<Record<string, { available: boolean; hasDefaults: boolean }>>({})
 
 async function refreshRuntimeStatus() {
   if (!workspacePath.value) {
@@ -538,7 +908,7 @@ async function refreshRuntimeStatus() {
     return
   }
   runtimeStatus.value = Object.fromEntries(
-    manifest.components.map(comp => [
+    manifest.components.map((comp) => [
       comp.exportName,
       { available: true, hasDefaults: Object.keys(comp.previewDefaults ?? {}).length > 0 }
     ])
@@ -552,14 +922,17 @@ async function exportCore() {
   }
   isExportingCore.value = true
   try {
-    await exportCoreComponents(workspacePath.value, PRIME_CORE_COMPONENTS.map(c => ({
-      id: c.id,
-      name: c.name,
-      primeReactImport: c.primeReactImport,
-      primeReactExport: c.primeReactExport,
-      description: c.description,
-      rules: editComp.value?.id === c.id ? (editComp.value.rules ?? c.rules) : c.rules,
-    })))
+    await exportCoreComponents(
+      workspacePath.value,
+      PRIME_CORE_COMPONENTS.map((c) => ({
+        id: c.id,
+        name: c.name,
+        primeReactImport: c.primeReactImport,
+        primeReactExport: c.primeReactExport,
+        description: c.description,
+        rules: editComp.value?.id === c.id ? (editComp.value.rules ?? c.rules) : c.rules
+      }))
+    )
     const manifest = await readCoreRuntimeManifest(workspacePath.value)
     if (!manifest) {
       toast.error('Core exported, but runtime manifest is missing')
@@ -571,7 +944,7 @@ async function exportCore() {
       return
     }
     await refreshRuntimeStatus()
-    toast.success(`Core runtime sync complete (${manifest.components.length} components)`)
+    toast.info(`Core runtime sync complete (${manifest.components.length} components)`)
   } catch (e) {
     toast.error('Ошибка экспорта')
     console.error(e)
@@ -586,15 +959,29 @@ const isGeneratingDesignMd = ref(false)
 
 async function generateDesignMd() {
   const model = createModel()
-  if (!model) { toast.error('Настройте AI-провайдер в настройках'); return }
-  if (!workspacePath.value) { toast.error('Откройте рабочую папку в Навигаторе проектов'); return }
+  if (!model) {
+    toast.error('Настройте AI-провайдер в настройках')
+    return
+  }
+  if (!workspacePath.value) {
+    toast.error('Откройте рабочую папку в Навигаторе проектов')
+    return
+  }
 
   isGeneratingDesignMd.value = true
   try {
-    const colorsTable = MOCK_COLORS.map(c => `| \`${c.name}\` | ${c.value} | ${c.group} |`).join('\n')
-    const typographyTable = MOCK_TYPOGRAPHY.map(t => `| ${t.name} | ${t.font} | ${t.size} | ${t.weight} | ${t.lineHeight} |`).join('\n')
-    const effectsTable = MOCK_EFFECTS.map(e => `| ${e.name} | ${e.description} | \`${e.value}\` |`).join('\n')
-    const componentsList = PRIME_CORE_COMPONENTS.map(c => `- **${c.name}** (\`${c.primeReactImport}\`): ${c.description}`).join('\n')
+    const colorsTable = MOCK_COLORS.map((c) => `| \`${c.name}\` | ${c.value} | ${c.group} |`).join(
+      '\n'
+    )
+    const typographyTable = MOCK_TYPOGRAPHY.map(
+      (t) => `| ${t.name} | ${t.font} | ${t.size} | ${t.weight} | ${t.lineHeight} |`
+    ).join('\n')
+    const effectsTable = MOCK_EFFECTS.map(
+      (e) => `| ${e.name} | ${e.description} | \`${e.value}\` |`
+    ).join('\n')
+    const componentsList = PRIME_CORE_COMPONENTS.map(
+      (c) => `- **${c.name}** (\`${c.primeReactImport}\`): ${c.description}`
+    ).join('\n')
 
     const prompt = `You are a design system expert. Generate a DESIGN.md file in the Google Stitch format with exactly 9 sections based on this design library data.
 
@@ -631,7 +1018,7 @@ Use the actual library data provided above. Make it LLM-friendly and actionable.
 
     const { text } = await generateText({ model, prompt })
     await writeDesignMd(workspacePath.value, text)
-    toast.success('DESIGN.md сохранён в рабочую папку')
+    toast.info('DESIGN.md сохранён в рабочую папку')
   } catch (err) {
     toast.error('Ошибка генерации DESIGN.md')
     console.error(err)
@@ -641,27 +1028,37 @@ Use the actual library data provided above. Make it LLM-friendly and actionable.
 }
 
 const sectionCounts = computed<Record<Section, number>>(() => ({
-  Colors:     MOCK_COLORS.length,
+  Colors: MOCK_COLORS.length,
   Typography: MOCK_TYPOGRAPHY.length,
-  Effects:    MOCK_EFFECTS.length,
+  Effects: MOCK_EFFECTS.length,
   Components: PRIME_CORE_COMPONENTS.length,
-  Icons:      MOCK_ICONS.length,
+  Icons: MOCK_ICONS.length
 }))
 
 const filteredColors = computed(() =>
-  MOCK_COLORS.filter(c => !searchQuery.value || c.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  MOCK_COLORS.filter(
+    (c) => !searchQuery.value || c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 )
 const filteredTypography = computed(() =>
-  MOCK_TYPOGRAPHY.filter(t => !searchQuery.value || t.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  MOCK_TYPOGRAPHY.filter(
+    (t) => !searchQuery.value || t.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 )
 const filteredComponents = computed(() =>
-  PRIME_CORE_COMPONENTS.filter(c => !searchQuery.value || c.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  PRIME_CORE_COMPONENTS.filter(
+    (c) => !searchQuery.value || c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 )
 const filteredIcons = computed(() =>
-  MOCK_ICONS.filter(i => !searchQuery.value || i.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  MOCK_ICONS.filter(
+    (i) => !searchQuery.value || i.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 )
 const filteredEffects = computed(() =>
-  MOCK_EFFECTS.filter(e => !searchQuery.value || e.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  MOCK_EFFECTS.filter(
+    (e) => !searchQuery.value || e.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
 )
 
 // Init — load first component
@@ -679,8 +1076,12 @@ void refreshRuntimeStatus()
       >
         <icon-lucide-arrow-left class="size-3.5" />
       </button>
-      <span class="text-sm font-medium text-surface">{{ currentLibrary?.name ?? 'Библиотека' }}</span>
-      <span class="rounded border border-border px-2 py-0.5 text-[11px] font-medium text-muted">v{{ currentLibrary?.version ?? '—' }}</span>
+      <span class="text-sm font-medium text-surface">{{
+        currentLibrary?.name ?? 'Библиотека'
+      }}</span>
+      <span class="rounded border border-border px-2 py-0.5 text-[11px] font-medium text-muted"
+        >v{{ currentLibrary?.version ?? '—' }}</span
+      >
 
       <button
         class="flex items-center gap-1.5 rounded bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent/80 transition-colors"
@@ -719,13 +1120,17 @@ void refreshRuntimeStatus()
       <div class="h-4 w-px bg-border" />
 
       <Tip label="Импортировать библиотеку">
-        <button class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface transition-colors">
+        <button
+          class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface transition-colors"
+        >
           <icon-lucide-download class="size-4" />
         </button>
       </Tip>
 
       <Tip label="Экспортировать библиотеку">
-        <button class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface transition-colors">
+        <button
+          class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface transition-colors"
+        >
           <icon-lucide-share-2 class="size-4" />
         </button>
       </Tip>
@@ -733,7 +1138,9 @@ void refreshRuntimeStatus()
       <div class="flex-1" />
 
       <!-- Search -->
-      <div class="flex items-center gap-1.5 rounded border border-border bg-canvas px-2 py-1 focus-within:border-accent/50 w-48">
+      <div
+        class="flex items-center gap-1.5 rounded border border-border bg-canvas px-2 py-1 focus-within:border-accent/50 w-48"
+      >
         <icon-lucide-search class="size-3.5 shrink-0 text-muted" />
         <input
           v-model="searchQuery"
@@ -744,19 +1151,27 @@ void refreshRuntimeStatus()
     </header>
 
     <!-- Body -->
-    <SplitterGroup direction="horizontal" auto-save-id="library-layout" class="flex-1 overflow-hidden">
+    <SplitterGroup
+      direction="horizontal"
+      auto-save-id="library-layout"
+      class="flex-1 overflow-hidden"
+    >
       <!-- Left: Tree -->
-      <SplitterPanel :default-size="20" :min-size="14" :max-size="30" class="flex flex-col overflow-hidden border-r border-border bg-panel">
+      <SplitterPanel
+        :default-size="20"
+        :min-size="14"
+        :max-size="30"
+        class="flex flex-col overflow-hidden border-r border-border bg-panel"
+      >
         <ScrollAreaRoot class="flex-1">
           <ScrollAreaViewport class="h-full py-2">
-            <div
-              v-for="section in SECTIONS"
-              :key="section"
-            >
+            <div v-for="section in SECTIONS" :key="section">
               <!-- Section header -->
               <button
                 class="flex w-full items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase tracking-wider transition-colors"
-                :class="activeSection === section ? 'text-surface' : 'text-muted hover:text-surface'"
+                :class="
+                  activeSection === section ? 'text-surface' : 'text-muted hover:text-surface'
+                "
                 @click="selectSection(section)"
               >
                 <icon-lucide-chevron-right
@@ -765,7 +1180,9 @@ void refreshRuntimeStatus()
                   @click.stop="toggleSection(section)"
                 />
                 <span class="flex-1 text-left">{{ SECTION_LABELS[section] }}</span>
-                <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px]">{{ sectionCounts[section] }}</span>
+                <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px]">{{
+                  sectionCounts[section]
+                }}</span>
               </button>
             </div>
 
@@ -793,26 +1210,38 @@ void refreshRuntimeStatus()
       </SplitterPanel>
 
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
+        />
       </SplitterResizeHandle>
 
       <!-- Center: Content browser -->
-      <SplitterPanel :default-size="55" :min-size="30" class="flex flex-col overflow-hidden bg-canvas">
+      <SplitterPanel
+        :default-size="55"
+        :min-size="30"
+        class="flex flex-col overflow-hidden bg-canvas"
+      >
         <!-- Section header + view toggle -->
         <div class="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-          <span class="flex-1 text-xs font-medium text-surface">{{ SECTION_LABELS[activeSection] }}</span>
+          <span class="flex-1 text-xs font-medium text-surface">{{
+            SECTION_LABELS[activeSection]
+          }}</span>
           <span class="text-[11px] text-muted">{{ sectionCounts[activeSection] }} элементов</span>
           <div class="flex items-center gap-0.5 rounded border border-border p-0.5">
             <button
               class="rounded p-0.5 transition-colors"
-              :class="viewMode === 'grid' ? 'bg-hover text-surface' : 'text-muted hover:text-surface'"
+              :class="
+                viewMode === 'grid' ? 'bg-hover text-surface' : 'text-muted hover:text-surface'
+              "
               @click="viewMode = 'grid'"
             >
               <icon-lucide-layout-grid class="size-3.5" />
             </button>
             <button
               class="rounded p-0.5 transition-colors"
-              :class="viewMode === 'list' ? 'bg-hover text-surface' : 'text-muted hover:text-surface'"
+              :class="
+                viewMode === 'list' ? 'bg-hover text-surface' : 'text-muted hover:text-surface'
+              "
               @click="viewMode = 'list'"
             >
               <icon-lucide-list class="size-3.5" />
@@ -822,33 +1251,38 @@ void refreshRuntimeStatus()
 
         <ScrollAreaRoot class="flex-1">
           <ScrollAreaViewport class="h-full p-3">
-
             <!-- Colors grid -->
             <template v-if="activeSection === 'Colors'">
-              <div
-                :class="viewMode === 'grid'
-                  ? 'grid grid-cols-3 gap-2'
-                  : 'flex flex-col gap-1'"
-              >
+              <div :class="viewMode === 'grid' ? 'grid grid-cols-3 gap-2' : 'flex flex-col gap-1'">
                 <button
                   v-for="color in filteredColors"
                   :key="color.id"
                   class="group rounded-lg border transition-all"
-                  :class="activeItemId === color.id
-                    ? 'border-accent/50 bg-hover'
-                    : 'border-border hover:border-border/80 hover:bg-hover/50'"
+                  :class="
+                    activeItemId === color.id
+                      ? 'border-accent/50 bg-hover'
+                      : 'border-border hover:border-border/80 hover:bg-hover/50'
+                  "
                   @click="selectItem(color.id)"
                 >
                   <template v-if="viewMode === 'grid'">
-                    <div class="h-12 w-full rounded-t-lg" :style="{ backgroundColor: color.value }" />
+                    <div
+                      class="h-12 w-full rounded-t-lg"
+                      :style="{ backgroundColor: color.value }"
+                    />
                     <div class="px-2 py-1.5 text-left">
-                      <div class="truncate text-[11px] text-surface">{{ color.name.split('/')[1] }}</div>
+                      <div class="truncate text-[11px] text-surface">
+                        {{ color.name.split('/')[1] }}
+                      </div>
                       <div class="text-[10px] text-muted">{{ color.value }}</div>
                     </div>
                   </template>
                   <template v-else>
                     <div class="flex items-center gap-2.5 px-2.5 py-2">
-                      <div class="size-5 shrink-0 rounded" :style="{ backgroundColor: color.value }" />
+                      <div
+                        class="size-5 shrink-0 rounded"
+                        :style="{ backgroundColor: color.value }"
+                      />
                       <span class="flex-1 text-left text-xs text-surface">{{ color.name }}</span>
                       <span class="text-[11px] text-muted">{{ color.value }}</span>
                     </div>
@@ -860,16 +1294,21 @@ void refreshRuntimeStatus()
             <!-- Typography table -->
             <template v-if="activeSection === 'Typography'">
               <div class="flex flex-col gap-1">
-                <div class="mb-1 grid grid-cols-5 gap-2 px-2 text-[10px] uppercase tracking-wider text-muted">
-                  <span>Название</span><span>Шрифт</span><span>Размер</span><span>Насыщ.</span><span>Высота</span>
+                <div
+                  class="mb-1 grid grid-cols-5 gap-2 px-2 text-[10px] uppercase tracking-wider text-muted"
+                >
+                  <span>Название</span><span>Шрифт</span><span>Размер</span><span>Насыщ.</span
+                  ><span>Высота</span>
                 </div>
                 <button
                   v-for="t in filteredTypography"
                   :key="t.id"
                   class="grid grid-cols-5 gap-2 rounded-lg border px-2 py-2 text-left transition-all"
-                  :class="activeItemId === t.id
-                    ? 'border-accent/50 bg-hover'
-                    : 'border-transparent hover:border-border hover:bg-hover/50'"
+                  :class="
+                    activeItemId === t.id
+                      ? 'border-accent/50 bg-hover'
+                      : 'border-transparent hover:border-border hover:bg-hover/50'
+                  "
                   @click="selectItem(t.id)"
                 >
                   <span class="truncate text-xs text-surface">{{ t.name }}</span>
@@ -888,9 +1327,11 @@ void refreshRuntimeStatus()
                   v-for="e in filteredEffects"
                   :key="e.id"
                   class="rounded-lg border p-3 text-left transition-all"
-                  :class="activeItemId === e.id
-                    ? 'border-accent/50 bg-hover'
-                    : 'border-border hover:bg-hover/50'"
+                  :class="
+                    activeItemId === e.id
+                      ? 'border-accent/50 bg-hover'
+                      : 'border-border hover:bg-hover/50'
+                  "
                   @click="selectItem(e.id)"
                 >
                   <div class="text-xs font-medium text-surface">{{ e.name }}</div>
@@ -902,23 +1343,24 @@ void refreshRuntimeStatus()
 
             <!-- Components grid -->
             <template v-if="activeSection === 'Components'">
-              <div
-                :class="viewMode === 'grid'
-                  ? 'grid grid-cols-3 gap-3'
-                  : 'flex flex-col gap-1'"
-              >
+              <div :class="viewMode === 'grid' ? 'grid grid-cols-3 gap-3' : 'flex flex-col gap-1'">
                 <button
                   v-for="comp in filteredComponents"
                   :key="comp.id"
                   class="rounded-lg border transition-all"
-                  :class="activeItemId === comp.id
-                    ? 'border-accent/50 bg-hover'
-                    : 'border-border hover:bg-hover/50'"
+                  :class="
+                    activeItemId === comp.id
+                      ? 'border-accent/50 bg-hover'
+                      : 'border-border hover:bg-hover/50'
+                  "
                   @click="selectItem(comp.id)"
                 >
                   <template v-if="viewMode === 'grid'">
                     <div class="flex h-16 items-center justify-center rounded-t-lg bg-panel/60">
-                      <div class="rounded px-4 py-2 text-xs font-medium text-white" :style="{ backgroundColor: comp.color }">
+                      <div
+                        class="rounded px-4 py-2 text-xs font-medium text-white"
+                        :style="{ backgroundColor: comp.color }"
+                      >
                         {{ comp.name }}
                       </div>
                     </div>
@@ -927,9 +1369,15 @@ void refreshRuntimeStatus()
                         <div class="text-xs text-surface">{{ comp.name }}</div>
                         <span
                           class="rounded px-1 py-0.5 text-[9px]"
-                          :class="runtimeStatus[comp.primeReactExport]?.available ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'"
+                          :class="
+                            runtimeStatus[comp.primeReactExport]?.available
+                              ? 'bg-emerald-500/15 text-emerald-400'
+                              : 'bg-red-500/15 text-red-400'
+                          "
                         >
-                          {{ runtimeStatus[comp.primeReactExport]?.available ? 'runtime' : 'missing' }}
+                          {{
+                            runtimeStatus[comp.primeReactExport]?.available ? 'runtime' : 'missing'
+                          }}
                         </span>
                       </div>
                       <div class="text-[10px] text-muted">{{ comp.usages }} использований</div>
@@ -937,7 +1385,10 @@ void refreshRuntimeStatus()
                   </template>
                   <template v-else>
                     <div class="flex items-center gap-2.5 px-2.5 py-2">
-                      <div class="flex size-6 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white" :style="{ backgroundColor: comp.color }">
+                      <div
+                        class="flex size-6 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white"
+                        :style="{ backgroundColor: comp.color }"
+                      >
                         {{ comp.name[0] }}
                       </div>
                       <div class="flex-1 text-left">
@@ -945,9 +1396,17 @@ void refreshRuntimeStatus()
                           <div class="text-xs text-surface">{{ comp.name }}</div>
                           <span
                             class="rounded px-1 py-0.5 text-[9px]"
-                            :class="runtimeStatus[comp.primeReactExport]?.available ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'"
+                            :class="
+                              runtimeStatus[comp.primeReactExport]?.available
+                                ? 'bg-emerald-500/15 text-emerald-400'
+                                : 'bg-red-500/15 text-red-400'
+                            "
                           >
-                            {{ runtimeStatus[comp.primeReactExport]?.available ? 'runtime' : 'missing' }}
+                            {{
+                              runtimeStatus[comp.primeReactExport]?.available
+                                ? 'runtime'
+                                : 'missing'
+                            }}
                           </span>
                         </div>
                         <div class="text-[10px] text-muted">{{ comp.description }}</div>
@@ -961,18 +1420,16 @@ void refreshRuntimeStatus()
 
             <!-- Icons grid -->
             <template v-if="activeSection === 'Icons'">
-              <div
-                :class="viewMode === 'grid'
-                  ? 'grid grid-cols-4 gap-2'
-                  : 'flex flex-col gap-1'"
-              >
+              <div :class="viewMode === 'grid' ? 'grid grid-cols-4 gap-2' : 'flex flex-col gap-1'">
                 <button
                   v-for="ic in filteredIcons"
                   :key="ic.id"
                   class="rounded-lg border transition-all"
-                  :class="activeItemId === ic.id
-                    ? 'border-accent/50 bg-hover'
-                    : 'border-border hover:bg-hover/50'"
+                  :class="
+                    activeItemId === ic.id
+                      ? 'border-accent/50 bg-hover'
+                      : 'border-border hover:bg-hover/50'
+                  "
                   @click="selectItem(ic.id)"
                 >
                   <template v-if="viewMode === 'grid'">
@@ -983,14 +1440,16 @@ void refreshRuntimeStatus()
                   </template>
                   <template v-else>
                     <div class="flex items-center gap-2.5 px-2.5 py-2">
-                      <component :is="`icon-lucide-${ic.icon}`" class="size-4 shrink-0 text-surface" />
+                      <component
+                        :is="`icon-lucide-${ic.icon}`"
+                        class="size-4 shrink-0 text-surface"
+                      />
                       <span class="text-xs text-surface">{{ ic.name }}</span>
                     </div>
                   </template>
                 </button>
               </div>
             </template>
-
           </ScrollAreaViewport>
           <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
             <ScrollAreaThumb class="rounded-full bg-border" />
@@ -999,12 +1458,22 @@ void refreshRuntimeStatus()
       </SplitterPanel>
 
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
+        />
       </SplitterResizeHandle>
 
       <!-- Right: Edit panel -->
-      <SplitterPanel :default-size="25" :min-size="18" :max-size="38" class="flex flex-col overflow-hidden border-l border-border bg-panel">
-        <div v-if="!activeItem" class="flex flex-1 flex-col items-center justify-center gap-3 text-muted">
+      <SplitterPanel
+        :default-size="25"
+        :min-size="18"
+        :max-size="38"
+        class="flex flex-col overflow-hidden border-l border-border bg-panel"
+      >
+        <div
+          v-if="!activeItem"
+          class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
+        >
           <icon-lucide-mouse-pointer-2 class="size-8 opacity-30" />
           <p class="text-center text-xs px-4">Выберите элемент для редактирования</p>
         </div>
@@ -1016,19 +1485,27 @@ void refreshRuntimeStatus()
               <span class="flex-1 truncate text-xs font-medium text-surface">
                 {{ activeSection === 'Components' ? editComp?.name : (activeItem as any).name }}
               </span>
-              <span v-if="activeSection === 'Components' && editComp" class="text-[10px] text-muted">
+              <span
+                v-if="activeSection === 'Components' && editComp"
+                class="text-[10px] text-muted"
+              >
                 {{ editComp.primeReactImport }}
               </span>
             </div>
             <!-- Tab bar (only for Components) -->
-            <div v-if="activeSection === 'Components'" class="flex items-center gap-0.5 border-t border-border/60 px-2 pb-1.5 pt-1">
+            <div
+              v-if="activeSection === 'Components'"
+              class="flex items-center gap-0.5 border-t border-border/60 px-2 pb-1.5 pt-1"
+            >
               <button
                 v-for="tab in COMPONENT_TABS"
                 :key="tab.id"
                 class="rounded px-2 py-0.5 text-[11px] transition-colors"
-                :class="activeComponentTab === tab.id
-                  ? 'bg-hover text-surface'
-                  : 'text-muted hover:text-surface'"
+                :class="
+                  activeComponentTab === tab.id
+                    ? 'bg-hover text-surface'
+                    : 'text-muted hover:text-surface'
+                "
                 @click="activeComponentTab = tab.id"
               >
                 {{ tab.label }}
@@ -1039,23 +1516,37 @@ void refreshRuntimeStatus()
           <ScrollAreaRoot class="flex-1">
             <ScrollAreaViewport class="h-full p-3">
               <div class="flex flex-col gap-3">
-
                 <!-- Color editor -->
                 <template v-if="activeSection === 'Colors'">
                   <div class="flex items-center justify-center">
-                    <div class="h-20 w-full rounded-lg border border-border shadow-inner" :style="{ backgroundColor: (activeItem as ColorToken).value }" />
+                    <div
+                      class="h-20 w-full rounded-lg border border-border shadow-inner"
+                      :style="{ backgroundColor: (activeItem as ColorToken).value }"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Hex</label>
-                    <input :value="(activeItem as ColorToken).value" class="w-full rounded border border-border bg-canvas px-2 py-1.5 font-mono text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as ColorToken).value"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 font-mono text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Название токена</label>
-                    <input :value="(activeItem as ColorToken).name" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as ColorToken).name"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Группа</label>
-                    <input :value="(activeItem as ColorToken).group" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as ColorToken).group"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                 </template>
 
@@ -1063,24 +1554,44 @@ void refreshRuntimeStatus()
                 <template v-if="activeSection === 'Typography'">
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Название</label>
-                    <input :value="(activeItem as TypographyToken).name" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as TypographyToken).name"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                   <div class="grid grid-cols-2 gap-2">
                     <div>
                       <label class="mb-1 block text-[11px] text-muted">Размер</label>
-                      <input :value="(activeItem as TypographyToken).size" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                      <input
+                        :value="(activeItem as TypographyToken).size"
+                        class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                        @input="markDirty"
+                      />
                     </div>
                     <div>
                       <label class="mb-1 block text-[11px] text-muted">Насыщенность</label>
-                      <input :value="(activeItem as TypographyToken).weight" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                      <input
+                        :value="(activeItem as TypographyToken).weight"
+                        class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                        @input="markDirty"
+                      />
                     </div>
                     <div>
                       <label class="mb-1 block text-[11px] text-muted">Шрифт</label>
-                      <input :value="(activeItem as TypographyToken).font" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                      <input
+                        :value="(activeItem as TypographyToken).font"
+                        class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                        @input="markDirty"
+                      />
                     </div>
                     <div>
                       <label class="mb-1 block text-[11px] text-muted">Межстрочный</label>
-                      <input :value="(activeItem as TypographyToken).lineHeight" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                      <input
+                        :value="(activeItem as TypographyToken).lineHeight"
+                        class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                        @input="markDirty"
+                      />
                     </div>
                   </div>
                 </template>
@@ -1089,32 +1600,53 @@ void refreshRuntimeStatus()
                 <template v-if="activeSection === 'Effects'">
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Название</label>
-                    <input :value="(activeItem as EffectToken).name" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as EffectToken).name"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Описание</label>
-                    <input :value="(activeItem as EffectToken).description" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as EffectToken).description"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">CSS значение</label>
-                    <textarea :value="(activeItem as EffectToken).value" rows="2" class="w-full resize-none rounded border border-border bg-canvas px-2 py-1.5 font-mono text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <textarea
+                      :value="(activeItem as EffectToken).value"
+                      rows="2"
+                      class="w-full resize-none rounded border border-border bg-canvas px-2 py-1.5 font-mono text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                 </template>
 
                 <!-- Icon editor -->
                 <template v-if="activeSection === 'Icons'">
-                  <div class="flex items-center justify-center rounded-lg border border-border bg-canvas py-6">
-                    <component :is="`icon-lucide-${(activeItem as IconItem).icon}`" class="size-10 text-surface" />
+                  <div
+                    class="flex items-center justify-center rounded-lg border border-border bg-canvas py-6"
+                  >
+                    <component
+                      :is="`icon-lucide-${(activeItem as IconItem).icon}`"
+                      class="size-10 text-surface"
+                    />
                   </div>
                   <div>
                     <label class="mb-1 block text-[11px] text-muted">Название</label>
-                    <input :value="(activeItem as IconItem).name" class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50" @input="markDirty" />
+                    <input
+                      :value="(activeItem as IconItem).name"
+                      class="w-full rounded border border-border bg-canvas px-2 py-1.5 text-xs text-surface outline-none focus:border-accent/50"
+                      @input="markDirty"
+                    />
                   </div>
                 </template>
 
                 <!-- ── Components: 5-tab editor ────────────────────────────── -->
                 <template v-if="activeSection === 'Components' && editComp">
-
                   <!-- Tab: Описание -->
                   <template v-if="activeComponentTab === 'description'">
                     <div>
@@ -1128,8 +1660,12 @@ void refreshRuntimeStatus()
                     </div>
                     <div>
                       <label class="mb-1.5 block text-[11px] text-muted">Импорт PrimeReact</label>
-                      <code class="block overflow-x-auto rounded bg-hover px-2 py-1.5 text-[11px] text-muted">
-                        import &#123; {{ editComp.primeReactExport }} &#125; from '{{ editComp.primeReactImport }}'
+                      <code
+                        class="block overflow-x-auto rounded bg-hover px-2 py-1.5 text-[11px] text-muted"
+                      >
+                        import &#123; {{ editComp.primeReactExport }} &#125; from '{{
+                          editComp.primeReactImport
+                        }}'
                       </code>
                     </div>
                     <div>
@@ -1139,10 +1675,13 @@ void refreshRuntimeStatus()
                           v-for="state in editComp.states"
                           :key="state"
                           class="rounded bg-accent/10 px-2 py-0.5 text-[11px] text-accent"
-                        >{{ state }}</span>
+                          >{{ state }}</span
+                        >
                       </div>
                     </div>
-                    <div class="flex items-center justify-between rounded border border-border px-3 py-2">
+                    <div
+                      class="flex items-center justify-between rounded border border-border px-3 py-2"
+                    >
                       <span class="text-xs text-muted">Использований</span>
                       <span class="text-xs font-medium text-surface">{{ editComp.usages }}</span>
                     </div>
@@ -1166,15 +1705,24 @@ void refreshRuntimeStatus()
                             :key="prop.name"
                             class="group hover:bg-hover/30"
                           >
-                            <td class="px-2 py-1.5 font-mono text-[11px] text-accent">{{ prop.name }}</td>
-                            <td class="max-w-[80px] truncate px-2 py-1.5 text-muted">{{ prop.type }}</td>
+                            <td class="px-2 py-1.5 font-mono text-[11px] text-accent">
+                              {{ prop.name }}
+                            </td>
+                            <td class="max-w-[80px] truncate px-2 py-1.5 text-muted">
+                              {{ prop.type }}
+                            </td>
                             <td class="px-2 py-1.5 text-muted">{{ prop.default || '—' }}</td>
-                            <td class="px-2 py-1.5 text-center text-accent">{{ prop.required ? '✓' : '' }}</td>
+                            <td class="px-2 py-1.5 text-center text-accent">
+                              {{ prop.required ? '✓' : '' }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
-                    <p class="text-[11px] text-muted">{{ editComp.props.length }} пропсов · редактирование через Правила или сохранённый markdown</p>
+                    <p class="text-[11px] text-muted">
+                      {{ editComp.props.length }} пропсов · редактирование через Правила или
+                      сохранённый markdown
+                    </p>
                   </template>
 
                   <!-- Tab: Варианты -->
@@ -1185,10 +1733,15 @@ void refreshRuntimeStatus()
                       class="flex flex-col gap-1.5"
                     >
                       <div class="flex items-center gap-1.5">
-                        <span class="rounded bg-accent/10 px-1.5 py-0.5 text-[11px] font-medium text-accent">{{ variant.name }}</span>
+                        <span
+                          class="rounded bg-accent/10 px-1.5 py-0.5 text-[11px] font-medium text-accent"
+                          >{{ variant.name }}</span
+                        >
                         <span class="text-[11px] text-muted">{{ variant.description }}</span>
                       </div>
-                      <pre class="overflow-x-auto rounded bg-hover px-3 py-2 text-[11px] leading-relaxed text-surface"><code>{{ variant.code }}</code></pre>
+                      <pre
+                        class="overflow-x-auto rounded bg-hover px-3 py-2 text-[11px] leading-relaxed text-surface"
+                      ><code>{{ variant.code }}</code></pre>
                     </div>
                   </template>
 
@@ -1198,7 +1751,7 @@ void refreshRuntimeStatus()
                       <span class="text-[11px] text-muted">Пример использования</span>
                       <button
                         class="flex items-center gap-1 rounded px-2 py-1 text-[11px] text-muted transition-colors hover:bg-hover hover:text-surface"
-                        @click="navigator.clipboard.writeText(editComp.usageExample)"
+                        @click="copyUsageExample(editComp.usageExample)"
                       >
                         <icon-lucide-copy class="size-3" />
                         Копировать
@@ -1215,7 +1768,8 @@ void refreshRuntimeStatus()
                   <!-- Tab: Правила -->
                   <template v-else-if="activeComponentTab === 'rules'">
                     <p class="rounded bg-accent/5 px-2.5 py-2 text-[11px] text-muted">
-                      Эти правила читает AI при генерации аналитики, макетов и передачи. Пишите кратко и конкретно.
+                      Эти правила читает AI при генерации аналитики, макетов и передачи. Пишите
+                      кратко и конкретно.
                     </p>
                     <textarea
                       v-model="editComp.rules"
@@ -1225,9 +1779,7 @@ void refreshRuntimeStatus()
                       @input="markDirty"
                     />
                   </template>
-
                 </template>
-
               </div>
             </ScrollAreaViewport>
             <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
@@ -1239,9 +1791,11 @@ void refreshRuntimeStatus()
           <div class="shrink-0 border-t border-border p-2">
             <button
               class="relative flex w-full items-center justify-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors"
-              :class="isDirty
-                ? 'bg-accent text-white hover:bg-accent/80'
-                : 'bg-hover text-muted cursor-not-allowed'"
+              :class="
+                isDirty
+                  ? 'bg-accent text-white hover:bg-accent/80'
+                  : 'bg-hover text-muted cursor-not-allowed'
+              "
               @click="isDirty && saveChanges()"
             >
               Сохранить изменения

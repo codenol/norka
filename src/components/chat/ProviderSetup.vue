@@ -124,7 +124,9 @@ async function runSetup() {
       <p class="text-[10px] text-muted">
         <template v-if="lmStatus === 'found'">
           <span class="text-green-500">LM Studio запущен ✓</span>
-          <span v-if="detectedModels.length"> — {{ detectedModels.length }} {{ dialogs.modelsLoaded }}</span>
+          <span v-if="detectedModels.length">
+            — {{ detectedModels.length }} {{ dialogs.modelsLoaded }}</span
+          >
         </template>
         <template v-else-if="lmStatus === 'not-found'">
           <span class="text-amber-500">{{ dialogs.lmStudioNotFound }}</span>

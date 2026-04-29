@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 import Tip from '@/components/ui/Tip.vue'
@@ -12,30 +13,53 @@ import IconSettings from '~icons/lucide/settings'
 import { useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
+import { buildWorkspacePath } from '@/utils/workspace-route'
 
 import type { PipelineStep } from '@/composables/use-projects'
 
-const route   = useRoute()
+const route = useRoute()
 const { isConfigured } = useAIChat()
 const settings = useSettingsDialog()
 const { currentFeature } = useProjects()
 
 const ICONS = {
-  analytics:  IconBrainCircuit,
-  design:     IconPenTool,
+  analytics: IconBrainCircuit,
+  design: IconPenTool,
   discussion: IconMessageCircle,
-  handoff:    IconSend,
+  handoff: IconSend
 }
 
+const routeContext = computed(() => {
+  const productId = route.params.productId
+  const screenId = route.params.screenId
+  const featureId = route.params.featureId
+  if (
+    typeof productId !== 'string' ||
+    typeof screenId !== 'string' ||
+    typeof featureId !== 'string'
+  ) {
+    return null
+  }
+  return { productId, screenId, featureId }
+})
+
 const pipeline = [
-  { key: 'analytics'  as const, label: 'Аналитика',   href: '/workspace/analytics',  step: 1 },
-  { key: 'design'     as const, label: 'Прототип',     href: '/workspace/design',     step: 2 },
-  { key: 'discussion' as const, label: 'Обсуждение',   href: '/workspace/discussion', step: 3 },
-  { key: 'handoff'    as const, label: 'Передача',     href: '/workspace/handoff',    step: 4 },
+  { key: 'analytics' as const, label: 'Аналитика', step: 1 },
+  { key: 'design' as const, label: 'Прототип', step: 2 },
+  { key: 'discussion' as const, label: 'Обсуждение', step: 3 },
+  { key: 'handoff' as const, label: 'Передача', step: 4 }
 ]
 
-function isActive(href: string) {
-  return route.path.startsWith(href)
+function stepHref(key: PipelineStep): string {
+  return routeContext.value ? buildWorkspacePath(key, routeContext.value) : '/projects'
+}
+
+function isPipelineActive(key: PipelineStep) {
+  return route.path.endsWith(`/${key}`)
+}
+
+function isRouteActive(prefix: string) {
+  return route.path.startsWith(prefix)
 }
 
 function isDone(key: PipelineStep): boolean {
@@ -44,21 +68,25 @@ function isDone(key: PipelineStep): boolean {
 </script>
 
 <template>
-  <nav class="flex h-full w-12 shrink-0 flex-col items-center border-r border-border bg-canvas py-2">
+  <nav
+    class="flex h-full w-12 shrink-0 flex-col items-center border-r border-border bg-canvas py-2"
+  >
     <!-- Pipeline steps -->
     <div class="flex flex-col items-center gap-0.5">
       <Tip
         v-for="step in pipeline"
-        :key="step.href"
+        :key="step.key"
         :label="`${step.step}. ${step.label}`"
         side="right"
       >
         <RouterLink
-          :to="step.href"
+          :to="stepHref(step.key)"
           class="relative flex size-9 flex-col items-center justify-center rounded-lg transition-colors"
-          :class="isActive(step.href)
-            ? 'bg-accent/15 text-accent'
-            : 'text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            isPipelineActive(step.key)
+              ? 'bg-accent/15 text-accent'
+              : 'text-muted hover:bg-hover hover:text-surface'
+          "
         >
           <component :is="ICONS[step.key]" class="size-4" />
 
@@ -66,7 +94,8 @@ function isDone(key: PipelineStep): boolean {
           <span
             v-if="!isDone(step.key)"
             class="absolute bottom-0.5 right-0.5 text-[8px] leading-none font-semibold opacity-40"
-          >{{ step.step }}</span>
+            >{{ step.step }}</span
+          >
           <span
             v-else
             class="absolute bottom-0.5 right-0.5 flex size-2.5 items-center justify-center rounded-full"
@@ -86,9 +115,11 @@ function isDone(key: PipelineStep): boolean {
         <RouterLink
           to="/libraries"
           class="flex size-9 items-center justify-center rounded-lg transition-colors"
-          :class="isActive('/libraries') || isActive('/library/')
-            ? 'bg-accent/15 text-accent'
-            : 'text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            isRouteActive('/libraries') || isRouteActive('/library/')
+              ? 'bg-accent/15 text-accent'
+              : 'text-muted hover:bg-hover hover:text-surface'
+          "
         >
           <IconLibrary class="size-4" />
         </RouterLink>

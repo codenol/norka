@@ -32,16 +32,19 @@ const activeFormat = ref<TokenExportFormat>('css')
 const copied = ref(false)
 let copyTimer: ReturnType<typeof setTimeout> | null = null
 
-const FORMATS: Array<{ value: TokenExportFormat; labelKey: 'tokensFormatCSS' | 'tokensFormatTailwind' | 'tokensFormatJSON' }> = [
-  { value: 'css',      labelKey: 'tokensFormatCSS' },
+const FORMATS: Array<{
+  value: TokenExportFormat
+  labelKey: 'tokensFormatCSS' | 'tokensFormatTailwind' | 'tokensFormatJSON'
+}> = [
+  { value: 'css', labelKey: 'tokensFormatCSS' },
   { value: 'tailwind', labelKey: 'tokensFormatTailwind' },
-  { value: 'tokens',   labelKey: 'tokensFormatJSON' },
+  { value: 'tokens', labelKey: 'tokensFormatJSON' }
 ]
 
 const fileExtensions: Record<TokenExportFormat, string> = {
   css: 'tokens.css',
   tailwind: 'tailwind.config.js',
-  tokens: 'tokens.json',
+  tokens: 'tokens.json'
 }
 
 const output = computed(() => {
@@ -62,7 +65,9 @@ async function copyToClipboard() {
     await navigator.clipboard.writeText(output.value)
     copied.value = true
     if (copyTimer) clearTimeout(copyTimer)
-    copyTimer = setTimeout(() => { copied.value = false }, 1500)
+    copyTimer = setTimeout(() => {
+      copied.value = false
+    }, 1500)
   } catch (err) {
     console.warn('[TokenExport] Failed to copy to clipboard:', err)
   }
@@ -155,10 +160,13 @@ function downloadFile() {
             <div v-else class="relative flex-1 overflow-hidden">
               <pre
                 class="scrollbar-thin h-full overflow-auto bg-input p-4 font-mono text-[11px] leading-relaxed text-surface"
-              >{{ output }}</pre>
+                >{{ output }}</pre
+              >
 
               <!-- Floating file name badge -->
-              <div class="pointer-events-none absolute right-3 top-3 rounded border border-border bg-panel px-1.5 py-0.5 text-[10px] text-muted">
+              <div
+                class="pointer-events-none absolute right-3 top-3 rounded border border-border bg-panel px-1.5 py-0.5 text-[10px] text-muted"
+              >
                 {{ fileExtensions[activeFormat] }}
               </div>
             </div>

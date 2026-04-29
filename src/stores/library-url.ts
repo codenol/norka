@@ -98,7 +98,7 @@ function computeDiff(
   return {
     addedComponents: newNames.filter((n) => !oldSet.has(n)),
     removedComponents: [...oldSet].filter((n) => !newSet.has(n)),
-    totalComponents: newNames.length,
+    totalComponents: newNames.length
   }
 }
 
@@ -127,7 +127,7 @@ async function fetchLibrary(
   return {
     buf,
     etag: resp.headers.get('etag'),
-    lastModified: resp.headers.get('last-modified'),
+    lastModified: resp.headers.get('last-modified')
   }
 }
 
@@ -194,7 +194,7 @@ export async function addLibraryFromUrl(url: string, name?: string): Promise<voi
     url,
     etag: result.etag,
     lastModified: result.lastModified,
-    lastChecked: Date.now(),
+    lastChecked: Date.now()
   }
   _metas.value = [..._metas.value, meta]
   saveMetas(_metas.value)
@@ -222,11 +222,11 @@ export async function checkAllUpdates(): Promise<void> {
       _pendingUpdates.set(meta.libraryId, {
         newGraph,
         newBuffer: result.buf,
-        ...diff,
+        ...diff
       })
       updateMeta(meta.libraryId, {
         etag: result.etag ?? meta.etag,
-        lastModified: result.lastModified ?? meta.lastModified,
+        lastModified: result.lastModified ?? meta.lastModified
       })
     } catch (err) {
       console.warn(`[library-url] Update check failed for ${meta.libraryId}:`, err)
@@ -321,7 +321,7 @@ const store: LibraryUrlStore = {
   dismissUpdate,
   removeUrlMeta,
   getUrlMeta,
-  getUpdateInfo,
+  getUpdateInfo
 }
 
 export function useLibraryUrlStore(): LibraryUrlStore {

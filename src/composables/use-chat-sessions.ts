@@ -1,110 +1,104 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { UIMessage } from 'ai'
 
-export interface ChatSession {
-  id: string
-  name: string
-  createdAt: number
-  providerID: string
-  messages: UIMessage[]
-}
-
-const STORAGE_KEY = 'norka:chat-sessions'
+const STORAGE_KEY = 'norka:chat-messages-by-scope'
+const LEGACY_SESSIONS_KEY = 'norka:chat-sessions'
 const ACTIVE_KEY = 'norka:active-session-id'
+const SINGLE_SESSION_ID = 'default'
+const DEFAULT_SCOPE = 'editor:global'
 
-function loadSessions(): ChatSession[] {
+type ScopeMessages = Record<string, UIMessage[]>
+
+function isScopeMessages(value: unknown): value is ScopeMessages {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function migrateLegacySessions(): ScopeMessages {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as ChatSession[]) : []
+    const existingRaw = localStorage.getItem(STORAGE_KEY)
+    if (existingRaw) {
+      const parsed = JSON.parse(existingRaw) as unknown
+      if (isScopeMessages(parsed)) {
+        return parsed
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to read scoped chat storage, trying legacy format.', error)
+  }
+
+  try {
+    const legacyRaw = localStorage.getItem(LEGACY_SESSIONS_KEY)
+    const parsed = legacyRaw ? (JSON.parse(legacyRaw) as Array<{ messages?: UIMessage[] }>) : []
+    const first = parsed[0]?.messages ?? []
+    const migrated: ScopeMessages = { [DEFAULT_SCOPE]: first }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+    localStorage.removeItem(LEGACY_SESSIONS_KEY)
+    return migrated
   } catch {
-    return []
+    return { [DEFAULT_SCOPE]: [] }
   }
 }
 
-function persist(list: ChatSession[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+function persist(messagesByScope: ScopeMessages) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesByScope))
 }
 
-// Singleton state
-const sessions = ref<ChatSession[]>(loadSessions())
-const activeSessionId = ref<string>(localStorage.getItem(ACTIVE_KEY) ?? '')
+const scopedMessages = ref<ScopeMessages>(migrateLegacySessions())
+const activeSessionId = ref<string>(SINGLE_SESSION_ID)
 
-// Module-level createSession so it's available before useChatSessions() is called
-function createSession(providerID: string): ChatSession {
-  const id = crypto.randomUUID().slice(0, 8)
-  const index = sessions.value.length + 1
-  const session: ChatSession = {
-    id,
-    name: `Сессия ${index}`,
-    createdAt: Date.now(),
-    providerID,
-    messages: []
-  }
-  sessions.value = [...sessions.value, session]
-  persist(sessions.value)
-  activeSessionId.value = id
-  return session
+function createSession(_providerID: string) {
+  activeSessionId.value = SINGLE_SESSION_ID
+  localStorage.setItem(ACTIVE_KEY, SINGLE_SESSION_ID)
 }
 
-function renameSession(id: string, name: string) {
-  sessions.value = sessions.value.map((s) => (s.id === id ? { ...s, name } : s))
-  persist(sessions.value)
+function renameSession(_id: string, _name: string) {
+  // Single-session mode keeps a fixed display name.
 }
 
 function deleteSession(id: string) {
-  const idx = sessions.value.findIndex((s) => s.id === id)
-  if (idx === -1) return
-  sessions.value = sessions.value.filter((s) => s.id !== id)
-  persist(sessions.value)
-  if (activeSessionId.value === id) {
-    if (sessions.value.length > 0) {
-      activeSessionId.value = sessions.value[Math.max(0, idx - 1)].id
-    } else {
-      createSession('openrouter')
-    }
-  }
+  if (id !== SINGLE_SESSION_ID) return
+  scopedMessages.value = { [DEFAULT_SCOPE]: [] }
+  persist(scopedMessages.value)
+  activeSessionId.value = SINGLE_SESSION_ID
+  localStorage.setItem(ACTIVE_KEY, SINGLE_SESSION_ID)
 }
 
 function setActiveSession(id: string) {
-  if (sessions.value.find((s) => s.id === id)) {
-    activeSessionId.value = id
-  }
+  if (id !== SINGLE_SESSION_ID) return
+  activeSessionId.value = SINGLE_SESSION_ID
+  localStorage.setItem(ACTIVE_KEY, SINGLE_SESSION_ID)
 }
 
-function getMessages(id: string): UIMessage[] {
-  return sessions.value.find((s) => s.id === id)?.messages ?? []
+function getMessages(scopeKey: string): UIMessage[] {
+  return scopedMessages.value[scopeKey] ?? []
 }
 
-function saveMessages(id: string, messages: UIMessage[]) {
-  sessions.value = sessions.value.map((s) => (s.id === id ? { ...s, messages } : s))
-  persist(sessions.value)
+function saveMessages(scopeKey: string, messages: UIMessage[]) {
+  scopedMessages.value = { ...scopedMessages.value, [scopeKey]: messages }
+  persist(scopedMessages.value)
 }
 
-// Ensure there's always an active session
 function ensureActive() {
-  if (sessions.value.length === 0 || !sessions.value.find((s) => s.id === activeSessionId.value)) {
-    if (sessions.value.length > 0) {
-      activeSessionId.value = sessions.value[sessions.value.length - 1].id
-    } else {
-      createSession('openrouter')
-    }
+  if (!scopedMessages.value[DEFAULT_SCOPE]) {
+    scopedMessages.value = { ...scopedMessages.value, [DEFAULT_SCOPE]: [] }
+    persist(scopedMessages.value)
   }
+  activeSessionId.value = SINGLE_SESSION_ID
+  localStorage.setItem(ACTIVE_KEY, SINGLE_SESSION_ID)
 }
-
-watch(activeSessionId, (id) => {
-  localStorage.setItem(ACTIVE_KEY, id)
-})
 
 ensureActive()
 
 export function useChatSessions() {
-  const activeSession = computed<ChatSession | null>(
-    () => sessions.value.find((s) => s.id === activeSessionId.value) ?? null
-  )
+  const activeSession = computed(() => ({
+    id: SINGLE_SESSION_ID,
+    name: 'Чат',
+    messages: getMessages(DEFAULT_SCOPE)
+  }))
 
   return {
-    sessions,
+    sessions: computed(() => [activeSession.value]),
     activeSessionId,
     activeSession,
     createSession,

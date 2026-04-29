@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 
 import { useLayerTree } from './context'
-
 import type { LayerNode } from './context'
 
 const props = defineProps<{
@@ -21,7 +20,7 @@ const emit = defineEmits<{
 
 const ctx = useLayerTree()
 
-const isSelected = computed(() => props.node ? ctx.selectedIds.value.has(props.node.id) : false)
+const isSelected = computed(() => (props.node ? ctx.selectedIds.value.has(props.node.id) : false))
 const isDragging = computed(() => false)
 const padLeft = computed(() => `${8 + (props.level - 1) * ctx.indentPerLevel}px`)
 
@@ -33,53 +32,58 @@ function onRef(el: unknown) {
   if (props.node) ctx.setRowRef(props.node.id, htmlEl)
 }
 
+function selectNode(additive: boolean) {
+  if (!props.node) return
+  emit('select', props.node.id, additive)
+  ctx.select(props.node.id, additive)
+}
+
+function toggleExpandNode() {
+  if (!props.node) return
+  emit('toggleExpand', props.node.id)
+  ctx.toggleExpand(props.node.id)
+}
+
+function toggleVisibilityNode() {
+  if (!props.node) return
+  emit('toggleVisibility', props.node.id)
+  ctx.toggleVisibility(props.node.id)
+}
+
+function toggleLockNode() {
+  if (!props.node) return
+  emit('toggleLock', props.node.id)
+  ctx.toggleLock(props.node.id)
+}
+
+function renameNode(name: string) {
+  if (!props.node) return
+  emit('rename', props.node.id, name)
+  ctx.rename(props.node.id, name)
+}
+
+const slotProps = computed<Record<string, unknown> | null>(() => {
+  if (!props.node) return null
+  return {
+    node: props.node,
+    level: props.level,
+    hasChildren: props.hasChildren,
+    isSelected: isSelected.value,
+    isDragging: isDragging.value,
+    padLeft: padLeft.value,
+    select: selectNode,
+    toggleExpand: toggleExpandNode,
+    toggleVisibility: toggleVisibilityNode,
+    toggleLock: toggleLockNode,
+    rename: renameNode
+  }
+})
+
 defineExpose({ rowEl })
 </script>
 
 <template>
   <div v-if="props.node" :ref="onRef" :data-node-id="props.node.id">
-    <slot
-      :node="props.node"
-      :level="props.level"
-      :has-children="props.hasChildren"
-      :is-selected="isSelected"
-      :is-dragging="isDragging"
-      :pad-left="padLeft"
-      :select="
-        (additive: boolean) => {
-          if (!props.node) return
-          emit('select', props.node.id, additive)
-          ctx.select(props.node.id, additive)
-        }
-      "
-      :toggle-expand="
-        () => {
-          if (!props.node) return
-          emit('toggleExpand', props.node.id)
-          ctx.toggleExpand(props.node.id)
-        }
-      "
-      :toggle-visibility="
-        () => {
-          if (!props.node) return
-          emit('toggleVisibility', props.node.id)
-          ctx.toggleVisibility(props.node.id)
-        }
-      "
-      :toggle-lock="
-        () => {
-          if (!props.node) return
-          emit('toggleLock', props.node.id)
-          ctx.toggleLock(props.node.id)
-        }
-      "
-      :rename="
-        (name: string) => {
-          if (!props.node) return
-          emit('rename', props.node.id, name)
-          ctx.rename(props.node.id, name)
-        }
-      "
-    />
+    <slot v-if="slotProps" v-bind="slotProps" />
   </div>
 </template>

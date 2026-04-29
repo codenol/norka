@@ -22,7 +22,7 @@ const side = computed(() => sideProp ?? 'top')
     <TooltipPortal>
       <TooltipContent :side="side" :side-offset="4" :class="cls.content">
         {{ label }}
-</TooltipContent>
+      </TooltipContent>
     </TooltipPortal>
   </TooltipRoot>
 </template>

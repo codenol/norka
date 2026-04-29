@@ -7,13 +7,17 @@ import {
   ScrollAreaViewport,
   SplitterGroup,
   SplitterPanel,
-  SplitterResizeHandle,
+  SplitterResizeHandle
 } from 'reka-ui'
 
 import Tip from '@/components/ui/Tip.vue'
 import { toast } from '@/utils/toast'
 import { useProjects } from '@/composables/use-projects'
-import { useWorkspaceFs, type FeatureComment, type FeatureVersion } from '@/composables/use-workspace-fs'
+import {
+  useWorkspaceFs,
+  type FeatureComment,
+  type FeatureVersion
+} from '@/composables/use-workspace-fs'
 
 const { context, workspacePath } = useProjects()
 const {
@@ -22,7 +26,7 @@ const {
   writeFeatureComments,
   readFeatureVersions,
   writeFeatureVersions,
-  writeFeatureFile,
+  writeFeatureFile
 } = useWorkspaceFs()
 
 type FilterType = 'all' | 'open' | 'resolved'
@@ -42,14 +46,18 @@ const visibleComments = computed(() => {
     if (activeFilter.value === 'resolved') return c.status === 'resolved'
     return true
   })
-  return statusFiltered.filter((c) => c.versionId === activeVersionId.value || c.status !== 'resolved')
+  return statusFiltered.filter(
+    (c) => c.versionId === activeVersionId.value || c.status !== 'resolved'
+  )
 })
 
-const activeComment = computed(() =>
-  comments.value.find((c) => c.id === activeCommentId.value) ?? null,
+const activeComment = computed(
+  () => comments.value.find((c) => c.id === activeCommentId.value) ?? null
 )
 
-const currentVersion = computed(() => versions.value.find((v) => v.id === activeVersionId.value) ?? null)
+const currentVersion = computed(
+  () => versions.value.find((v) => v.id === activeVersionId.value) ?? null
+)
 
 async function loadDiscussionData() {
   if (!workspacePath.value || !context.value) return
@@ -57,7 +65,9 @@ async function loadDiscussionData() {
   comments.value = await readFeatureComments(workspacePath.value, productId, screenId, featureId)
   versions.value = await readFeatureVersions(workspacePath.value, productId, screenId, featureId)
   if (versions.value.length === 0) {
-    versions.value = [{ id: 'v1', title: 'v1', createdAt: new Date().toISOString(), notes: 'Initial version' }]
+    versions.value = [
+      { id: 'v1', title: 'v1', createdAt: new Date().toISOString(), notes: 'Initial version' }
+    ]
     await writeFeatureVersions(workspacePath.value, productId, screenId, featureId, versions.value)
   }
   if (!versions.value.some((v) => v.id === activeVersionId.value)) {
@@ -84,7 +94,7 @@ async function addComment() {
     author: 'Дизайнер',
     text: newCommentText.value.trim(),
     createdAt: new Date().toISOString(),
-    replies: [],
+    replies: []
   })
   newCommentText.value = ''
   await persistComments()
@@ -96,7 +106,7 @@ async function sendReply() {
     id: `r-${Date.now()}`,
     author: 'Дизайнер',
     text: replyText.value.trim(),
-    createdAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
   })
   replyText.value = ''
   await persistComments()
@@ -120,26 +130,28 @@ async function createNewVersion() {
     id: versionId,
     title: versionId,
     createdAt: new Date().toISOString(),
-    notes: `From ${activeVersionId.value}`,
+    notes: `From ${activeVersionId.value}`
   }
   versions.value.push(version)
   // unresolved comments migrate
-  const unresolved = comments.value.filter((c) => c.versionId === activeVersionId.value && c.status !== 'resolved')
+  const unresolved = comments.value.filter(
+    (c) => c.versionId === activeVersionId.value && c.status !== 'resolved'
+  )
   for (const c of unresolved) {
     comments.value.push({
       ...c,
       id: `c-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
       versionId,
       createdAt: new Date().toISOString(),
-      replies: [...c.replies],
+      replies: [...c.replies]
     })
   }
   activeVersionId.value = versionId
   await Promise.all([
     writeFeatureVersions(workspacePath.value, productId, screenId, featureId, versions.value),
-    persistComments(),
+    persistComments()
   ])
-  toast.success(`Создана версия ${versionId}. Незакрытые комментарии перенесены.`)
+  toast.info(`Создана версия ${versionId}. Незакрытые комментарии перенесены.`)
 }
 
 async function saveDiscussionMd() {
@@ -157,8 +169,15 @@ async function saveDiscussionMd() {
     lines.push('')
   }
   const { productId, screenId, featureId } = context.value
-  await writeFeatureFile(workspacePath.value, productId, screenId, featureId, 'discussion.md', lines.join('\n'))
-  toast.success('discussion.md сохранён')
+  await writeFeatureFile(
+    workspacePath.value,
+    productId,
+    screenId,
+    featureId,
+    'discussion.md',
+    lines.join('\n')
+  )
+  toast.info('discussion.md сохранён')
 }
 
 function countByFilter(f: FilterType) {
@@ -179,9 +198,11 @@ onMounted(() => {
     <header class="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3">
       <button
         class="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs transition-colors"
-        :class="activeComment && activeComment.status !== 'resolved'
-          ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30'
-          : 'cursor-not-allowed text-muted opacity-50'"
+        :class="
+          activeComment && activeComment.status !== 'resolved'
+            ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30'
+            : 'cursor-not-allowed text-muted opacity-50'
+        "
         :disabled="!activeComment || activeComment.status === 'resolved'"
         @click="resolveComment"
       >
@@ -197,9 +218,11 @@ onMounted(() => {
           v-for="(f, label) in { all: 'Все', open: 'Открытые', resolved: 'Решённые' }"
           :key="f"
           class="rounded px-2 py-0.5 text-[11px] transition-colors"
-          :class="activeFilter === f
-            ? 'bg-accent/15 text-accent'
-            : 'text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            activeFilter === f
+              ? 'bg-accent/15 text-accent'
+              : 'text-muted hover:bg-hover hover:text-surface'
+          "
           @click="activeFilter = f as FilterType"
         >
           {{ label }}
@@ -233,31 +256,48 @@ onMounted(() => {
     </header>
 
     <!-- Body -->
-    <SplitterGroup direction="horizontal" auto-save-id="discussion-layout" class="flex-1 overflow-hidden">
+    <SplitterGroup
+      direction="horizontal"
+      auto-save-id="discussion-layout"
+      class="flex-1 overflow-hidden"
+    >
       <!-- Left: Filters -->
-      <SplitterPanel :default-size="18" :min-size="12" :max-size="28" class="flex flex-col overflow-hidden border-r border-border bg-panel">
+      <SplitterPanel
+        :default-size="18"
+        :min-size="12"
+        :max-size="28"
+        class="flex flex-col overflow-hidden border-r border-border bg-panel"
+      >
         <ScrollAreaRoot class="flex-1">
           <ScrollAreaViewport class="h-full p-2">
             <div class="mb-3">
-              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Статус</header>
+              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">
+                Статус
+              </header>
               <div class="flex flex-col gap-0.5">
                 <button
                   v-for="(label, f) in { all: 'Все', open: 'Открытые', resolved: 'Решённые' }"
                   :key="f"
                   class="flex items-center justify-between rounded px-2 py-1 text-xs transition-colors"
-                  :class="activeFilter === f
-                    ? 'bg-hover text-surface'
-                    : 'text-muted hover:bg-hover hover:text-surface'"
+                  :class="
+                    activeFilter === f
+                      ? 'bg-hover text-surface'
+                      : 'text-muted hover:bg-hover hover:text-surface'
+                  "
                   @click="activeFilter = f as FilterType"
                 >
                   <span>{{ label }}</span>
-                  <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px] text-muted">{{ countByFilter(f as FilterType) }}</span>
+                  <span class="rounded bg-canvas px-1.5 py-0.5 text-[10px] text-muted">{{
+                    countByFilter(f as FilterType)
+                  }}</span>
                 </button>
               </div>
             </div>
 
             <div>
-              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">Новый комментарий</header>
+              <header class="px-1 py-1.5 text-[11px] uppercase tracking-wider text-muted">
+                Новый комментарий
+              </header>
               <textarea
                 v-model="newCommentText"
                 rows="5"
@@ -267,7 +307,9 @@ onMounted(() => {
               <button
                 class="mt-2 w-full rounded border border-border px-2.5 py-1 text-xs text-surface hover:bg-hover"
                 @click="addComment"
-              >Добавить</button>
+              >
+                Добавить
+              </button>
             </div>
           </ScrollAreaViewport>
           <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
@@ -277,11 +319,17 @@ onMounted(() => {
       </SplitterPanel>
 
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
+        />
       </SplitterResizeHandle>
 
       <!-- Center: Version summary -->
-      <SplitterPanel :default-size="56" :min-size="30" class="flex flex-col overflow-hidden bg-canvas">
+      <SplitterPanel
+        :default-size="56"
+        :min-size="30"
+        class="flex flex-col overflow-hidden bg-canvas"
+      >
         <div class="flex flex-1 flex-col gap-3 overflow-auto p-6">
           <div class="rounded border border-border/60 bg-panel px-3 py-2">
             <p class="text-xs text-muted">Текущая версия</p>
@@ -291,12 +339,23 @@ onMounted(() => {
             v-for="(c, idx) in visibleComments"
             :key="c.id"
             class="rounded border px-3 py-2 text-left"
-            :class="activeCommentId === c.id ? 'border-accent bg-accent/5' : 'border-border/50 bg-panel/40'"
+            :class="
+              activeCommentId === c.id
+                ? 'border-accent bg-accent/5'
+                : 'border-border/50 bg-panel/40'
+            "
             @click="selectComment(c.id)"
           >
             <div class="flex items-center gap-2">
               <span class="text-[10px] text-muted">#{{ idx + 1 }}</span>
-              <span class="rounded px-1.5 py-0.5 text-[10px]" :class="c.status === 'resolved' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-hover text-muted'">
+              <span
+                class="rounded px-1.5 py-0.5 text-[10px]"
+                :class="
+                  c.status === 'resolved'
+                    ? 'bg-emerald-500/15 text-emerald-400'
+                    : 'bg-hover text-muted'
+                "
+              >
                 {{ c.status }}
               </span>
               <span class="text-[10px] text-muted">v: {{ c.versionId }}</span>
@@ -307,11 +366,18 @@ onMounted(() => {
       </SplitterPanel>
 
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
+        />
       </SplitterResizeHandle>
 
       <!-- Right: Thread -->
-      <SplitterPanel :default-size="26" :min-size="18" :max-size="40" class="flex flex-col overflow-hidden border-l border-border bg-panel">
+      <SplitterPanel
+        :default-size="26"
+        :min-size="18"
+        :max-size="40"
+        class="flex flex-col overflow-hidden border-l border-border bg-panel"
+      >
         <!-- Empty state -->
         <div
           v-if="!activeComment"
@@ -325,17 +391,23 @@ onMounted(() => {
         <template v-else>
           <!-- Thread header -->
           <div class="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
+            <span
+              class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent"
+            >
               {{ activeComment.id }}
             </span>
             <span class="flex-1 truncate text-xs text-surface">{{ activeComment.author }}</span>
-            <span class="text-[10px] text-muted">{{ new Date(activeComment.createdAt).toLocaleString('ru') }}</span>
+            <span class="text-[10px] text-muted">{{
+              new Date(activeComment.createdAt).toLocaleString('ru')
+            }}</span>
             <Tip label="Отметить как решённый">
               <button
                 class="flex size-6 items-center justify-center rounded transition-colors"
-                :class="activeComment.status === 'resolved'
-                  ? 'text-emerald-400 hover:bg-hover'
-                  : 'text-muted hover:bg-hover hover:text-emerald-400'"
+                :class="
+                  activeComment.status === 'resolved'
+                    ? 'text-emerald-400 hover:bg-hover'
+                    : 'text-muted hover:bg-hover hover:text-emerald-400'
+                "
                 @click="resolveComment"
               >
                 <icon-lucide-check-circle class="size-3.5" />
@@ -349,31 +421,39 @@ onMounted(() => {
               <div class="flex flex-col gap-3">
                 <!-- Original comment -->
                 <div class="flex gap-2">
-                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted">
+                  <span
+                    class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted"
+                  >
                     {{ activeComment.author.slice(0, 2).toUpperCase() }}
                   </span>
                   <div>
                     <div class="flex items-baseline gap-1.5">
-                      <span class="text-[11px] font-medium text-surface">{{ activeComment.author }}</span>
-                      <span class="text-[10px] text-muted">{{ new Date(activeComment.createdAt).toLocaleString('ru') }}</span>
+                      <span class="text-[11px] font-medium text-surface">{{
+                        activeComment.author
+                      }}</span>
+                      <span class="text-[10px] text-muted">{{
+                        new Date(activeComment.createdAt).toLocaleString('ru')
+                      }}</span>
                     </div>
-                    <p class="mt-0.5 text-xs leading-relaxed text-surface/80">{{ activeComment.text }}</p>
+                    <p class="mt-0.5 text-xs leading-relaxed text-surface/80">
+                      {{ activeComment.text }}
+                    </p>
                   </div>
                 </div>
 
                 <!-- Replies -->
-                <div
-                  v-for="reply in activeComment.replies"
-                  :key="reply.id"
-                  class="flex gap-2"
-                >
-                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted">
+                <div v-for="reply in activeComment.replies" :key="reply.id" class="flex gap-2">
+                  <span
+                    class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted"
+                  >
                     {{ reply.author.slice(0, 2).toUpperCase() }}
                   </span>
                   <div>
                     <div class="flex items-baseline gap-1.5">
                       <span class="text-[11px] font-medium text-surface">{{ reply.author }}</span>
-                      <span class="text-[10px] text-muted">{{ new Date(reply.createdAt).toLocaleString('ru') }}</span>
+                      <span class="text-[10px] text-muted">{{
+                        new Date(reply.createdAt).toLocaleString('ru')
+                      }}</span>
                     </div>
                     <p class="mt-0.5 text-xs leading-relaxed text-surface/80">{{ reply.text }}</p>
                   </div>
@@ -387,7 +467,9 @@ onMounted(() => {
 
           <!-- Reply input -->
           <div class="shrink-0 border-t border-border p-2">
-            <div class="flex gap-2 rounded-lg border border-border bg-canvas px-2 py-1.5 focus-within:border-accent/50">
+            <div
+              class="flex gap-2 rounded-lg border border-border bg-canvas px-2 py-1.5 focus-within:border-accent/50"
+            >
               <textarea
                 v-model="replyText"
                 rows="2"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
 import { ref } from 'vue'
+import type { Ref } from 'vue'
 
 import { useEditor } from '@norka/vue/context/editorContext'
 import { useCanvas, type UseCanvasOptions } from '@norka/vue'
@@ -11,7 +12,7 @@ const props = withDefaults(defineProps<UseCanvasOptions>(), {
 })
 
 const editor = useEditor()
-const canvasRef = ref<HTMLCanvasElement | null>(null)
+const canvasRef = ref(null) as Ref<HTMLCanvasElement | null>
 const ready = ref(false)
 
 const { renderNow, hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle } = useCanvas(

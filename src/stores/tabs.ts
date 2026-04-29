@@ -1,8 +1,7 @@
 import { shallowRef, computed, triggerRef } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
-
 import { createEditorStore, setActiveEditorStore } from '@/stores/editor'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@norka/core'
 
 import type { EditorStore } from '@/stores/editor'
 import type { SceneGraph } from '@norka/core'

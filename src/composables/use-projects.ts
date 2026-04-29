@@ -1,9 +1,12 @@
 import { computed, ref, watch } from 'vue'
+
+import { migrateLegacyLocalStorageValue } from '@/utils/local-storage'
+
 import {
   workspacePath,
   readNorkaJson,
   writeNorkaJson,
-  ensureWorkspaceStructure,
+  ensureWorkspaceStructure
 } from './use-workspace-fs'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -11,10 +14,10 @@ import {
 export type PipelineStep = 'analytics' | 'design' | 'discussion' | 'handoff'
 
 export const PIPELINE_STEPS: { key: PipelineStep; label: string; index: number }[] = [
-  { key: 'analytics',  label: 'Аналитика',  index: 0 },
-  { key: 'design',     label: 'Прототип',   index: 1 },
+  { key: 'analytics', label: 'Аналитика', index: 0 },
+  { key: 'design', label: 'Прототип', index: 1 },
   { key: 'discussion', label: 'Обсуждение', index: 2 },
-  { key: 'handoff',    label: 'Передача',   index: 3 },
+  { key: 'handoff', label: 'Передача', index: 3 }
 ]
 
 export interface Feature {
@@ -48,8 +51,10 @@ export interface ProjectContext {
 
 // ── Singleton state ────────────────────────────────────────────────────────────
 
-const LS_PRODUCTS = 'bereста:products'
-const LS_CONTEXT  = 'bereста:context'
+const LS_PRODUCTS = 'norka:products'
+const LS_CONTEXT = 'norka:context'
+const LEGACY_PRODUCTS_KEYS = ['bereста:products']
+const LEGACY_CONTEXT_KEYS = ['bereста:context']
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -57,7 +62,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function loadProducts(): Product[] {
   try {
-    const raw = localStorage.getItem(LS_PRODUCTS)
+    const raw = migrateLegacyLocalStorageValue(LS_PRODUCTS, LEGACY_PRODUCTS_KEYS)
     if (!raw) return defaultProducts()
     const parsed: unknown = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed.map(migrateProduct) : defaultProducts()
@@ -68,7 +73,7 @@ function loadProducts(): Product[] {
 
 function loadContext(): ProjectContext | null {
   try {
-    const raw = localStorage.getItem(LS_CONTEXT)
+    const raw = migrateLegacyLocalStorageValue(LS_CONTEXT, LEGACY_CONTEXT_KEYS)
     return raw ? (JSON.parse(raw) as ProjectContext) : null
   } catch {
     return null
@@ -81,14 +86,14 @@ function migrateProduct(p: unknown): Product {
   const title = typeof data.title === 'string' ? data.title : 'Новый продукт'
   const screens = Array.isArray(data.screens)
     ? (data.screens as Screen[]).map((screen) => ({
-      ...screen,
-      features: Array.isArray(screen.features)
-        ? screen.features.map((feature) => ({
-          ...feature,
-          completedSteps: sanitizeCompletedSteps(feature.completedSteps),
-        }))
-        : [],
-    }))
+        ...screen,
+        features: Array.isArray(screen.features)
+          ? screen.features.map((feature) => ({
+              ...feature,
+              completedSteps: sanitizeCompletedSteps(feature.completedSteps)
+            }))
+          : []
+      }))
     : []
   const connectedLibraryIds = Array.isArray(data.connectedLibraryIds)
     ? data.connectedLibraryIds.filter((id): id is string => typeof id === 'string')
@@ -97,7 +102,7 @@ function migrateProduct(p: unknown): Product {
     id,
     title,
     screens,
-    connectedLibraryIds,
+    connectedLibraryIds
   }
 }
 
@@ -105,8 +110,9 @@ function sanitizeCompletedSteps(steps: unknown): PipelineStep[] {
   if (!Array.isArray(steps)) return []
   // Hard migration: collapse old preview into design and drop unknown values.
   const mapped = steps.map((step) => (step === 'preview' ? 'design' : step))
-  return mapped.filter((step): step is PipelineStep =>
-    step === 'analytics' || step === 'design' || step === 'discussion' || step === 'handoff',
+  return mapped.filter(
+    (step): step is PipelineStep =>
+      step === 'analytics' || step === 'design' || step === 'discussion' || step === 'handoff'
   )
 }
 
@@ -121,20 +127,60 @@ function defaultProducts(): Product[] {
           id: 's1',
           title: 'Каталог',
           features: [
-            { id: 'f1', title: 'Карточка товара',                    completedSteps: ['analytics', 'design'], jiraIssueKey: 'APP-101', jiraUrl: 'https://jira.example.com/browse/APP-101', designerFullName: 'Марина Соколова', confluenceUrl: 'https://confluence.example.com/display/APP/Feature+101' },
-            { id: 'f2', title: 'Фильтры и сортировка',               completedSteps: ['analytics', 'design', 'discussion', 'handoff'], jiraIssueKey: 'APP-102', jiraUrl: 'https://jira.example.com/browse/APP-102', designerFullName: 'Алексей Карпов', confluenceUrl: 'https://confluence.example.com/display/APP/Feature+102' },
-            { id: 'f3', title: 'Пагинация / бесконечная прокрутка',  completedSteps: [], jiraIssueKey: 'APP-103', jiraUrl: 'https://jira.example.com/browse/APP-103', designerFullName: 'Марина Соколова', confluenceUrl: 'https://confluence.example.com/display/APP/Feature+103' },
-          ],
+            {
+              id: 'f1',
+              title: 'Карточка товара',
+              completedSteps: ['analytics', 'design'],
+              jiraIssueKey: 'APP-101',
+              jiraUrl: 'https://jira.example.com/browse/APP-101',
+              designerFullName: 'Марина Соколова',
+              confluenceUrl: 'https://confluence.example.com/display/APP/Feature+101'
+            },
+            {
+              id: 'f2',
+              title: 'Фильтры и сортировка',
+              completedSteps: ['analytics', 'design', 'discussion', 'handoff'],
+              jiraIssueKey: 'APP-102',
+              jiraUrl: 'https://jira.example.com/browse/APP-102',
+              designerFullName: 'Алексей Карпов',
+              confluenceUrl: 'https://confluence.example.com/display/APP/Feature+102'
+            },
+            {
+              id: 'f3',
+              title: 'Пагинация / бесконечная прокрутка',
+              completedSteps: [],
+              jiraIssueKey: 'APP-103',
+              jiraUrl: 'https://jira.example.com/browse/APP-103',
+              designerFullName: 'Марина Соколова',
+              confluenceUrl: 'https://confluence.example.com/display/APP/Feature+103'
+            }
+          ]
         },
         {
           id: 's2',
           title: 'Корзина',
           features: [
-            { id: 'f4', title: 'Список товаров', completedSteps: ['analytics'], jiraIssueKey: 'APP-104', jiraUrl: 'https://jira.example.com/browse/APP-104', designerFullName: 'Дмитрий Лебедев', confluenceUrl: 'https://confluence.example.com/display/APP/Feature+104' },
-            { id: 'f5', title: 'Промокод',       completedSteps: [], jiraIssueKey: 'APP-105', jiraUrl: 'https://jira.example.com/browse/APP-105', designerFullName: 'Дмитрий Лебедев', confluenceUrl: 'https://confluence.example.com/display/APP/Feature+105' },
-          ],
-        },
-      ],
+            {
+              id: 'f4',
+              title: 'Список товаров',
+              completedSteps: ['analytics'],
+              jiraIssueKey: 'APP-104',
+              jiraUrl: 'https://jira.example.com/browse/APP-104',
+              designerFullName: 'Дмитрий Лебедев',
+              confluenceUrl: 'https://confluence.example.com/display/APP/Feature+104'
+            },
+            {
+              id: 'f5',
+              title: 'Промокод',
+              completedSteps: [],
+              jiraIssueKey: 'APP-105',
+              jiraUrl: 'https://jira.example.com/browse/APP-105',
+              designerFullName: 'Дмитрий Лебедев',
+              confluenceUrl: 'https://confluence.example.com/display/APP/Feature+105'
+            }
+          ]
+        }
+      ]
     },
     {
       id: 'p2',
@@ -145,21 +191,37 @@ function defaultProducts(): Product[] {
           id: 's3',
           title: 'Главная',
           features: [
-            { id: 'f6', title: 'Метрики DAU/MAU',   completedSteps: [], jiraIssueKey: 'DASH-201', jiraUrl: 'https://jira.example.com/browse/DASH-201', designerFullName: 'Екатерина Миронова', confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+201' },
-            { id: 'f7', title: 'Когортный retention', completedSteps: [], jiraIssueKey: 'DASH-202', jiraUrl: 'https://jira.example.com/browse/DASH-202', designerFullName: 'Екатерина Миронова', confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+202' },
-          ],
-        },
-      ],
-    },
+            {
+              id: 'f6',
+              title: 'Метрики DAU/MAU',
+              completedSteps: [],
+              jiraIssueKey: 'DASH-201',
+              jiraUrl: 'https://jira.example.com/browse/DASH-201',
+              designerFullName: 'Екатерина Миронова',
+              confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+201'
+            },
+            {
+              id: 'f7',
+              title: 'Когортный retention',
+              completedSteps: [],
+              jiraIssueKey: 'DASH-202',
+              jiraUrl: 'https://jira.example.com/browse/DASH-202',
+              designerFullName: 'Екатерина Миронова',
+              confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+202'
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
 
 const products = ref<Product[]>(loadProducts())
-const context  = ref<ProjectContext | null>(loadContext())
+const context = ref<ProjectContext | null>(loadContext())
 
 // Persist to localStorage
 watch(products, (val) => localStorage.setItem(LS_PRODUCTS, JSON.stringify(val)), { deep: true })
-watch(context,  (val) => localStorage.setItem(LS_CONTEXT,  JSON.stringify(val)))
+watch(context, (val) => localStorage.setItem(LS_CONTEXT, JSON.stringify(val)))
 
 // ── Disk sync (Tauri only) ────────────────────────────────────────────────────
 
@@ -171,8 +233,9 @@ function scheduleDiskSave() {
   saveTimer = setTimeout(() => {
     const root = workspacePath.value
     if (!root) return
-    void writeNorkaJson(root, products.value)
-      .then(() => ensureWorkspaceStructure(root, products.value))
+    void writeNorkaJson(root, products.value).then(() =>
+      ensureWorkspaceStructure(root, products.value)
+    )
   }, 800)
 }
 
@@ -194,13 +257,13 @@ export function useProjects() {
   // ── Lookup helpers ──────────────────────────────────────────────────────────
 
   function findProduct(id: string) {
-    return products.value.find(p => p.id === id) ?? null
+    return products.value.find((p) => p.id === id) ?? null
   }
   function findScreen(productId: string, screenId: string) {
-    return findProduct(productId)?.screens.find(s => s.id === screenId) ?? null
+    return findProduct(productId)?.screens.find((s) => s.id === screenId) ?? null
   }
   function findFeature(productId: string, screenId: string, featureId: string) {
-    return findScreen(productId, screenId)?.features.find(f => f.id === featureId) ?? null
+    return findScreen(productId, screenId)?.features.find((f) => f.id === featureId) ?? null
   }
 
   // ── Current context ─────────────────────────────────────────────────────────
@@ -228,14 +291,12 @@ export function useProjects() {
   // ── Step helpers ────────────────────────────────────────────────────────────
 
   function stepIndex(step: PipelineStep): number {
-    return PIPELINE_STEPS.find(s => s.key === step)?.index ?? -1
+    return PIPELINE_STEPS.find((s) => s.key === step)?.index ?? -1
   }
 
   function lastCompletedStep(feature: Feature): PipelineStep | null {
     if (feature.completedSteps.length === 0) return null
-    return feature.completedSteps.reduce((a, b) =>
-      stepIndex(a) > stepIndex(b) ? a : b
-    )
+    return feature.completedSteps.reduce((a, b) => (stepIndex(a) > stepIndex(b) ? a : b))
   }
 
   function stepProgress(feature: Feature): number {
@@ -249,7 +310,12 @@ export function useProjects() {
   }
 
   /** Mark a step as visited/completed (only advances, never removes) */
-  function markStepVisited(productId: string, screenId: string, featureId: string, step: PipelineStep) {
+  function markStepVisited(
+    productId: string,
+    screenId: string,
+    featureId: string,
+    step: PipelineStep
+  ) {
     const feature = findFeature(productId, screenId, featureId)
     if (!feature) return
     if (!feature.completedSteps.includes(step)) {
@@ -295,7 +361,12 @@ export function useProjects() {
     confluenceUrl?: string
   }
 
-  function addFeature(productId: string, screenId: string, title: string, meta?: FeatureMetaInput): Feature | null {
+  function addFeature(
+    productId: string,
+    screenId: string,
+    title: string,
+    meta?: FeatureMetaInput
+  ): Feature | null {
     const screen = findScreen(productId, screenId)
     if (!screen) return null
     const feature: Feature = {
@@ -305,7 +376,7 @@ export function useProjects() {
       jiraIssueKey: meta?.jiraIssueKey ?? '',
       jiraUrl: meta?.jiraUrl ?? '',
       designerFullName: meta?.designerFullName ?? '',
-      confluenceUrl: meta?.confluenceUrl ?? '',
+      confluenceUrl: meta?.confluenceUrl ?? ''
     }
     screen.features.push(feature)
     return feature
@@ -315,7 +386,7 @@ export function useProjects() {
     productId: string,
     screenId: string,
     featureId: string,
-    meta: FeatureMetaInput,
+    meta: FeatureMetaInput
   ) {
     const feature = findFeature(productId, screenId, featureId)
     if (!feature) return
@@ -326,7 +397,7 @@ export function useProjects() {
   }
 
   function deleteProduct(productId: string) {
-    const i = products.value.findIndex(p => p.id === productId)
+    const i = products.value.findIndex((p) => p.id === productId)
     if (i !== -1) products.value.splice(i, 1)
     if (context.value?.productId === productId) context.value = null
   }
@@ -334,7 +405,7 @@ export function useProjects() {
   function deleteScreen(productId: string, screenId: string) {
     const product = findProduct(productId)
     if (!product) return
-    const i = product.screens.findIndex(s => s.id === screenId)
+    const i = product.screens.findIndex((s) => s.id === screenId)
     if (i !== -1) product.screens.splice(i, 1)
     if (context.value?.productId === productId && context.value.screenId === screenId) {
       context.value = null
@@ -344,7 +415,7 @@ export function useProjects() {
   function deleteFeature(productId: string, screenId: string, featureId: string) {
     const screen = findScreen(productId, screenId)
     if (!screen) return
-    const i = screen.features.findIndex(f => f.id === featureId)
+    const i = screen.features.findIndex((f) => f.id === featureId)
     if (i !== -1) screen.features.splice(i, 1)
     if (context.value?.featureId === featureId) context.value = null
   }
@@ -375,6 +446,6 @@ export function useProjects() {
     connectLibrary,
     disconnectLibrary,
     loadFromDisk,
-    PIPELINE_STEPS,
+    PIPELINE_STEPS
   }
 }

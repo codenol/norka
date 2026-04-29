@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ update: [color: Color] }>()
 
-const swatchBg = computed(() => props.color ? colorToCSS(props.color) : 'transparent')
+const swatchBg = computed(() => (props.color ? colorToCSS(props.color) : 'transparent'))
 </script>
 
 <template>

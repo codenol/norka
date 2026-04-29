@@ -1,7 +1,7 @@
-import type { Command as ShellCommand } from '@tauri-apps/plugin-shell'
-
 import { decodeTauriStderr } from '@/utils/tauri'
 import { AUTOMATION_HTTP_PORT, IS_TAURI, randomHex } from '@norka/core'
+
+import type { Command as ShellCommand } from '@tauri-apps/plugin-shell'
 
 interface AutomationHealth {
   status: 'ok' | 'no_app'

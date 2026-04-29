@@ -620,9 +620,8 @@ function convertTextProps(
     styleRuns: importStyleRuns(nc),
     textTruncation: (nc.textTruncation as string) === 'ENDING' ? 'ENDING' : 'DISABLED',
     textDirection:
-      (getNorkaPluginValue(nc, TEXT_DIRECTION_PLUGIN_KEY) as
-        | SceneNode['textDirection']
-        | null) || 'AUTO'
+      (getNorkaPluginValue(nc, TEXT_DIRECTION_PLUGIN_KEY) as SceneNode['textDirection'] | null) ||
+      'AUTO'
   }
 }
 

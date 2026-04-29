@@ -63,10 +63,7 @@ watch(isOpen, (open) => {
         </div>
 
         <!-- Close -->
-        <button
-          class="rounded p-1 text-muted hover:bg-hover hover:text-surface"
-          @click="close"
-        >
+        <button class="rounded p-1 text-muted hover:bg-hover hover:text-surface" @click="close">
           <icon-lucide-x class="size-3.5" />
         </button>
       </div>
@@ -92,10 +89,7 @@ watch(isOpen, (open) => {
         </div>
 
         <!-- iframe -->
-        <div
-          v-else-if="htmlCode"
-          class="flex flex-1 items-start justify-center overflow-auto p-4"
-        >
+        <div v-else-if="htmlCode" class="flex flex-1 items-start justify-center overflow-auto p-4">
           <iframe
             :srcdoc="htmlCode"
             :style="iframeWidth ? `width: ${iframeWidth}px; flex-shrink: 0;` : 'width: 100%;'"
@@ -106,10 +100,7 @@ watch(isOpen, (open) => {
         </div>
 
         <!-- Placeholder when not yet generated -->
-        <div
-          v-else
-          class="flex flex-1 flex-col items-center justify-center gap-2 text-muted"
-        >
+        <div v-else class="flex flex-1 flex-col items-center justify-center gap-2 text-muted">
           <icon-lucide-monitor class="size-8 opacity-30" />
           <p class="text-xs">{{ dialogs.preview }}</p>
         </div>

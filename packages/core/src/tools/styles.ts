@@ -1,5 +1,5 @@
-import { generateId } from '../scene-graph'
 import { parseColor } from '../color'
+import { generateId } from '../scene-graph'
 import { defineTool } from './schema'
 
 import type { StyleType, FillStyle, TextStyle, EffectStyle } from '../scene-graph'

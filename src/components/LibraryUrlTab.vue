@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useI18n } from '@norka/vue'
 
@@ -24,6 +24,7 @@ const previewing = ref(false)
 const preview = ref<Preview | null>(null)
 const previewError = ref<string | null>(null)
 const adding = ref(false)
+const manifests = computed(() => libStore.manifests.value ?? [])
 
 async function handlePreview() {
   const url = urlInput.value.trim()
@@ -85,7 +86,6 @@ function handleRemove(libraryId: string) {
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-0">
-
     <!-- URL input row -->
     <div class="flex shrink-0 items-start gap-1.5 border-b border-border px-4 py-3">
       <div class="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -171,7 +171,9 @@ function handleRemove(libraryId: string) {
           <div class="flex min-w-0 flex-1 flex-col gap-0.5">
             <div class="flex items-center gap-1.5">
               <span class="truncate text-xs font-medium text-surface">
-                {{ libStore.manifests.value.find(m => m.id === meta.libraryId)?.name ?? meta.url }}
+                {{
+                  manifests.find((m: { id: string }) => m.id === meta.libraryId)?.name ?? meta.url
+                }}
               </span>
               <!-- Update badge -->
               <span
@@ -199,7 +201,7 @@ function handleRemove(libraryId: string) {
           v-if="libUrlStore.librariesWithUpdates.value.has(meta.libraryId)"
           class="border-t border-accent/20 bg-accent/5 px-4 py-2.5"
         >
-          <div v-if="libUrlStore.getUpdateInfo(meta.libraryId) as info">
+          <div v-if="libUrlStore.getUpdateInfo(meta.libraryId)">
             <div class="mb-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px]">
               <span
                 v-if="(libUrlStore.getUpdateInfo(meta.libraryId)?.addedComponents.length ?? 0) > 0"
@@ -209,7 +211,9 @@ function handleRemove(libraryId: string) {
                 {{ dialogs.libDiffAdded }}
               </span>
               <span
-                v-if="(libUrlStore.getUpdateInfo(meta.libraryId)?.removedComponents.length ?? 0) > 0"
+                v-if="
+                  (libUrlStore.getUpdateInfo(meta.libraryId)?.removedComponents.length ?? 0) > 0
+                "
                 class="text-error"
               >
                 −{{ libUrlStore.getUpdateInfo(meta.libraryId)?.removedComponents.length }}

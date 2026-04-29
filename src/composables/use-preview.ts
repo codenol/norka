@@ -1,9 +1,8 @@
 import { ref } from 'vue'
 
-import { selectionToJSX } from '@norka/core'
-
 import { useAIChat } from '@/composables/use-chat'
 import { getActiveEditorStore } from '@/stores/editor'
+import { selectionToJSX } from '@norka/core'
 
 // Singleton state
 const isOpen = ref(false)
@@ -121,7 +120,8 @@ export function usePreview() {
         return
       }
 
-      const jsxFallback = selectionToJSX(nodeIds, store.graph, 'tailwind') || 'Нет данных — создай примерный макет.'
+      const jsxFallback =
+        selectionToJSX(nodeIds, store.graph, 'tailwind') || 'Нет данных — создай примерный макет.'
       const prompt = [
         'Сгенерируй самодостаточный React-компонент для iframe-предпросмотра.',
         'Требования: Tailwind CDN, без import/export, экспортируй как `const Component = () => ...`.',
@@ -148,7 +148,9 @@ export function usePreview() {
       })
 
       const last = chat.messages.at(-1)
-      const parts: Array<{ type: string; text?: string }> = last ? (last.parts as Array<{ type: string; text?: string }>) : []
+      const parts: Array<{ type: string; text?: string }> = last
+        ? (last.parts as Array<{ type: string; text?: string }>)
+        : []
       const textPart = parts.find((p) => p.type === 'text')
       const responseText = textPart?.text ?? ''
       const code = extractCodeBlock(responseText)

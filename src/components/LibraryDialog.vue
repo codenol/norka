@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import {
   DialogClose,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   TabsContent,
   TabsList,
   TabsRoot,
-  TabsTrigger,
+  TabsTrigger
 } from 'reka-ui'
 
 import { useI18n } from '@norka/vue'
@@ -36,6 +36,7 @@ const activeTab = ref<LibTab>('mine')
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const adding = ref(false)
+const manifests = computed(() => libStore.manifests.value ?? [])
 
 function triggerFileInput() {
   fileInput.value?.click()
@@ -66,7 +67,6 @@ function isUrlLibrary(id: string): boolean {
     <DialogPortal>
       <DialogOverlay :class="cls.overlay" />
       <DialogContent :class="cls.content">
-
         <!-- Header -->
         <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
           <DialogTitle class="text-sm font-semibold text-surface">
@@ -110,7 +110,7 @@ function isUrlLibrary(id: string): boolean {
           <TabsContent value="mine" class="flex min-h-0 flex-1 flex-col">
             <!-- Empty state -->
             <div
-              v-if="libStore.manifests.value.length === 0"
+              v-if="manifests.length === 0"
               class="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center"
             >
               <icon-lucide-library class="size-8 text-muted" />
@@ -120,7 +120,7 @@ function isUrlLibrary(id: string): boolean {
             <!-- Library list -->
             <div class="min-h-0 flex-1 overflow-y-auto">
               <div
-                v-for="manifest in libStore.manifests.value"
+                v-for="manifest in manifests"
                 :key="manifest.id"
                 class="group flex items-center gap-3 border-b border-border/30 px-4 py-3 hover:bg-hover/40"
               >
@@ -147,8 +147,14 @@ function isUrlLibrary(id: string): boolean {
                     </span>
                   </div>
                   <div class="flex gap-3 text-[10px] text-muted">
-                    <span>{{ manifest.componentCount }} {{ dialogs.libraryComponents.toLowerCase() }}</span>
-                    <span>{{ manifest.variableCount }} {{ dialogs.libraryVariables.toLowerCase() }}</span>
+                    <span
+                      >{{ manifest.componentCount }}
+                      {{ dialogs.libraryComponents.toLowerCase() }}</span
+                    >
+                    <span
+                      >{{ manifest.variableCount }}
+                      {{ dialogs.libraryVariables.toLowerCase() }}</span
+                    >
                     <span>{{ manifest.styleCount }} {{ dialogs.libraryStyles.toLowerCase() }}</span>
                   </div>
                 </div>
@@ -202,7 +208,6 @@ function isUrlLibrary(id: string): boolean {
             <LibraryPublishTab />
           </TabsContent>
         </TabsRoot>
-
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

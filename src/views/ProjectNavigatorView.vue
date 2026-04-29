@@ -5,26 +5,46 @@ import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewpor
 
 import Tip from '@/components/ui/Tip.vue'
 import { useProjects, type Feature, type Product, type Screen } from '@/composables/use-projects'
+import { buildWorkspacePath } from '@/utils/workspace-route'
 import { useLibraries, LIBRARY_TYPE_COLORS } from '@/composables/use-libraries'
 import {
   useWorkspaceFs,
-  readProjectMd, writeProjectMd,
-  readScreenMd, writeScreenMd,
+  readProjectMd,
+  writeProjectMd,
+  readScreenMd,
+  writeScreenMd
 } from '@/composables/use-workspace-fs'
 
 const router = useRouter()
 const {
-  products, PIPELINE_STEPS, workspacePath,
-  lastCompletedStep, stepProgress,
-  addProduct, addScreen, addFeature,
-  deleteProduct, deleteScreen, deleteFeature,
-  connectLibrary, disconnectLibrary,
-  setContext, loadFromDisk,
+  products,
+  PIPELINE_STEPS,
+  workspacePath,
+  lastCompletedStep,
+  stepProgress,
+  addProduct,
+  addScreen,
+  addFeature,
+  deleteProduct,
+  deleteScreen,
+  deleteFeature,
+  connectLibrary,
+  disconnectLibrary,
+  setContext,
+  loadFromDisk
 } = useProjects()
 const { libraries } = useLibraries()
 const { isDesktop, openWorkspaceDialog } = useWorkspaceFs()
 
 const isOpeningWorkspace = ref(false)
+
+function projectDraftStorageKey(productId: string): string {
+  return `norka:project-md-draft:${productId}`
+}
+
+function screenDraftStorageKey(productId: string, screenId: string): string {
+  return `norka:screen-md-draft:${productId}:${screenId}`
+}
 
 async function handleOpenWorkspace() {
   isOpeningWorkspace.value = true
@@ -42,13 +62,15 @@ async function handleOpenWorkspace() {
 
 const editingProductId = ref<string | null>(null)
 const productMdContent = ref('')
-const productMdSaving  = ref(false)
+const productMdSaving = ref(false)
 
 async function openProductEditor(product: Product) {
   editingProductId.value = product.id
-  productMdContent.value = workspacePath.value
-    ? await readProjectMd(workspacePath.value, product.id)
-    : ''
+  if (workspacePath.value) {
+    productMdContent.value = await readProjectMd(workspacePath.value, product.id)
+    return
+  }
+  productMdContent.value = localStorage.getItem(projectDraftStorageKey(product.id)) ?? ''
 }
 
 function closeProductEditor() {
@@ -58,26 +80,31 @@ function closeProductEditor() {
 
 let productSaveTimer: ReturnType<typeof setTimeout> | null = null
 function scheduleProductSave(productId: string) {
-  if (!workspacePath.value) return
   if (productSaveTimer) clearTimeout(productSaveTimer)
   productSaveTimer = setTimeout(async () => {
     const root = workspacePath.value
-    if (!root) return
+    if (!root) {
+      localStorage.setItem(projectDraftStorageKey(productId), productMdContent.value)
+      return
+    }
     productMdSaving.value = true
     await writeProjectMd(root, productId, productMdContent.value)
     productMdSaving.value = false
   }, 800)
 }
 
-const editingScreenKey = ref<string | null>(null)  // `${productId}:${screenId}`
-const screenMdContent  = ref('')
-const screenMdSaving   = ref(false)
+const editingScreenKey = ref<string | null>(null) // `${productId}:${screenId}`
+const screenMdContent = ref('')
+const screenMdSaving = ref(false)
 
 async function openScreenEditor(product: Product, screen: Screen) {
   editingScreenKey.value = `${product.id}:${screen.id}`
-  screenMdContent.value = workspacePath.value
-    ? await readScreenMd(workspacePath.value, product.id, screen.id)
-    : ''
+  if (workspacePath.value) {
+    screenMdContent.value = await readScreenMd(workspacePath.value, product.id, screen.id)
+    return
+  }
+  screenMdContent.value =
+    localStorage.getItem(screenDraftStorageKey(product.id, screen.id)) ?? ''
 }
 
 function closeScreenEditor() {
@@ -87,11 +114,13 @@ function closeScreenEditor() {
 
 let screenSaveTimer: ReturnType<typeof setTimeout> | null = null
 function scheduleScreenSave(productId: string, screenId: string) {
-  if (!workspacePath.value) return
   if (screenSaveTimer) clearTimeout(screenSaveTimer)
   screenSaveTimer = setTimeout(async () => {
     const root = workspacePath.value
-    if (!root) return
+    if (!root) {
+      localStorage.setItem(screenDraftStorageKey(productId, screenId), screenMdContent.value)
+      return
+    }
     screenMdSaving.value = true
     await writeScreenMd(root, productId, screenId, screenMdContent.value)
     screenMdSaving.value = false
@@ -107,7 +136,7 @@ function workspaceName(path: string): string {
 const managingLibrariesForProduct = ref<string | null>(null)
 
 function toggleLibraryConnection(productId: string, libraryId: string) {
-  const product = products.value.find(p => p.id === productId)
+  const product = products.value.find((p) => p.id === productId)
   if (!product) return
   if (product.connectedLibraryIds.includes(libraryId)) {
     disconnectLibrary(productId, libraryId)
@@ -117,13 +146,15 @@ function toggleLibraryConnection(productId: string, libraryId: string) {
 }
 
 function productConnectedLibraries(product: Product) {
-  return libraries.value.filter(l => product.connectedLibraryIds.includes(l.id))
+  return libraries.value.filter((l) => product.connectedLibraryIds.includes(l.id))
 }
 
 // ── UI state ───────────────────────────────────────────────────────────────────
 
-const expandedProducts = ref<Set<string>>(new Set(products.value.map(p => p.id)))
-const expandedScreens  = ref<Set<string>>(new Set(products.value.flatMap(p => p.screens.map(s => s.id))))
+const expandedProducts = ref<Set<string>>(new Set(products.value.map((p) => p.id)))
+const expandedScreens = ref<Set<string>>(
+  new Set(products.value.flatMap((p) => p.screens.map((s) => s.id)))
+)
 
 function toggleProduct(id: string) {
   if (expandedProducts.value.has(id)) expandedProducts.value.delete(id)
@@ -141,14 +172,17 @@ function toggleScreen(id: string) {
 const creatingProduct = ref(false)
 const newProductTitle = ref('')
 
-interface Creating { productId: string; screenId?: string }
+interface Creating {
+  productId: string
+  screenId?: string
+}
 const creatingIn = ref<Creating | null>(null)
-const newTitle   = ref('')
+const newTitle = ref('')
 const featureMetaDraft = ref({
   jiraIssueKey: '',
   jiraUrl: '',
   designerFullName: '',
-  confluenceUrl: '',
+  confluenceUrl: ''
 })
 
 function startCreateScreen(productId: string) {
@@ -164,7 +198,7 @@ function startCreateFeature(productId: string, screenId: string) {
     jiraIssueKey: '',
     jiraUrl: '',
     designerFullName: '',
-    confluenceUrl: '',
+    confluenceUrl: ''
   }
   expandedScreens.value.add(screenId)
   expandedScreens.value = new Set(expandedScreens.value)
@@ -172,14 +206,17 @@ function startCreateFeature(productId: string, screenId: string) {
 
 function confirmCreate() {
   const title = newTitle.value.trim()
-  if (!title || !creatingIn.value) { creatingIn.value = null; return }
+  if (!title || !creatingIn.value) {
+    creatingIn.value = null
+    return
+  }
   const { productId, screenId } = creatingIn.value
   if (screenId) {
     addFeature(productId, screenId, title, {
       jiraIssueKey: featureMetaDraft.value.jiraIssueKey.trim(),
       jiraUrl: featureMetaDraft.value.jiraUrl.trim(),
       designerFullName: featureMetaDraft.value.designerFullName.trim(),
-      confluenceUrl: featureMetaDraft.value.confluenceUrl.trim(),
+      confluenceUrl: featureMetaDraft.value.confluenceUrl.trim()
     })
   } else {
     const screen = addScreen(productId, title)
@@ -194,13 +231,16 @@ function confirmCreate() {
     jiraIssueKey: '',
     jiraUrl: '',
     designerFullName: '',
-    confluenceUrl: '',
+    confluenceUrl: ''
   }
 }
 
 function confirmNewProduct() {
   const title = newProductTitle.value.trim()
-  if (!title) { creatingProduct.value = false; return }
+  if (!title) {
+    creatingProduct.value = false
+    return
+  }
   const product = addProduct(title)
   expandedProducts.value.add(product.id)
   expandedProducts.value = new Set(expandedProducts.value)
@@ -215,7 +255,9 @@ function openFeature(product: Product, screen: Screen, feature: Feature) {
   // Navigate to the furthest completed step, or analytics if none
   const last = lastCompletedStep(feature)
   const step = last ?? 'analytics'
-  router.push(`/workspace/${step}`)
+  router.push(
+    buildWorkspacePath(step, { productId: product.id, screenId: screen.id, featureId: feature.id })
+  )
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -227,7 +269,7 @@ function featureCount(product: Product): number {
 function stepLabel(feature: Feature): string {
   const last = lastCompletedStep(feature)
   if (!last) return 'Не начата'
-  return PIPELINE_STEPS.find(s => s.key === last)?.label ?? ''
+  return PIPELINE_STEPS.find((s) => s.key === last)?.label ?? ''
 }
 
 function stepColor(feature: Feature): string {
@@ -246,7 +288,10 @@ function stepColor(feature: Feature): string {
       <span class="text-sm font-semibold text-surface">Проекты</span>
 
       <!-- Workspace path indicator -->
-      <div v-if="workspacePath" class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted">
+      <div
+        v-if="workspacePath"
+        class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted"
+      >
         <icon-lucide-folder-open class="size-3 text-accent" />
         <span class="max-w-48 truncate">{{ workspaceName(workspacePath) }}</span>
       </div>
@@ -254,7 +299,11 @@ function stepColor(feature: Feature): string {
       <div class="flex-1" />
 
       <!-- Open/change workspace (Tauri only) -->
-      <Tip v-if="isDesktop" :label="workspacePath ? 'Сменить папку' : 'Открыть папку на диске'" side="bottom">
+      <Tip
+        v-if="isDesktop"
+        :label="workspacePath ? 'Сменить папку' : 'Открыть папку на диске'"
+        side="bottom"
+      >
         <button
           class="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
           :disabled="isOpeningWorkspace"
@@ -296,7 +345,6 @@ function stepColor(feature: Feature): string {
     <ScrollAreaRoot class="flex-1">
       <ScrollAreaViewport class="h-full">
         <div class="mx-auto max-w-3xl px-5 py-6">
-
           <!-- New product input -->
           <div
             v-if="creatingProduct"
@@ -311,8 +359,12 @@ function stepColor(feature: Feature): string {
               @keydown.enter="confirmNewProduct"
               @keydown.escape="creatingProduct = false; newProductTitle = ''"
             />
-            <button class="text-xs text-accent hover:underline" @click="confirmNewProduct">Создать</button>
-            <button class="text-xs text-muted hover:text-surface" @click="creatingProduct = false">Отмена</button>
+            <button class="text-xs text-accent hover:underline" @click="confirmNewProduct">
+              Создать
+            </button>
+            <button class="text-xs text-muted hover:text-surface" @click="creatingProduct = false">
+              Отмена
+            </button>
           </div>
 
           <!-- Products list -->
@@ -323,8 +375,13 @@ function stepColor(feature: Feature): string {
               class="overflow-hidden rounded-xl border border-border bg-panel"
             >
               <!-- Product header -->
-              <div class="group flex items-center gap-2 px-4 py-3 transition-colors hover:bg-hover/40">
-                <button class="flex flex-1 items-center gap-2 text-left" @click="toggleProduct(product.id)">
+              <div
+                class="group flex items-center gap-2 px-4 py-3 transition-colors hover:bg-hover/40"
+              >
+                <button
+                  class="flex flex-1 items-center gap-2 text-left"
+                  @click="toggleProduct(product.id)"
+                >
                   <icon-lucide-chevron-right
                     class="size-4 shrink-0 text-muted transition-transform duration-150"
                     :class="expandedProducts.has(product.id) ? 'rotate-90' : ''"
@@ -337,13 +394,19 @@ function stepColor(feature: Feature): string {
                       v-for="lib in productConnectedLibraries(product)"
                       :key="lib.id"
                       class="rounded px-1.5 py-0.5 text-[10px]"
-                      :class="[LIBRARY_TYPE_COLORS[lib.type].bg, LIBRARY_TYPE_COLORS[lib.type].text]"
-                    >{{ lib.name }}</span>
+                      :class="[
+                        LIBRARY_TYPE_COLORS[lib.type].bg,
+                        LIBRARY_TYPE_COLORS[lib.type].text
+                      ]"
+                      >{{ lib.name }}</span
+                    >
                   </div>
                   <span class="text-xs text-muted">{{ featureCount(product) }} фич</span>
                 </button>
                 <!-- Product actions (on hover) -->
-                <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <div
+                  class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                >
                   <Tip label="Подключить библиотеки" side="top">
                     <button
                       class="flex size-6 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
@@ -388,16 +451,27 @@ function stepColor(feature: Feature): string {
               >
                 <div class="mb-2 flex items-center justify-between">
                   <span class="text-[11px] text-muted">Подключённые библиотеки</span>
-                  <button class="text-[11px] text-muted hover:text-surface" @click="managingLibrariesForProduct = null">Готово</button>
+                  <button
+                    class="text-[11px] text-muted hover:text-surface"
+                    @click="managingLibrariesForProduct = null"
+                  >
+                    Готово
+                  </button>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
                   <button
                     v-for="lib in libraries"
                     :key="lib.id"
                     class="rounded-lg border px-2.5 py-1 text-xs transition-colors"
-                    :class="product.connectedLibraryIds.includes(lib.id)
-                      ? [LIBRARY_TYPE_COLORS[lib.type].bg, LIBRARY_TYPE_COLORS[lib.type].text, LIBRARY_TYPE_COLORS[lib.type].border]
-                      : 'border-border text-muted hover:bg-hover hover:text-surface'"
+                    :class="
+                      product.connectedLibraryIds.includes(lib.id)
+                        ? [
+                            LIBRARY_TYPE_COLORS[lib.type].bg,
+                            LIBRARY_TYPE_COLORS[lib.type].text,
+                            LIBRARY_TYPE_COLORS[lib.type].border
+                          ]
+                        : 'border-border text-muted hover:bg-hover hover:text-surface'
+                    "
                     @click="toggleLibraryConnection(product.id, lib.id)"
                   >
                     {{ lib.name }}
@@ -417,9 +491,16 @@ function stepColor(feature: Feature): string {
                   <span class="text-[11px] text-muted">project.md</span>
                   <div class="flex items-center gap-2">
                     <span v-if="productMdSaving" class="text-[10px] text-muted">Сохранение…</span>
-                    <span v-else-if="workspacePath" class="text-[10px] text-accent/70">Авто-сохранение</span>
-                    <span v-else class="text-[10px] text-muted/50">Нет рабочей папки</span>
-                    <button class="text-[11px] text-muted hover:text-surface" @click="closeProductEditor">Закрыть</button>
+                    <span v-else-if="workspacePath" class="text-[10px] text-accent/70"
+                      >Авто-сохранение</span
+                    >
+                    <span v-else class="text-[10px] text-muted/70">Черновик локально</span>
+                    <button
+                      class="text-[11px] text-muted hover:text-surface"
+                      @click="closeProductEditor"
+                    >
+                      Закрыть
+                    </button>
                   </div>
                 </div>
                 <textarea
@@ -446,7 +527,9 @@ function stepColor(feature: Feature): string {
                   @keydown.enter="confirmCreate"
                   @keydown.escape="creatingIn = null"
                 />
-                <button class="text-xs text-accent hover:underline" @click="confirmCreate">ОК</button>
+                <button class="text-xs text-accent hover:underline" @click="confirmCreate">
+                  ОК
+                </button>
               </div>
 
               <!-- Screens -->
@@ -457,22 +540,33 @@ function stepColor(feature: Feature): string {
                   class="border-t border-border/60"
                 >
                   <!-- Screen header -->
-                  <div class="group flex items-center gap-2 bg-canvas/40 px-4 py-2.5 transition-colors hover:bg-hover/30">
-                    <button class="flex flex-1 items-center gap-2 text-left" @click="toggleScreen(screen.id)">
+                  <div
+                    class="group flex items-center gap-2 bg-canvas/40 px-4 py-2.5 transition-colors hover:bg-hover/30"
+                  >
+                    <button
+                      class="flex flex-1 items-center gap-2 text-left"
+                      @click="toggleScreen(screen.id)"
+                    >
                       <div class="w-4 shrink-0" />
                       <icon-lucide-chevron-right
                         class="size-3.5 shrink-0 text-muted transition-transform duration-150"
                         :class="expandedScreens.has(screen.id) ? 'rotate-90' : ''"
                       />
                       <icon-lucide-monitor class="size-3.5 shrink-0 text-muted" />
-                      <span class="flex-1 text-xs font-medium text-surface">{{ screen.title }}</span>
+                      <span class="flex-1 text-xs font-medium text-surface">{{
+                        screen.title
+                      }}</span>
                       <span class="text-[11px] text-muted">{{ screen.features.length }} фич</span>
                     </button>
-                    <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div
+                      class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
                       <Tip label="Редактировать screen.md" side="top">
                         <button
                           class="flex size-6 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
-                          :class="editingScreenKey === `${product.id}:${screen.id}` ? 'text-accent' : ''"
+                          :class="
+                            editingScreenKey === `${product.id}:${screen.id}` ? 'text-accent' : ''
+                          "
                           @click.stop="editingScreenKey === `${product.id}:${screen.id}` ? closeScreenEditor() : openScreenEditor(product, screen)"
                         >
                           <icon-lucide-file-text class="size-3.5" />
@@ -505,10 +599,19 @@ function stepColor(feature: Feature): string {
                     <div class="mb-1.5 flex items-center justify-between">
                       <span class="text-[11px] text-muted">screen.md</span>
                       <div class="flex items-center gap-2">
-                        <span v-if="screenMdSaving" class="text-[10px] text-muted">Сохранение…</span>
-                        <span v-else-if="workspacePath" class="text-[10px] text-accent/70">Авто-сохранение</span>
-                        <span v-else class="text-[10px] text-muted/50">Нет рабочей папки</span>
-                        <button class="text-[11px] text-muted hover:text-surface" @click="closeScreenEditor">Закрыть</button>
+                        <span v-if="screenMdSaving" class="text-[10px] text-muted"
+                          >Сохранение…</span
+                        >
+                        <span v-else-if="workspacePath" class="text-[10px] text-accent/70"
+                          >Авто-сохранение</span
+                        >
+                        <span v-else class="text-[10px] text-muted/70">Черновик локально</span>
+                        <button
+                          class="text-[11px] text-muted hover:text-surface"
+                          @click="closeScreenEditor"
+                        >
+                          Закрыть
+                        </button>
                       </div>
                     </div>
                     <textarea
@@ -536,7 +639,9 @@ function stepColor(feature: Feature): string {
                         @keydown.enter="confirmCreate"
                         @keydown.escape="creatingIn = null"
                       />
-                      <button class="text-xs text-accent hover:underline" @click="confirmCreate">ОК</button>
+                      <button class="text-xs text-accent hover:underline" @click="confirmCreate">
+                        ОК
+                      </button>
                     </div>
                     <div class="ml-10 grid grid-cols-2 gap-2">
                       <input
@@ -573,7 +678,10 @@ function stepColor(feature: Feature): string {
                       <div class="w-8 shrink-0" />
                       <icon-lucide-git-branch class="size-3.5 shrink-0 text-muted/60" />
                       <span class="flex-1 text-xs text-surface">{{ feature.title }}</span>
-                      <span v-if="feature.jiraIssueKey" class="rounded bg-hover px-1.5 py-0.5 text-[10px] text-muted">
+                      <span
+                        v-if="feature.jiraIssueKey"
+                        class="rounded bg-hover px-1.5 py-0.5 text-[10px] text-muted"
+                      >
                         {{ feature.jiraIssueKey }}
                       </span>
 
@@ -585,15 +693,23 @@ function stepColor(feature: Feature): string {
                             v-for="step in PIPELINE_STEPS"
                             :key="step.key"
                             class="size-1.5 rounded-full transition-colors"
-                            :class="feature.completedSteps.includes(step.key)
-                              ? step.key === 'handoff' ? 'bg-emerald-400' : 'bg-accent'
-                              : 'bg-border'"
+                            :class="
+                              feature.completedSteps.includes(step.key)
+                                ? step.key === 'handoff'
+                                  ? 'bg-emerald-400'
+                                  : 'bg-accent'
+                                : 'bg-border'
+                            "
                           />
                         </div>
                         <div class="h-1.5 w-16 overflow-hidden rounded-full bg-border">
                           <div
                             class="h-full rounded-full transition-all duration-300"
-                            :class="lastCompletedStep(feature) === 'handoff' ? 'bg-emerald-400' : 'bg-accent'"
+                            :class="
+                              lastCompletedStep(feature) === 'handoff'
+                                ? 'bg-emerald-400'
+                                : 'bg-accent'
+                            "
                             :style="{ width: `${stepProgress(feature) * 100}%` }"
                           />
                         </div>
@@ -620,7 +736,10 @@ function stepColor(feature: Feature): string {
             </div>
 
             <!-- Empty state -->
-            <div v-if="products.length === 0" class="flex flex-col items-center gap-4 py-16 text-center">
+            <div
+              v-if="products.length === 0"
+              class="flex flex-col items-center gap-4 py-16 text-center"
+            >
               <icon-lucide-layout-grid class="size-10 text-muted opacity-30" />
               <p class="text-sm text-muted">Нет продуктов. Создайте первый.</p>
             </div>

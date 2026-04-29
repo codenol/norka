@@ -46,10 +46,13 @@ const treeKey = ref(0)
 const expanded = ref<string[]>([])
 const selectedIds = computed(() => editor.state.selectedIds)
 
-watch([() => editor.state.sceneVersion, () => editor.state.currentPageId], ([, newPage], [, oldPage]) => {
-  items.value = buildTree(editor.state.currentPageId)
-  if (newPage !== oldPage) treeKey.value++
-})
+watch(
+  [() => editor.state.sceneVersion, () => editor.state.currentPageId],
+  ([, newPage], [, oldPage]) => {
+    items.value = buildTree(editor.state.currentPageId)
+    if (newPage !== oldPage) treeKey.value++
+  }
+)
 
 // Stable function references — must not be recreated on every render
 // so reka-ui's TreeRoot doesn't reset flattenItems when these props change

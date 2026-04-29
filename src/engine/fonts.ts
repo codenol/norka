@@ -1,9 +1,4 @@
-import {
-  IS_TAURI,
-  loadFont as loadFontCore,
-  markFontLoaded,
-  styleToWeight
-} from '@norka/core'
+import { IS_TAURI, loadFont as loadFontCore, markFontLoaded, styleToWeight } from '@norka/core'
 
 interface TauriFontFamily {
   family: string

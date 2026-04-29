@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Chat } from '@ai-sdk/vue'
 import { DirectChatTransport, stepCountIs, ToolLoopAgent } from 'ai'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   ScrollAreaRoot,
@@ -10,120 +10,70 @@ import {
   ScrollAreaViewport,
   SplitterGroup,
   SplitterPanel,
-  SplitterResizeHandle,
+  SplitterResizeHandle
 } from 'reka-ui'
 
+import ChatPanel from '@/components/ChatPanel.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { createModel, useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
+import { workspacePath, writeFeatureFile, readFeatureFile } from '@/composables/use-workspace-fs'
 import {
-  workspacePath,
-  readProjectMd,
-  readScreenMd,
-  writeFeatureFile,
-  readAllComponentRules,
-  readFeatureFile
-} from '@/composables/use-workspace-fs'
-import {
-  ANALYTICS_DESIGN_INSTRUCTIONS,
-  useAnalyticsDesign,
-  validateAnalyticsDesignSources,
+  buildAnalyticsDesignPrompt,
+  validateAnalyticsDesignSources
 } from '@/composables/use-analytics-design'
+import {
+  buildAssemblyPlanFromScreenPlan,
+  buildDeterministicScreenPlan,
+  evaluateQualityGate
+} from '@/ai/screen-pipeline'
+import {
+  IS_TAURI,
+  buildAnalyticsFeatureAnalysisPrompt
+} from '@/constants'
 import { toast } from '@/utils/toast'
+import { parseStructuredAnalyticsPayload } from '@/utils/analytics-chat'
+import { buildWorkspacePath } from '@/utils/workspace-route'
 
 import type { UIMessage } from 'ai'
-
-// ── Brief sections ─────────────────────────────────────────────────────────────
+import type { StructuredAnalyticsPayload, StructuredSection } from '@/utils/analytics-chat'
 
 const BRIEF_SECTIONS = [
-  { id: 'task',        title: 'Задача' },
-  { id: 'users',       title: 'Пользователь' },
-  { id: 'scenarios',   title: 'Сценарии' },
-  { id: 'states',      title: 'Состояния' },
+  { id: 'task', title: 'Задача' },
+  { id: 'users', title: 'Пользователь' },
+  { id: 'scenarios', title: 'Сценарии' },
+  { id: 'states', title: 'Состояния' },
   { id: 'constraints', title: 'Ограничения' },
-  { id: 'metrics',     title: 'Метрики' },
-  { id: 'questions',   title: 'Открытые вопросы' },
+  { id: 'metrics', title: 'Метрики' },
+  { id: 'questions', title: 'Открытые вопросы' }
 ] as const
-
+const PENDING_DESIGN_PROMPT_EVENT = 'norka:pending-design-prompt:updated'
+const PENDING_ANALYTICS_PROMPT_KEY = 'norka:pending-analytics-prompt'
+const PENDING_ANALYTICS_PROMPT_EVENT = 'norka:pending-analytics-prompt:updated'
+const PREVIEW_LAYOUT_UPDATED_EVENT = 'norka:preview-layout:updated'
 type BriefSectionId = (typeof BRIEF_SECTIONS)[number]['id']
 
-const DEMO_SOURCE = `# Confluence: Улучшение онбординга команды продаж
-
-## Контекст
-- Продукт: B2B CRM для mid-market клиентов
-- Проблема: новый менеджер по продажам долго выходит на первую успешную сделку
-- Текущее время до первой ценности: 9.4 дня (медиана)
-
-## Наблюдения
-1. 62% пользователей пропускают шаг "Подключить почту"
-2. 48% не создают первую воронку в первые 24 часа
-3. Только 31% доходят до шага "Пригласить коллег"
-
-## Гипотеза
-Если сократить первичный путь до 3 понятных шагов с явной выгодой, то activation rate вырастет минимум на 12%.
-
-## Ограничения
-- Релиз в течение 2 спринтов
-- Без изменений в backend-API
-- Локализация RU/EN обязательна
-`
-
-const DEMO_BRIEF: Record<BriefSectionId, string> = {
-  task: `Сократить время до первой ценности (TTV) для новых sales-менеджеров.
-Сделать стартовый опыт проще: пользователь должен за первые 10 минут пройти базовые шаги и увидеть практическую пользу.`,
-  users: `Основной сегмент: менеджер по продажам 24-38 лет в B2B-команде из 5-30 человек.
-Контекст: много операционных задач, мало времени на обучение.
-Потребность: быстро понять "с чего начать", не читать длинные инструкции.
-Боли: непонятный порядок шагов, страх "сломать что-то", ощущение перегруженного интерфейса.`,
-  scenarios: `1. Новый пользователь регистрируется и попадает в онбординг.
-2. Подключает почту и импортирует первые контакты.
-3. Создаёт первую воронку из готового шаблона.
-4. Добавляет одну сделку и получает подсказку по следующему шагу.
-5. Приглашает коллегу для совместной работы.
-6. Прерывает онбординг и возвращается позже, продолжая с того же шага.`,
-  states: `- Пустое состояние: до старта онбординга.
-- Загрузка: импорт контактов, проверка интеграций.
-- Успех: шаг завершён, отображается прогресс и следующий CTA.
-- Ошибка: подключение почты не удалось / импорт прерван / нет прав.
-- Пограничные случаи: пользователь пропустил шаг, нет данных для воронки, отключён JS, мобильный экран.`,
-  constraints: `- Дедлайн: 2 спринта.
-- Без новых серверных эндпоинтов.
-- Совместимость с текущей дизайн-системой.
-- Доступность: клавиатурная навигация и контраст WCAG AA.
-- Локализация: русский и английский.`,
-  metrics: `- Activation rate (завершили 3 ключевых шага) >= 45% (+12 п.п.).
-- Время до первой созданной сделки <= 20 минут.
-- Completion rate онбординга >= 55%.
-- Доля пользователей, вернувшихся на следующий день (D1 retention) +8%.
-- Снижение обращений в поддержку по теме старта на 20%.`,
-  questions: `- Нужно ли разрешать пропуск "Подключить почту" без штрафа в прогрессе?
-- Какие шаблоны воронок приоритетны для MVP?
-- Как корректно объяснить выгоду приглашения коллеги на шаге 3?
-- Какой fallback для пользователей без корпоративной почты?
-- Нужна ли отдельная версия онбординга для администраторов?`,
-}
-
 const briefContent = ref<Record<BriefSectionId, string>>({
-  task:        '',
-  users:       '',
-  scenarios:   '',
-  states:      '',
+  task: '',
+  users: '',
+  scenarios: '',
+  states: '',
   constraints: '',
-  metrics:     '',
-  questions:   '',
+  metrics: '',
+  questions: ''
 })
 const analyticsSource = ref('')
-const implementationReady = ref('')
+const isHydratingAnalyticsFiles = ref(false)
 
-function fillDemoData() {
-  analyticsSource.value = DEMO_SOURCE
-  briefContent.value = structuredClone(DEMO_BRIEF)
-  void generateImplementationReadyDoc()
-  toast.info('Демо-данные заполнены')
+function resetBriefContent() {
+  for (const section of BRIEF_SECTIONS) {
+    briefContent.value[section.id] = ''
+  }
 }
 
 function parseBriefMd(md: string) {
+  resetBriefContent()
   for (const section of BRIEF_SECTIONS) {
     const regex = new RegExp(`## ${section.title}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`)
     const match = md.match(regex)
@@ -133,113 +83,213 @@ function parseBriefMd(md: string) {
 
 function briefToMd(): string {
   const lines = ['# Аналитика\n']
-  for (const s of BRIEF_SECTIONS) {
-    lines.push(`## ${s.title}\n\n${briefContent.value[s.id]}\n`)
-  }
+  for (const s of BRIEF_SECTIONS) lines.push(`## ${s.title}\n\n${briefContent.value[s.id]}\n`)
   return lines.join('\n')
 }
 
-// ── Workspace & context ───────────────────────────────────────────────────────
-
 const router = useRouter()
-const { isConfigured, providerID, maxOutputTokens, ensureChat } = useAIChat()
+const { isConfigured, providerID, ensureChat, chatSessions, protoDesignMode } = useAIChat()
 const settings = useSettingsDialog()
-const { context: projectContext } = useProjects()
-const { createAnalyticsTools } = useAnalyticsDesign()
+const { context: projectContext, currentProduct, currentScreen, currentFeature } = useProjects()
+const chatInst = ref<Chat<UIMessage> | null>(null)
+const chatMessages = computed(() => chatInst.value?.messages ?? [])
+const chatStatus = computed(() => chatInst.value?.status ?? 'ready')
+const isChatBusy = computed(
+  () => chatStatus.value === 'streaming' || chatStatus.value === 'submitted'
+)
+const importedStructuredMessageIds = ref<Set<string>>(new Set())
+const selectedSceneLabel = ref<string | null>(null)
+const missingComponentCount = ref<number | null>(null)
+const pipelineStatus = ref<string>('План экрана уточняется')
 
-async function buildSystemPrompt(): Promise<string> {
-  const base = `Ты — продуктовый аналитик и UX-исследователь. Помоги дизайнеру собрать аналитический бриф для фичи.
-
-Бриф состоит из 7 разделов:
-- Задача: что нужно решить, зачем это пользователю и бизнесу
-- Пользователь: кто использует, его контекст, потребности, боли
-- Сценарии: основные пользовательские сценарии (numbered list)
-- Состояния: все состояния экрана/фичи — пустое, загрузка, успех, ошибка, крайние случаи
-- Ограничения: технические, бизнесовые, временны́е
-- Метрики: как измерить успех дизайна/фичи
-- Открытые вопросы: что ещё нужно уточнить перед проектированием
-
-Веди диалог: задавай уточняющие вопросы по одному. Будь кратким. Отвечай на русском языке.`
-
-  if (!workspacePath.value || !projectContext.value) return base
-
-  const { productId, screenId } = projectContext.value
-  const [projectMd, screenMd] = await Promise.all([
-    readProjectMd(workspacePath.value, productId),
-    readScreenMd(workspacePath.value, productId, screenId),
-  ])
-
-  const rules = await readAllComponentRules(workspacePath.value)
-
-  const parts = [base]
-  if (projectMd) parts.push(`\n\n# Контекст продукта\n${projectMd}`)
-  if (screenMd)  parts.push(`\n\n# Контекст экрана\n${screenMd}`)
-  if (rules)     parts.push(`\n\n# Правила компонентов дизайн-системы\n${rules}`)
-  return parts.join('')
+function getFeatureStorageRoot(): string | null {
+  if (workspacePath.value) return workspacePath.value
+  return IS_TAURI ? null : 'browser'
 }
 
-// ── Load brief on mount ───────────────────────────────────────────────────────
+function resetImportedStructuredMessages() {
+  importedStructuredMessageIds.value = new Set()
+}
 
-onMounted(async () => {
-  if (!workspacePath.value || !projectContext.value) return
-  const { productId, screenId, featureId } = projectContext.value
+async function ensureAnalyticsChat() {
+  if (!isConfigured.value) return
+  const chat = await ensureChat('analytics')
+  chatInst.value = chat ? markRaw(chat) : null
+}
+
+async function loadAnalyticsFilesForCurrentContext() {
+  isHydratingAnalyticsFiles.value = true
   try {
-    const [md, sourceMd, implementationMd] = await Promise.all([
-      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics.md'),
-      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics-source.md'),
-      readFeatureFile(workspacePath.value, productId, screenId, featureId, 'implementation-ready.md'),
+    resetBriefContent()
+    analyticsSource.value = ''
+    if (!projectContext.value) return
+    const root = getFeatureStorageRoot()
+    if (!root) return
+    const { productId, screenId, featureId } = projectContext.value
+    const [md, sourceMd] = await Promise.all([
+      readFeatureFile(root, productId, screenId, featureId, 'analytics.md'),
+      readFeatureFile(root, productId, screenId, featureId, 'analytics-source.md')
     ])
     if (md) parseBriefMd(md)
     analyticsSource.value = sourceMd
-    implementationReady.value = implementationMd
-  } catch (error) {
-    console.warn('Could not load analytics brief from disk:', error)
+  } finally {
+    isHydratingAnalyticsFiles.value = false
   }
+}
+
+async function loadPreviewLayoutStatus() {
+  selectedSceneLabel.value = null
+  missingComponentCount.value = null
+  pipelineStatus.value = 'План экрана уточняется'
+  if (!projectContext.value) return
+  const root = getFeatureStorageRoot()
+  if (!root) return
+  const { productId, screenId, featureId } = projectContext.value
+  const raw = await readFeatureFile(root, productId, screenId, featureId, 'preview-layout.json')
+  if (!raw.trim()) return
+  try {
+    const parsed = JSON.parse(raw) as {
+      screenPlan?: { selectedScene?: string; sceneId?: string }
+      componentMapping?: { missingComponents?: Array<unknown> }
+      flow?: { status?: string }
+      qualityGate?: { passed?: boolean; failReasons?: string[] }
+    }
+    selectedSceneLabel.value = parsed.screenPlan?.selectedScene ?? parsed.screenPlan?.sceneId ?? null
+    const missing = parsed.componentMapping?.missingComponents
+    if (Array.isArray(missing)) missingComponentCount.value = missing.length
+    if (parsed.qualityGate?.passed === false) {
+      pipelineStatus.value = 'Черновик неполный'
+    } else {
+      pipelineStatus.value = parsed.flow?.status ?? 'Сборка'
+    }
+  } catch {
+    selectedSceneLabel.value = null
+    missingComponentCount.value = null
+    pipelineStatus.value = 'План экрана уточняется'
+  }
+}
+
+function queueAnalyticsPrompt(text: string) {
+  localStorage.setItem(
+    PENDING_ANALYTICS_PROMPT_KEY,
+    JSON.stringify({ text, target: 'analytics', createdAt: Date.now() })
+  )
+  window.dispatchEvent(new CustomEvent(PENDING_ANALYTICS_PROMPT_EVENT))
+}
+
+async function startDiscussion() {
+  if (!isConfigured.value) {
+    settings.show()
+    toast.warning('Сначала настройте AI-провайдер')
+    return
+  }
+
+  const ctx = projectContext.value
+  const scopeKey = ctx
+    ? `analytics:${ctx.productId}:${ctx.screenId}:${ctx.featureId}`
+    : 'analytics:global'
+  const hasMessages = chatSessions.getMessages(scopeKey).length > 0
+  if (
+    hasMessages &&
+    !window.confirm('Точно хотите начать заново? Это обнулит весь диалог')
+  ) {
+    return
+  }
+
+  await ensureAnalyticsChat()
+  if (isChatBusy.value) {
+    chatInst.value?.stop()
+  }
+
+  if (hasMessages) {
+    chatSessions.saveMessages(scopeKey, [])
+  }
+  resetImportedStructuredMessages()
+
+  const productMeta = currentProduct.value as unknown as Record<string, unknown> | null
+  const screenMeta = currentScreen.value as unknown as Record<string, unknown> | null
+  queueAnalyticsPrompt(
+    buildAnalyticsFeatureAnalysisPrompt({
+      projectTitle: currentProduct.value?.title,
+      screenTitle: currentScreen.value?.title,
+      featureTitle: currentFeature.value?.title?.trim() || 'Без названия',
+      projectDescription:
+        typeof productMeta?.description === 'string' ? productMeta.description : undefined,
+      screenDescription:
+        typeof screenMeta?.description === 'string' ? screenMeta.description : undefined
+    })
+  )
+}
+
+onMounted(async () => {
+  await loadAnalyticsFilesForCurrentContext()
+  await loadPreviewLayoutStatus()
+  if (isConfigured.value) await ensureAnalyticsChat()
+  window.addEventListener(PREVIEW_LAYOUT_UPDATED_EVENT, loadPreviewLayoutStatus)
 })
 
-// ── Auto-save brief ───────────────────────────────────────────────────────────
+onUnmounted(() => {
+  window.removeEventListener(PREVIEW_LAYOUT_UPDATED_EVENT, loadPreviewLayoutStatus)
+})
+
+watch(
+  [workspacePath, projectContext],
+  () => {
+    void loadAnalyticsFilesForCurrentContext()
+    void loadPreviewLayoutStatus()
+  },
+  { immediate: true }
+)
+
+watch(isConfigured, (configured) => {
+  if (configured) void ensureAnalyticsChat()
+  else chatInst.value = null
+})
 
 const savingBrief = ref(false)
 const briefDirty = ref(false)
-const lastSaved = ref(false) // true = ever saved this session
+const lastSaved = ref(false)
+const savingSource = ref(false)
+const sourceDirty = ref(false)
+let sourceSaveTimer: ReturnType<typeof setTimeout> | null = null
+let saveTimer: ReturnType<typeof setTimeout> | null = null
 
 async function saveBrief() {
-  if (!workspacePath.value || !projectContext.value) {
-    toast.warning('Откройте проект и фичу, чтобы сохранить analytics.md')
-    return
-  }
+  if (!projectContext.value) return
+  const root = getFeatureStorageRoot()
+  if (!root) return
   savingBrief.value = true
   try {
     const { productId, screenId, featureId } = projectContext.value
     await writeFeatureFile(
-      workspacePath.value, productId, screenId, featureId,
-      'analytics.md', briefToMd(),
+      root,
+      productId,
+      screenId,
+      featureId,
+      'analytics.md',
+      briefToMd()
     )
     lastSaved.value = true
     briefDirty.value = false
-  } catch (e) {
-    console.error('Save brief error:', e)
   } finally {
     savingBrief.value = false
   }
 }
 
-const savingSource = ref(false)
-const sourceDirty = ref(false)
-let sourceSaveTimer: ReturnType<typeof setTimeout> | null = null
-
 async function saveAnalyticsSource() {
-  if (!workspacePath.value || !projectContext.value) return
+  if (!projectContext.value) return
+  const root = getFeatureStorageRoot()
+  if (!root) return
   savingSource.value = true
   try {
     const { productId, screenId, featureId } = projectContext.value
     await writeFeatureFile(
-      workspacePath.value,
+      root,
       productId,
       screenId,
       featureId,
       'analytics-source.md',
-      analyticsSource.value,
+      analyticsSource.value
     )
     sourceDirty.value = false
   } finally {
@@ -248,22 +298,24 @@ async function saveAnalyticsSource() {
 }
 
 watch(analyticsSource, () => {
-  if (!workspacePath.value || !projectContext.value) return
+  if (isHydratingAnalyticsFiles.value) return
+  if (!projectContext.value || !getFeatureStorageRoot()) return
   sourceDirty.value = true
   if (sourceSaveTimer) clearTimeout(sourceSaveTimer)
-  sourceSaveTimer = setTimeout(() => {
-    void saveAnalyticsSource()
-  }, 1200)
+  sourceSaveTimer = setTimeout(() => void saveAnalyticsSource(), 1200)
 })
 
-let saveTimer: ReturnType<typeof setTimeout> | null = null
-
-watch(briefContent, () => {
-  if (!workspacePath.value || !projectContext.value) return
-  briefDirty.value = true
-  if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => saveBrief(), 1500)
-}, { deep: true })
+watch(
+  briefContent,
+  () => {
+    if (isHydratingAnalyticsFiles.value) return
+    if (!projectContext.value || !getFeatureStorageRoot()) return
+    briefDirty.value = true
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => void saveBrief(), 1500)
+  },
+  { deep: true }
+)
 
 const saveStatusLabel = computed(() => {
   if (savingBrief.value) return 'Сохраняю…'
@@ -272,281 +324,7 @@ const saveStatusLabel = computed(() => {
   return null
 })
 
-// ── AI Chat ───────────────────────────────────────────────────────────────────
-
-const GREETING = 'Привет! Я помогу составить аналитический бриф для этой фичи. Расскажите — какую задачу или проблему мы решаем?'
-
-function makeGreeting(): UIMessage {
-  return {
-    id: 'init-greeting',
-    role: 'assistant',
-    content: GREETING,
-    parts: [{ type: 'text', text: GREETING }],
-  } as UIMessage
-}
-
-const inputText = ref('')
-const messagesEndRef = ref<HTMLDivElement>()
-const chatInst = ref<Chat<UIMessage> | null>(null)
-const chatMessages = ref<UIMessage[]>([makeGreeting()])
-const chatStatus = ref<string>('ready')
-
-async function createChat(): Promise<Chat<UIMessage>> {
-  const isLMStudio = providerID.value === 'lm-studio'
-  const baseInstructions = await buildSystemPrompt()
-  // Append design tool instructions so AI knows it can assemble mockups
-  const instructions = `${baseInstructions}\n\n${ANALYTICS_DESIGN_INSTRUCTIONS}`
-  const agent = new ToolLoopAgent({
-    model: createModel(),
-    instructions,
-    tools: createAnalyticsTools(),
-    stopWhen: stepCountIs(25),  // increased to allow multi-step mockup assembly
-    maxOutputTokens: isLMStudio ? undefined : Math.min(maxOutputTokens.value, 4096),
-  })
-  const transport = new DirectChatTransport({ agent })
-  return new Chat<UIMessage>({ transport, messages: [makeGreeting()] })
-}
-
-let statusInterval: ReturnType<typeof setInterval> | null = null
-let loadingTypeTimer: ReturnType<typeof setTimeout> | null = null
-
-const LOADING_PHRASES = [
-  'Складываю буквы в слова…',
-  'Собираю мысли в аккуратные абзацы…',
-  'Полирую формулировки до блеска…',
-  'Подбираю слова, которые звучат умно…',
-  'Наливаю смысл по строчкам…',
-  'Укрощаю хаос и делаю выводы…',
-  'Сортирую идеи по полочкам…',
-  'Собираю аргументы в красивый строй…',
-  'Проверяю, где тут самое важное…',
-  'Накручиваю нейроны на максимум…',
-  'Подогреваю гипотезы до рабочей температуры…',
-  'Просеиваю шум, оставляю суть…',
-  'Готовлю ответ с хрустящей логикой…',
-  'Собираю пазл из контекста…',
-  'Глажу углы у формулировок…',
-  'Добавляю щепотку ясности…',
-  'Взвешиваю варианты на смысловых весах…',
-  'Пишу, стираю, делаю вид что так и было…',
-  'Тестирую каждое слово на внятность…',
-  'Разгоняю вдохновение до рабочей скорости…',
-  'Ловлю инсайты в чистый блокнот…',
-  'Достраиваю фразу до идеальной дуги…',
-  'Переупаковываю мысли в понятный формат…',
-  'Выравниваю логику по сетке…',
-  'Калибрую тон ответа…',
-  'Включаю режим «умно и по делу»…',
-  'Собираю тезисы в один маршрут…',
-  'Обновляю словарь метких формулировок…',
-  'Проветриваю предложения от воды…',
-  'Проверяю, не потерялся ли смысл по дороге…',
-  'Достаю из рукава лучший вариант…',
-  'Прогоняю текст через фильтр «понятно?»…',
-  'Раскладываю сложное на простые шаги…',
-  'Заполняю пробелы между «почему» и «как»…',
-  'Собираю ответ без лишнего пафоса…',
-  'Чищу формулировки от шероховатостей…',
-  'Вяжу идеи в цельный рассказ…',
-  'Сгущаю пользу до концентрата…',
-  'Выбираю слова точнее лазера…',
-  'Прокладываю маршрут от вопроса к ответу…',
-  'Рисую мысленный чертеж ответа…',
-  'Обрабатываю входящие мысли напильником…',
-  'Подтягиваю контекст из дальних полок памяти…',
-  'Клею смысл скотчем логики…',
-  'Заряжаю фразы энергией пользы…',
-  'Сканирую вопрос на скрытые нюансы…',
-  'Шлифую структуру до ровного ритма…',
-  'Собираю формулировку «чтобы сразу зашло»…',
-  'Нахожу короткий путь к сути…',
-  'Сверяю ответ с реальностью и здравым смыслом…',
-  'Подбираю примеры, чтобы стало очевидно…',
-  'Убираю туман из сложных мест…',
-  'Прокладываю мостик от идеи к действию…',
-  'Генерирую понятность в промышленных масштабах…',
-  'Нормализую поток мыслей…',
-  'Готовлю фразы, которые не стыдно процитировать…',
-  'Подсвечиваю главное, прячу второстепенное…',
-  'Отмеряю нужную дозу деталей…',
-  'Согласовываю слова с интонацией…',
-  'Собираю ответ как швейцарские часы…',
-  'Проверяю, не перегнул ли с умничаньем…',
-  'Разворачиваю идею на человеческом языке…',
-  'Перевожу сложное с диалекта «эксперт»…',
-  'Выстраиваю мысли в аккуратную очередь…',
-  'Добавляю мягкие переходы между тезисами…',
-  'Ищу самое точное «в двух словах»…',
-  'Миксую краткость с полезностью…',
-  'Оптимизирую ответ под ваше время…',
-  'Перепроверяю, чтобы было без воды…',
-  'Готовлю мягкую посадку для сложной темы…',
-  'Привожу мысли к единому знаменателю…',
-  'Собираю контекст из соседних вселенных…',
-  'Проверяю логику на прочность…',
-  'Укладываю смысл в удобочитаемую форму…',
-  'Примеряю формулировки, как костюмы…',
-  'Даю словам правильный вес…',
-  'Намечаю маршрут: вопрос → решение…',
-  'Снимаю пену с черновика…',
-  'Тонко настраиваю градус конкретики…',
-  'Проверяю, чтобы каждое слово работало…',
-  'Собираю ответ так, чтобы не пришлось уточнять…',
-  'Расставляю акценты по местам…',
-  'Разглаживаю смысловые складки…',
-  'Декомпозирую сложность до комфорта…',
-  'Кручу мысль до идеальной посадки…',
-  'Вычитываю ответ глазами зануды…',
-  'Добавляю ясность, убираю магию…',
-  'Компилирую идеи в практичный результат…',
-  'Собираю полезность по крупицам…',
-  'Сверяю направление с вашим запросом…',
-  'Переношу умные мысли в простой интерфейс…',
-  'Строю ответ без острых углов…',
-  'Расчищаю путь к главному выводу…',
-  'Привожу аргументы к стройному виду…',
-  'Включаю режим «лаконично, но ёмко»…',
-  'Собираю идеальный черновик за кадром…',
-  'Проверяю ответ на дружелюбность…',
-  'Упаковываю суть в удобный формат…',
-] as const
-
-const typedLoaderText = ref('')
-const loaderCursorVisible = ref(true)
-const currentLoaderPhrase = ref('')
-const previousLoaderPhraseIndex = ref<number | null>(null)
-
-function randomInt(maxExclusive: number): number {
-  if (maxExclusive <= 1) return 0
-  const values = new Uint32Array(1)
-  crypto.getRandomValues(values)
-  return values[0] % maxExclusive
-}
-
-function pickRandomLoaderPhrase(): string {
-  if (LOADING_PHRASES.length === 1) return LOADING_PHRASES[0]
-  let nextIndex = randomInt(LOADING_PHRASES.length)
-  while (nextIndex === previousLoaderPhraseIndex.value) {
-    nextIndex = randomInt(LOADING_PHRASES.length)
-  }
-  previousLoaderPhraseIndex.value = nextIndex
-  return LOADING_PHRASES[nextIndex]
-}
-
-function clearLoaderTypeTimer() {
-  if (!loadingTypeTimer) return
-  clearTimeout(loadingTypeTimer)
-  loadingTypeTimer = null
-}
-
-function runLoaderTypingCycle() {
-  const typeForward = () => {
-    const nextLength = typedLoaderText.value.length + 1
-    typedLoaderText.value = currentLoaderPhrase.value.slice(0, nextLength)
-    if (nextLength < currentLoaderPhrase.value.length) {
-      loadingTypeTimer = setTimeout(typeForward, 38 + randomInt(30))
-      return
-    }
-    loadingTypeTimer = setTimeout(typeBackward, 1200 + randomInt(800))
-  }
-
-  const typeBackward = () => {
-    const nextLength = Math.max(typedLoaderText.value.length - 1, 0)
-    typedLoaderText.value = currentLoaderPhrase.value.slice(0, nextLength)
-    if (nextLength > 0) {
-      loadingTypeTimer = setTimeout(typeBackward, 22 + randomInt(20))
-      return
-    }
-    currentLoaderPhrase.value = pickRandomLoaderPhrase()
-    loadingTypeTimer = setTimeout(typeForward, 180 + randomInt(220))
-  }
-
-  currentLoaderPhrase.value = pickRandomLoaderPhrase()
-  typedLoaderText.value = ''
-  clearLoaderTypeTimer()
-  loadingTypeTimer = setTimeout(typeForward, 120)
-}
-
-function stopLoaderTypingCycle() {
-  clearLoaderTypeTimer()
-  typedLoaderText.value = ''
-}
-
-function startStatusWatch(inst: Chat<UIMessage>) {
-  if (statusInterval) clearInterval(statusInterval)
-  statusInterval = setInterval(() => {
-    chatStatus.value = inst.status
-    chatMessages.value = inst.messages
-  }, 100)
-}
-
-async function initChat() {
-  if (!isConfigured.value) return
-  const inst = await createChat()
-  chatInst.value = inst
-  chatMessages.value = inst.messages
-  startStatusWatch(inst)
-}
-
-async function resetChat() {
-  if (statusInterval) clearInterval(statusInterval)
-  statusInterval = null
-  chatInst.value = null
-  chatMessages.value = [makeGreeting()]
-  chatStatus.value = 'ready'
-  if (isConfigured.value) {
-    const inst = await createChat()
-    chatInst.value = inst
-    chatMessages.value = inst.messages
-    startStatusWatch(inst)
-  }
-}
-
-onUnmounted(() => {
-  if (statusInterval) clearInterval(statusInterval)
-  if (saveTimer) clearTimeout(saveTimer)
-  if (sourceSaveTimer) clearTimeout(sourceSaveTimer)
-  clearLoaderTypeTimer()
-  clearUpdateBriefProgressTimer()
-})
-
-if (isConfigured.value) void initChat()
-
-watch(isConfigured, (configured) => {
-  if (configured && !chatInst.value) void initChat()
-})
-
-async function sendMessage() {
-  const text = inputText.value.trim()
-  if (!text || !isConfigured.value) return
-  inputText.value = ''
-  if (!chatInst.value) void initChat()
-  const inst = chatInst.value
-  if (!inst) return
-  if (inst.status === 'streaming' || inst.status === 'submitted') return
-  inst.sendMessage({ text }).catch((e: unknown) => {
-    console.error('Analytics chat error:', e)
-  })
-  await nextTick()
-  messagesEndRef.value?.scrollIntoView({ behavior: 'smooth' })
-}
-
-function stopMessage() {
-  const inst = chatInst.value
-  if (!inst) return
-  inst.stop()
-}
-
-watch(
-  chatMessages,
-  () => { nextTick(() => messagesEndRef.value?.scrollIntoView({ behavior: 'smooth' })) },
-  { deep: true },
-)
-
-// ── Update brief from chat ────────────────────────────────────────────────────
-
 const isUpdatingBrief = ref(false)
-const isGeneratingDesign = ref(false)
 const updateBriefProgress = ref(0)
 let updateBriefProgressTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -559,36 +337,21 @@ function clearUpdateBriefProgressTimer() {
 function startUpdateBriefProgress() {
   clearUpdateBriefProgressTimer()
   updateBriefProgress.value = 0
-
   const tick = () => {
     if (!isUpdatingBrief.value) return
-    const current = updateBriefProgress.value
-    const cap = 87
-    if (current >= cap) {
-      updateBriefProgressTimer = setTimeout(tick, 420 + randomInt(520))
-      return
-    }
-    const step = current < 20 ? 2 : current < 55 ? 1 : randomInt(2)
-    updateBriefProgress.value = Math.min(cap, current + step)
-    updateBriefProgressTimer = setTimeout(tick, 180 + randomInt(420))
+    updateBriefProgress.value = Math.min(87, updateBriefProgress.value + 2)
+    updateBriefProgressTimer = setTimeout(tick, 220)
   }
-
-  updateBriefProgressTimer = setTimeout(tick, 160)
+  updateBriefProgressTimer = setTimeout(tick, 120)
 }
 
 function finishUpdateBriefProgress(): Promise<void> {
   clearUpdateBriefProgressTimer()
   return new Promise((resolve) => {
     const rush = () => {
-      const current = updateBriefProgress.value
-      if (current >= 100) {
-        resolve()
-        return
-      }
-      const remaining = 100 - current
-      const step = remaining > 35 ? 9 : remaining > 18 ? 6 : remaining > 8 ? 4 : 2
-      updateBriefProgress.value = Math.min(100, current + step)
-      updateBriefProgressTimer = setTimeout(rush, 24 + randomInt(30))
+      if (updateBriefProgress.value >= 100) return resolve()
+      updateBriefProgress.value = Math.min(100, updateBriefProgress.value + 6)
+      updateBriefProgressTimer = setTimeout(rush, 24)
     }
     updateBriefProgressTimer = setTimeout(rush, 10)
   })
@@ -596,9 +359,8 @@ function finishUpdateBriefProgress(): Promise<void> {
 
 function getText(msg: UIMessage): string {
   for (const part of msg.parts ?? []) {
-    if ((part as Record<string, unknown>).type === 'text') {
+    if ((part as Record<string, unknown>).type === 'text')
       return (part as { type: string; text: string }).text
-    }
   }
   return (msg as unknown as { content?: string }).content ?? ''
 }
@@ -625,6 +387,46 @@ function extractBriefJson(raw: string): Record<string, string> | null {
   }
 }
 
+function appendBriefSection(section: StructuredSection, answer: string): boolean {
+  const normalized = answer.trim()
+  if (!normalized) return false
+  const current = briefContent.value[section].trim()
+  const blocks = current
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+  if (blocks.includes(normalized)) return false
+  briefContent.value[section] = current ? `${current}\n\n${normalized}` : normalized
+  return true
+}
+
+function getStructuredAnalyticsPayload(message: UIMessage): StructuredAnalyticsPayload | null {
+  if (message.role !== 'assistant') return null
+  return parseStructuredAnalyticsPayload(getText(message))
+}
+
+function isStructuredAssistantMessageImported(messageId: string): boolean {
+  return importedStructuredMessageIds.value.has(messageId)
+}
+
+function importStructuredAssistantMessage(message: UIMessage) {
+  if (message.role !== 'assistant') return
+  if (isStructuredAssistantMessageImported(message.id)) return
+  const payload = getStructuredAnalyticsPayload(message)
+  if (!payload) {
+    toast.warning(
+      'Ответ аналитики не распознан. Ожидается JSON: section, answer, nextQuestion, readyToSave.'
+    )
+    return
+  }
+  if (!payload.readyToSave || !payload.answer) return
+  const didAppend = appendBriefSection(payload.section, payload.answer)
+  importedStructuredMessageIds.value = new Set(importedStructuredMessageIds.value).add(message.id)
+  if (!didAppend) {
+    toast.warning('Этот ответ уже есть в analytics.md')
+  }
+}
+
 async function updateBriefFromChat() {
   if (!isConfigured.value || chatMessages.value.length < 2) return
   isUpdatingBrief.value = true
@@ -632,62 +434,30 @@ async function updateBriefFromChat() {
   try {
     const isLMStudio = providerID.value === 'lm-studio'
     const context = chatMessages.value
-      .map(m => `${m.role === 'user' ? 'Пользователь' : 'AI'}: ${getText(m)}`)
+      .map((m) => `${m.role === 'user' ? 'Пользователь' : 'AI'}: ${getText(m)}`)
       .join('\n')
-
-    const currentBrief = BRIEF_SECTIONS
-      .map(s => `## ${s.title}\n${briefContent.value[s.id] || '(пусто)'}`)
-      .join('\n\n')
-
-    const prompt =
-      `Диалог:\n${context}\n\nТекущий бриф:\n${currentBrief}\n\n` +
-      `На основе диалога обнови бриф. Заполни все разделы, которые можно вывести из диалога. ` +
-      `Для разделов без данных оставь пустую строку. ` +
-      `Верни ТОЛЬКО валидный JSON без markdown-блоков:\n` +
-      `{"task":"...","users":"...","scenarios":"...","states":"...","constraints":"...","metrics":"...","questions":"..."}\n` +
-      `Пиши по-русски, кратко и по существу.`
-
+    const currentBrief = BRIEF_SECTIONS.map(
+      (s) => `## ${s.title}\n${briefContent.value[s.id] || '(пусто)'}`
+    ).join('\n\n')
+    const prompt = `Диалог:\n${context}\n\nТекущий бриф:\n${currentBrief}\n\nВерни только JSON:\n{"task":"...","users":"...","scenarios":"...","states":"...","constraints":"...","metrics":"...","questions":"..."}`
     const agent = new ToolLoopAgent({
       model: createModel(),
-      instructions:
-        'Ты преобразуешь диалог в JSON-структуру брифа. Возвращай строго валидный JSON-объект без markdown и комментариев.',
+      instructions: 'Возвращай только валидный JSON без markdown.',
       stopWhen: stepCountIs(1),
-      maxOutputTokens: isLMStudio ? undefined : 2048,
+      maxOutputTokens: isLMStudio ? undefined : 2048
     })
-    const transport = new DirectChatTransport({ agent })
-    const docChat = new Chat<UIMessage>({ transport, messages: [] })
+    const docChat = new Chat<UIMessage>({
+      transport: new DirectChatTransport({ agent }) as unknown as Chat<UIMessage>['transport'],
+      messages: []
+    })
     await docChat.sendMessage({ text: prompt })
     await waitForReady(docChat)
-
-    let parsed: Record<string, string> | null = null
     const last = docChat.messages.at(-1)
-    if (last) {
-      const raw = getText(last)
-      parsed = extractBriefJson(raw)
-      if (!parsed) {
-        const fixerPrompt =
-          `Исправь вывод в строго валидный JSON-объект без markdown и без пояснений.\n` +
-          `Используй схему:\n` +
-          `{"task":"...","users":"...","scenarios":"...","states":"...","constraints":"...","metrics":"...","questions":"..."}\n\n` +
-          `Твой предыдущий вывод:\n${raw}`
-        await docChat.sendMessage({ text: fixerPrompt })
-        await waitForReady(docChat)
-        const fixed = docChat.messages.at(-1)
-        if (fixed) parsed = extractBriefJson(getText(fixed))
-      }
+    const parsed = last ? extractBriefJson(getText(last)) : null
+    if (!parsed) return
+    for (const s of BRIEF_SECTIONS) {
+      if (parsed[s.id]?.trim()) briefContent.value[s.id] = parsed[s.id]
     }
-
-    if (parsed) {
-      for (const s of BRIEF_SECTIONS) {
-        if (parsed[s.id]?.trim()) {
-          briefContent.value[s.id] = parsed[s.id]
-        }
-      }
-    } else {
-      toast.warning('Не удалось автоматически применить бриф из ответа AI. Нажмите "Обновить бриф".')
-    }
-  } catch (e) {
-    console.error('Update brief error:', e)
   } finally {
     await finishUpdateBriefProgress()
     clearUpdateBriefProgressTimer()
@@ -695,55 +465,31 @@ async function updateBriefFromChat() {
   }
 }
 
-function buildImplementationReadyDoc(): string {
-  const sections = [
-    '# Implementation Ready',
-    '',
-    '## Source',
-    analyticsSource.value || '(not provided)',
-    '',
-    '## Analytics Brief',
-    briefToMd(),
-    '',
-    '## Ready For Engineering',
-    '### Functional Scope',
-    briefContent.value.task || '(tbd)',
-    '',
-    '### User Story',
-    briefContent.value.users || '(tbd)',
-    '',
-    '### Main Scenarios',
-    briefContent.value.scenarios || '(tbd)',
-    '',
-    '### States',
-    briefContent.value.states || '(tbd)',
-    '',
-    '### Constraints',
-    briefContent.value.constraints || '(tbd)',
-    '',
-    '### Metrics',
-    briefContent.value.metrics || '(tbd)',
-    '',
-    '### Open Questions',
-    briefContent.value.questions || '(none)',
-    '',
-  ]
-  return sections.join('\n')
-}
-
-async function generateImplementationReadyDoc() {
-  implementationReady.value = buildImplementationReadyDoc()
-  if (!workspacePath.value || !projectContext.value) return
-  const { productId, screenId, featureId } = projectContext.value
-  await writeFeatureFile(
-    workspacePath.value,
-    productId,
-    screenId,
-    featureId,
-    'implementation-ready.md',
-    implementationReady.value,
-  )
-}
+const isGeneratingDesign = ref(false)
+const DEFAULT_SCENE_ID = 'overview-dashboard'
+const analyticsPlanBlocks = computed(() => {
+  const rows: Array<{ title: string; description: string }> = []
+  if (briefContent.value.task.trim()) {
+    rows.push({ title: 'Цель экрана', description: briefContent.value.task.trim() })
+  }
+  if (briefContent.value.users.trim()) {
+    rows.push({ title: 'Пользователь', description: briefContent.value.users.trim() })
+  }
+  if (briefContent.value.scenarios.trim()) {
+    rows.push({ title: 'Основные сценарии', description: briefContent.value.scenarios.trim() })
+  }
+  if (briefContent.value.states.trim()) {
+    rows.push({ title: 'Состояния', description: briefContent.value.states.trim() })
+  }
+  if (briefContent.value.metrics.trim()) {
+    rows.push({ title: 'Метрики', description: briefContent.value.metrics.trim() })
+  }
+  if (briefContent.value.constraints.trim()) {
+    rows.push({ title: 'Ограничения', description: briefContent.value.constraints.trim() })
+  }
+  return rows.slice(0, 8)
+})
+const screenPlanReady = computed(() => analyticsPlanBlocks.value.length >= 4)
 
 async function generateDesignFromAnalytics() {
   if (isGeneratingDesign.value) return
@@ -752,134 +498,177 @@ async function generateDesignFromAnalytics() {
     toast.warning('Сначала настройте AI-провайдер')
     return
   }
-
   isGeneratingDesign.value = true
   try {
     if (workspacePath.value && projectContext.value) {
       await Promise.all([saveBrief(), saveAnalyticsSource()])
-      await generateImplementationReadyDoc()
-    } else {
-      implementationReady.value = buildImplementationReadyDoc()
     }
-
-    const analyticsMd = briefToMd()
-    const analyticsSourceMd = analyticsSource.value
-    const implementationReadyMd = implementationReady.value
     const validation = validateAnalyticsDesignSources({
-      analyticsMd,
-      analyticsSourceMd,
-      implementationReadyMd,
+      analyticsMd: briefToMd(),
+      analyticsSourceMd: analyticsSource.value
     })
     if (!validation.ok) {
       toast.error(validation.message)
       return
     }
-
-    const designPrompt = [
-      'Собери макет экрана на канвасе на основе текущей аналитики.',
-      'Используй ТОЛЬКО данные ниже как source of truth.',
-      'Работай execution-first: сначала инструменты, потом краткий ответ.',
-      'Рекомендуемый порядок: get_components() -> render() -> create_instance() -> set_layout/batch_update -> describe().',
-      'После сборки кратко по-русски опиши: какой экран собран, какие блоки и состояния покрыты.',
-      '',
-      '# analytics.md',
-      analyticsMd,
-      '',
-      '# analytics-source.md',
-      analyticsSourceMd,
-      '',
-      '# implementation-ready.md',
-      implementationReadyMd,
-    ].join('\n')
-
-    const designChat = await ensureChat('editor')
-    if (!designChat) {
-      toast.error('Не удалось инициализировать чат дизайна')
+    protoDesignMode.value = 'auto-scene'
+    const designPrompt = buildAnalyticsDesignPrompt({
+      analyticsMd: briefToMd(),
+      analyticsSourceMd: analyticsSource.value,
+      mode: 'auto-scene'
+    })
+    let screenPlanPayload: ReturnType<typeof buildDeterministicScreenPlan> | null = null
+    let assemblyPlanPayload: ReturnType<typeof buildAssemblyPlanFromScreenPlan> | null = null
+    if (projectContext.value) {
+      const root = getFeatureStorageRoot()
+      if (root) {
+        const { productId, screenId, featureId } = projectContext.value
+        const screenPlan = buildDeterministicScreenPlan(briefToMd(), analyticsSource.value)
+        const assemblyPlan = buildAssemblyPlanFromScreenPlan(screenPlan)
+        screenPlanPayload = screenPlan
+        assemblyPlanPayload = assemblyPlan
+        const qualityGate = evaluateQualityGate({
+          nodeCount: 0,
+          requiredSections: screenPlan.requiredSections.map((section) => section.id),
+          presentSections: [],
+          missingComponents: [],
+          repairAttempts: 0
+        })
+        await writeFeatureFile(
+          root,
+          productId,
+          screenId,
+          featureId,
+          'preview-layout.json',
+          JSON.stringify(
+            {
+              mode: 'auto-scene',
+              uiMode: 'editor',
+              screenPlan,
+              assemblyPlan,
+              componentMapping: {
+                blocks: [],
+                availableComponents: [],
+                missingComponents: [],
+                fallbackPlan: []
+              },
+              flow: {
+                planGenerated: true,
+                assembled: false,
+                stage: 'planning',
+                status: 'Сборка'
+              },
+              qualityGate
+            },
+            null,
+            2
+          )
+        )
+        window.dispatchEvent(new CustomEvent(PREVIEW_LAYOUT_UPDATED_EVENT))
+      }
+    }
+    localStorage.setItem(
+      'norka:pending-design-prompt',
+      JSON.stringify({
+        text: designPrompt,
+        target: 'proto',
+        mode: 'auto-scene',
+        uiMode: 'editor',
+        resetSession: true,
+        autoBuildOnly: true,
+        screenPlan: screenPlanPayload,
+        assemblyPlan: assemblyPlanPayload,
+        createdAt: Date.now()
+      })
+    )
+    window.dispatchEvent(new CustomEvent(PENDING_DESIGN_PROMPT_EVENT))
+    if (!projectContext.value) {
+      toast.error('Контекст фичи не выбран')
       return
     }
-
-    await router.push('/workspace/design')
-    await designChat.sendMessage({ text: designPrompt })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    toast.error(`Не удалось сгенерировать дизайн: ${message}`)
+    await router.push(buildWorkspacePath('design', projectContext.value))
   } finally {
     isGeneratingDesign.value = false
   }
 }
 
-const isChatBusy = computed(() => chatStatus.value === 'streaming' || chatStatus.value === 'submitted')
-const showLoader = computed(() => chatStatus.value === 'submitted')
-watch(showLoader, (active) => {
-  if (active) {
-    runLoaderTypingCycle()
-    return
-  }
-  stopLoaderTypingCycle()
-}, { immediate: true })
+const canSaveBrief = computed(
+  () => Boolean(projectContext.value && getFeatureStorageRoot()) && !savingBrief.value
+)
 
-let loaderCursorBlinkInterval: ReturnType<typeof setInterval> | null = null
-onMounted(() => {
-  loaderCursorBlinkInterval = setInterval(() => {
-    loaderCursorVisible.value = !loaderCursorVisible.value
-  }, 460)
-})
-onUnmounted(() => {
-  if (!loaderCursorBlinkInterval) return
-  clearInterval(loaderCursorBlinkInterval)
-  loaderCursorBlinkInterval = null
-})
+const isApplyingDemo = ref(false)
 
-const canSuggestVariants = computed(() => isConfigured.value && !isChatBusy.value)
-const canSend = computed(() => inputText.value.trim().length > 0 && isConfigured.value && !isChatBusy.value)
-const canSaveBrief = computed(() => Boolean(workspacePath.value && projectContext.value) && !savingBrief.value)
-
-async function copyMessage(msg: UIMessage) {
-  const text = getText(msg).trim()
-  if (!text) return
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.info('Сообщение скопировано')
-  } catch (error) {
-    console.error('Copy message error:', error)
-    toast.error('Не удалось скопировать сообщение')
+function buildDemoBrief(): Record<BriefSectionId, string> {
+  const screenTitle = currentScreen.value?.title?.trim() || 'Экран'
+  const featureTitle = currentFeature.value?.title?.trim() || 'Фича'
+  return {
+    task: `Главная задача страницы «${screenTitle}» — дать пользователю быстрый и понятный обзор состояния по фиче «${featureTitle}», чтобы ускорить принятие решений и снизить время на ручную проверку данных.`,
+    users:
+      'Основной пользователь — администратор/аналитик. Он регулярно открывает страницу в течение дня, чтобы контролировать ключевые метрики и вовремя реагировать на отклонения.',
+    scenarios:
+      '1) Быстрый утренний просмотр состояния. 2) Проверка причин отклонений после алерта. 3) Сравнение текущих значений с предыдущим периодом перед принятием решения.',
+    states:
+      'Healthy: все ключевые показатели в пределах нормы. Warning: есть отклонения, нужен дополнительный анализ. Critical: обнаружена критичная проблема, требуется немедленное действие.',
+    constraints:
+      'Обновление данных не реже 1 раза в минуту. Время первого отображения до 2 секунд. Корректная работа на desktop-экранах от 1280px. Все значения должны иметь единые форматы и подписи.',
+    metrics:
+      'Время до первого полезного отображения, доля пользователей, нашедших причину инцидента без перехода на другие страницы, время реакции на критичное состояние, точность интерпретации статусов.',
+    questions:
+      'Нужно ли показывать исторические данные на этой же странице? Какие пороги для Warning/Critical считаются официальными? Какие действия пользователь должен выполнять прямо из этого экрана?'
   }
 }
 
-async function suggestVariants() {
-  if (!canSuggestVariants.value) return
-  if (!chatInst.value) await initChat()
-  const inst = chatInst.value
-  if (!inst) return
+async function applyDemoBrief() {
+  if (isApplyingDemo.value) return
+  if (!projectContext.value) {
+    toast.error('Контекст фичи не выбран')
+    return
+  }
+  isApplyingDemo.value = true
+  try {
+    const demo = buildDemoBrief()
+    briefContent.value = { ...demo }
+    analyticsSource.value = [
+      `DEMO: ${new Date().toISOString()}`,
+      `Проект: ${currentProduct.value?.title ?? 'Без названия'}`,
+      `Экран: ${currentScreen.value?.title ?? 'Без названия'}`,
+      `Фича: ${currentFeature.value?.title ?? 'Без названия'}`,
+      'Источник создан автоматически для демонстрации полного заполнения analytics.md.'
+    ].join('\n')
+    await Promise.all([saveBrief(), saveAnalyticsSource()])
+    toast.info('Демо-данные analytics.md заполнены')
+  } finally {
+    isApplyingDemo.value = false
+  }
+}
 
-  const prompt = [
-    'Норка, предложи варианты ответов на вопросы, которые ты сама задала в текущем диалоге.',
-    'Если в последнем сообщении ассистента есть вопросы — ответь именно на них.',
-    'Формат ответа:',
-    '1) Коротко перечисли найденные вопросы.',
-    '2) Для каждого вопроса дай 3-5 реалистичных вариантов ответа, применимых к продуктовой аналитике и UX.',
-    '3) Отметь рекомендуемый вариант и почему.',
-    '4) Если в диалоге нет явных вопросов, предложи 5 ключевых уточнений для разделов: Пользователь, Сценарии, Состояния, Ограничения, Метрики.',
-    'Пиши по-русски, кратко и практично.',
-  ].join('\n')
-
-  inst.sendMessage({ text: prompt }).catch((e: unknown) => {
-    console.error('Suggest variants error:', e)
-  })
-  await nextTick()
-  messagesEndRef.value?.scrollIntoView({ behavior: 'smooth' })
+async function copyBriefMarkdown() {
+  await navigator.clipboard.writeText(briefToMd())
 }
 </script>
 
 <template>
   <div class="flex h-full w-full select-text flex-col overflow-hidden">
-    <!-- Top bar -->
     <header class="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3">
       <icon-lucide-brain-circuit class="size-3.5 text-accent" />
       <span class="text-xs font-medium text-surface">Аналитика</span>
-
       <div class="h-4 w-px bg-border" />
-
+      <button
+        :disabled="isChatBusy"
+        class="flex items-center gap-1.5 rounded border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs text-accent transition-colors hover:bg-accent/15 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+        @click="startDiscussion"
+      >
+        <icon-lucide-messages-square class="size-3.5" />
+        Запустить обсуждение
+      </button>
+      <button
+        :disabled="isApplyingDemo || isChatBusy || !projectContext"
+        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface disabled:cursor-not-allowed disabled:opacity-40"
+        @click="applyDemoBrief"
+      >
+        <icon-lucide-flask-conical class="size-3.5" />
+        {{ isApplyingDemo ? 'Заполняю…' : 'Демо' }}
+      </button>
       <button
         :disabled="!isConfigured || chatMessages.length < 2 || isUpdatingBrief"
         class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs transition-colors hover:bg-hover hover:text-surface disabled:cursor-not-allowed disabled:opacity-40"
@@ -891,213 +680,61 @@ async function suggestVariants() {
         {{ isUpdatingBrief ? 'Обновляю…' : 'Обновить бриф' }}
       </button>
       <button
-        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-        @click="generateImplementationReadyDoc"
-      >
-        <icon-lucide-file-check-2 class="size-3.5" />
-        Implementation-ready
-      </button>
-      <button
-        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-        @click="fillDemoData"
-      >
-        <icon-lucide-flask-conical class="size-3.5" />
-        Демо
-      </button>
-      <button
-          :disabled="!isConfigured || isChatBusy || isGeneratingDesign"
+        :disabled="!isConfigured || isChatBusy || isGeneratingDesign"
         class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         :class="isGeneratingDesign ? 'text-accent' : 'text-muted hover:bg-hover hover:text-surface'"
         @click="generateDesignFromAnalytics"
       >
         <icon-lucide-loader-circle v-if="isGeneratingDesign" class="size-3.5 animate-spin" />
         <icon-lucide-wand-sparkles v-else class="size-3.5" />
-        {{ isGeneratingDesign ? 'Собираю дизайн…' : 'В дизайн через LLM' }}
+        {{ isGeneratingDesign ? 'Собираю экран…' : 'Собрать экран' }}
       </button>
-
+      <span class="text-[10px] text-muted">
+        {{
+          screenPlanReady
+            ? `${pipelineStatus}${selectedSceneLabel ? ` · Сцена: ${selectedSceneLabel}` : ''}${missingComponentCount !== null ? ` · Missing: ${missingComponentCount}` : ''}`
+            : 'План экрана уточняется'
+        }}
+      </span>
       <div class="flex-1" />
-
       <span v-if="saveStatusLabel" class="text-[10px] text-muted">{{ saveStatusLabel }}</span>
-
-      <div class="h-4 w-px bg-border" />
-
-      <button
-        class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-        @click="resetChat"
-      >
-        <icon-lucide-rotate-ccw class="size-3.5" />
-        Сбросить чат
-      </button>
     </header>
 
-    <SplitterGroup direction="horizontal" auto-save-id="analytics-layout" class="flex-1 overflow-hidden">
-      <!-- Left: Chat -->
-      <SplitterPanel :default-size="55" :min-size="35" class="relative flex flex-col overflow-hidden bg-canvas">
-        <!-- AI not configured banner -->
-        <div
-          v-if="!isConfigured"
-          class="m-4 flex flex-col items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 text-center"
-        >
-          <icon-lucide-bot class="size-8 text-amber-400" />
-          <p class="text-sm font-medium text-surface">Нужно настроить AI</p>
-          <p class="text-xs text-muted">
-            Настройте подключение к AI-провайдеру, чтобы начать диалог с ассистентом.
-          </p>
-          <button
-            class="mt-1 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent/80"
-            @click="settings.show()"
-          >
-            <icon-lucide-settings class="size-3.5" />
-            Настроить AI
-          </button>
-        </div>
-
-        <!-- Messages -->
-        <ScrollAreaRoot class="min-h-0 flex-1">
-          <ScrollAreaViewport class="h-full min-h-0 overflow-y-auto px-4 py-4">
-            <div class="flex flex-col gap-4">
-              <div
-                v-for="msg in chatMessages"
-                :key="msg.id"
-                class="flex gap-3"
-                :class="msg.role === 'user' ? 'flex-row-reverse' : ''"
-              >
-                <div
-                  class="flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                  :class="msg.role === 'assistant' ? 'bg-accent/20 text-accent' : 'bg-muted/20 text-muted'"
-                >
-                  {{ msg.role === 'assistant' ? 'AI' : 'Я' }}
-                </div>
-                <div
-                  class="max-w-[75%] rounded-2xl px-4 py-2.5"
-                  :class="
-                    msg.role === 'assistant'
-                      ? 'rounded-tl-sm bg-panel text-surface'
-                      : 'rounded-tr-sm bg-accent/15 text-surface'
-                  "
-                >
-                  <p class="whitespace-pre-wrap text-sm leading-relaxed">{{ getText(msg) }}</p>
-                </div>
-                <button
-                  class="mt-1 flex size-6 shrink-0 items-center justify-center rounded text-muted transition-colors hover:bg-hover hover:text-surface"
-                  @click="copyMessage(msg)"
-                >
-                  <icon-lucide-copy class="size-3.5" />
-                </button>
-              </div>
-
-              <!-- Streaming indicator -->
-              <div v-if="showLoader" class="flex gap-3">
-                <div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
-                  AI
-                </div>
-                <div class="flex min-h-[46px] items-center rounded-2xl rounded-tl-sm bg-panel px-4 py-3">
-                  <span class="text-sm leading-relaxed text-surface/90">
-                    {{ typedLoaderText }}
-                    <span
-                      class="inline-block w-[0.5ch] text-accent transition-opacity duration-150"
-                      :class="loaderCursorVisible ? 'opacity-100' : 'opacity-10'"
-                    >
-                      |
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              <div ref="messagesEndRef" />
-            </div>
-          </ScrollAreaViewport>
-          <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-            <ScrollAreaThumb class="rounded-full bg-border" />
-          </ScrollAreaScrollbar>
-        </ScrollAreaRoot>
-
-        <!-- Input -->
-        <div class="shrink-0 border-t border-border p-3">
-          <div class="flex items-end gap-2 rounded-xl border border-border bg-panel px-3 py-2 transition-colors focus-within:border-accent/50">
-            <textarea
-              v-model="inputText"
-              rows="2"
-              :disabled="!isConfigured || isChatBusy"
-              :placeholder="isConfigured ? 'Ответьте на вопрос AI…' : 'Сначала настройте AI'"
-              class="flex-1 resize-none bg-transparent text-sm text-surface outline-none placeholder:text-muted disabled:opacity-50"
-              @keydown.enter.exact.prevent="sendMessage"
-            />
-            <button
-              :disabled="!canSuggestVariants"
-              class="rounded-lg border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:bg-hover hover:text-surface disabled:cursor-not-allowed disabled:opacity-40"
-              @click="suggestVariants"
-            >
-              Предложи варианты
-            </button>
-            <button
-              :disabled="isChatBusy ? false : !canSend"
-              class="flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed"
-              :class="
-                isChatBusy
-                  ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
-                  : canSend
-                    ? 'bg-accent text-white hover:bg-accent/80'
-                    : 'bg-hover text-muted'
-              "
-              :title="isChatBusy ? 'Остановить ответ AI' : 'Отправить'"
-              @click="isChatBusy ? stopMessage() : sendMessage()"
-            >
-              <icon-lucide-square v-if="isChatBusy" class="size-3.5" />
-              <icon-lucide-arrow-up v-else class="size-4" />
-            </button>
-          </div>
-          <p class="mt-1 text-[10px] text-muted">Enter — отправить · Shift+Enter — новая строка</p>
-        </div>
-
-        <div
-          v-if="isUpdatingBrief"
-          class="absolute inset-x-0 bottom-0 top-0 z-20 flex flex-col bg-canvas/70 backdrop-blur-[1px]"
-        >
-          <div class="min-h-0 flex-1" />
-          <div class="mx-4 mb-4 rounded-xl border border-border bg-panel/95 px-4 py-3 shadow-lg">
-            <div class="flex items-center gap-2">
-              <icon-lucide-loader-circle class="size-4 animate-spin text-accent" />
-              <span class="text-xs font-medium text-surface">Анализирую диалог и заполняю блоки… {{ updateBriefProgress }}%</span>
-            </div>
-            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-hover">
-              <div
-                class="h-full rounded-full bg-accent/80 transition-[width] duration-150 ease-out"
-                :style="{ width: `${updateBriefProgress}%` }"
-              />
-            </div>
-          </div>
-        </div>
+    <SplitterGroup
+      direction="horizontal"
+      auto-save-id="analytics-layout"
+      class="flex-1 overflow-hidden"
+    >
+      <SplitterPanel
+        :default-size="55"
+        :min-size="35"
+        class="flex flex-col overflow-hidden bg-canvas"
+      >
+        <ChatPanel
+          canvas-target="analytics"
+          class="h-full w-full"
+          :on-import-structured-analytics="importStructuredAssistantMessage"
+          :is-structured-analytics-message-imported="isStructuredAssistantMessageImported"
+        />
       </SplitterPanel>
-
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border" />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
+        />
       </SplitterResizeHandle>
-
-      <!-- Right: Brief editor -->
       <SplitterPanel
         :default-size="45"
         :min-size="28"
         :max-size="60"
         class="flex flex-col overflow-hidden border-l border-border"
       >
-        <!-- Panel header -->
         <div class="flex shrink-0 items-center gap-2 border-b border-border bg-panel px-3 py-2">
           <icon-lucide-file-text class="size-3.5 shrink-0 text-accent" />
           <span class="flex-1 text-xs font-medium text-surface">analytics.md</span>
-          <button
-            :disabled="!isConfigured || chatMessages.length < 2 || isUpdatingBrief"
-            class="flex items-center gap-1 rounded border border-border px-2 py-1 text-[10px] text-muted transition-colors hover:bg-hover hover:text-surface disabled:cursor-not-allowed disabled:opacity-40"
-            @click="updateBriefFromChat"
-          >
-            <icon-lucide-loader-circle v-if="isUpdatingBrief" class="size-3 animate-spin" />
-            <icon-lucide-sparkles v-else class="size-3" />
-            {{ isUpdatingBrief ? `Обновляю (${updateBriefProgress}%)` : 'Проанализировать диалог и заполнить блоки' }}
-          </button>
           <Tip label="Скопировать markdown">
             <button
               class="flex size-6 items-center justify-center rounded text-muted transition-colors hover:bg-hover hover:text-surface"
-              @click="navigator.clipboard.writeText(briefToMd())"
+              @click="copyBriefMarkdown"
             >
               <icon-lucide-copy class="size-3.5" />
             </button>
@@ -1112,61 +749,66 @@ async function suggestVariants() {
             </button>
           </Tip>
         </div>
-
-        <!-- Sections -->
-        <ScrollAreaRoot class="flex-1 bg-canvas">
-          <ScrollAreaViewport class="h-full">
+        <ScrollAreaRoot class="flex-1 min-h-0 bg-canvas">
+          <ScrollAreaViewport class="h-full overflow-y-auto">
             <div class="flex flex-col divide-y divide-border/60">
               <div class="flex flex-col">
                 <div class="bg-panel/60 px-3 py-1.5">
-                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    Источник аналитики (Confluence)
-                  </span>
-                  <span class="ml-2 text-[10px] text-muted">{{ savingSource ? 'Сохраняю…' : sourceDirty ? 'Не сохранено' : 'Сохранено' }}</span>
+                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted"
+                    >Источник аналитики (Confluence)</span
+                  >
+                  <span class="ml-2 text-[10px] text-muted">{{
+                    savingSource ? 'Сохраняю…' : sourceDirty ? 'Не сохранено' : 'Сохранено'
+                  }}</span>
                 </div>
                 <textarea
                   v-model="analyticsSource"
-                  placeholder="Вставьте сюда source-аналитику и ссылку на Confluence"
                   class="min-h-[92px] resize-none bg-canvas px-3 py-2.5 text-sm leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
                   style="field-sizing: content"
                 />
               </div>
-              <div
-                v-for="section in BRIEF_SECTIONS"
-                :key="section.id"
-                class="flex flex-col"
-              >
+              <div v-for="section in BRIEF_SECTIONS" :key="section.id" class="flex flex-col">
                 <div class="bg-panel/60 px-3 py-1.5">
-                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    {{ section.title }}
-                  </span>
+                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">{{
+                    section.title
+                  }}</span>
                 </div>
                 <textarea
                   v-model="briefContent[section.id]"
                   :placeholder="`${section.title}…`"
                   class="min-h-[72px] resize-none bg-canvas px-3 py-2.5 text-sm leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
-                  :class="section.id === 'users' ? 'max-h-56 overflow-y-auto' : ''"
                   style="field-sizing: content"
                 />
               </div>
               <div class="flex flex-col">
                 <div class="bg-panel/60 px-3 py-1.5">
-                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    implementation-ready.md
-                  </span>
+                  <span class="text-[10px] font-semibold uppercase tracking-wider text-muted"
+                    >План экрана</span
+                  >
                 </div>
-                <textarea
-                  v-model="implementationReady"
-                  placeholder="Сформируйте implementation-ready документ кнопкой сверху"
-                  class="min-h-[140px] resize-none bg-canvas px-3 py-2.5 font-mono text-xs leading-relaxed text-surface outline-none placeholder:text-muted/40 focus:bg-hover/20"
-                  style="field-sizing: content"
-                />
+                <div class="grid grid-cols-1 gap-2 p-3">
+                  <div
+                    v-for="(block, index) in analyticsPlanBlocks"
+                    :key="`${block.title}-${index}`"
+                    class="rounded border border-border/70 bg-panel/40 px-2.5 py-2"
+                  >
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                      {{ block.title }}
+                    </p>
+                    <p class="mt-1 line-clamp-3 text-xs text-surface">
+                      {{ block.description }}
+                    </p>
+                  </div>
+                  <p v-if="analyticsPlanBlocks.length === 0" class="text-xs text-muted">
+                    Добавьте данные в бриф или импортируйте ответы из чата, чтобы сформировать план.
+                  </p>
+                </div>
               </div>
             </div>
           </ScrollAreaViewport>
-          <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-            <ScrollAreaThumb class="rounded-full bg-border" />
-          </ScrollAreaScrollbar>
+          <ScrollAreaScrollbar orientation="vertical" class="w-1.5"
+            ><ScrollAreaThumb class="rounded-full bg-border"
+          /></ScrollAreaScrollbar>
         </ScrollAreaRoot>
       </SplitterPanel>
     </SplitterGroup>

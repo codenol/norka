@@ -7,6 +7,6 @@ export function useSettingsDialog() {
     open,
     show: () => {
       open.value = true
-    },
+    }
   }
 }

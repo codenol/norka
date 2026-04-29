@@ -15,7 +15,7 @@ import type {
   SceneNode,
   Variable,
   VariableCollection,
-  NamedStyle,
+  NamedStyle
 } from '../scene-graph'
 
 export interface LibraryManifest {
@@ -167,10 +167,7 @@ export class LibraryRegistry {
    */
   findLocalComponent(libraryId: string, itemId: string, graph: SceneGraph): SceneNode | null {
     for (const node of graph.getAllNodes()) {
-      if (
-        node.libraryRef?.libraryId === libraryId &&
-        node.libraryRef.itemId === itemId
-      ) {
+      if (node.libraryRef?.libraryId === libraryId && node.libraryRef.itemId === itemId) {
         return node
       }
     }
@@ -216,7 +213,7 @@ export class LibraryRegistry {
       addedAt: new Date().toISOString(),
       componentCount,
       variableCount: graph.variables.size,
-      styleCount: graph.styles.size,
+      styleCount: graph.styles.size
     }
   }
 
@@ -234,7 +231,7 @@ export class LibraryRegistry {
     // Create it
     return graph.createNode('CANVAS', graph.rootId, {
       name: '__library_components__',
-      internalOnly: true,
+      internalOnly: true
     })
   }
 }

@@ -4,11 +4,7 @@ import { computed } from 'vue'
 import { useAIChat } from '@/composables/use-chat'
 import { TOOL_SHORTCUTS, useEditorStore } from '@/stores/editor'
 import { closeTab, activeTab as activeTabRef } from '@/stores/tabs'
-import {
-  extractImageFilesFromClipboard,
-  useEditorCommands,
-  useViewportKind
-} from '@norka/vue'
+import { extractImageFilesFromClipboard, useEditorCommands, useViewportKind } from '@norka/vue'
 
 import { openFileDialog } from './use-menu'
 

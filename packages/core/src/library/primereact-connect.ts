@@ -17,101 +17,121 @@ export const PRIMEREACT_CONNECT_DEFS: Record<string, PrimeReactConnectDef> = {
   Button: {
     codeComponent: 'Button',
     importPath: 'primereact/button',
-    staticProps: { label: 'Button' },
+    staticProps: { label: 'Button' }
   },
   InputText: {
     codeComponent: 'InputText',
     importPath: 'primereact/inputtext',
-    staticProps: {},
+    staticProps: {}
   },
   Dropdown: {
     codeComponent: 'Dropdown',
     importPath: 'primereact/dropdown',
-    staticProps: { placeholder: 'Select' },
+    staticProps: { placeholder: 'Select' }
   },
   DataTable: {
     codeComponent: 'DataTable',
     importPath: 'primereact/datatable',
-    staticProps: {},
+    staticProps: {}
   },
   Card: {
     codeComponent: 'Card',
     importPath: 'primereact/card',
-    staticProps: { title: 'Card Title' },
+    staticProps: { title: 'Card Title' }
   },
   Dialog: {
     codeComponent: 'Dialog',
     importPath: 'primereact/dialog',
-    staticProps: { header: 'Dialog', visible: true },
+    staticProps: { header: 'Dialog', visible: true }
   },
   Panel: {
     codeComponent: 'Panel',
     importPath: 'primereact/panel',
-    staticProps: { header: 'Panel' },
+    staticProps: { header: 'Panel' }
   },
   Tag: {
     codeComponent: 'Tag',
     importPath: 'primereact/tag',
-    staticProps: { value: 'Tag' },
+    staticProps: { value: 'Tag' }
   },
   Badge: {
     codeComponent: 'Badge',
     importPath: 'primereact/badge',
-    staticProps: { value: '3' },
+    staticProps: { value: '3' }
   },
   ProgressBar: {
     codeComponent: 'ProgressBar',
     importPath: 'primereact/progressbar',
-    staticProps: { value: 50 },
+    staticProps: { value: 50 }
   },
   Toolbar: {
     codeComponent: 'Toolbar',
     importPath: 'primereact/toolbar',
-    staticProps: {},
+    staticProps: {}
   },
   Breadcrumb: {
     codeComponent: 'Breadcrumb',
     importPath: 'primereact/breadcrumb',
-    staticProps: {},
+    staticProps: {}
   },
   InputNumber: {
     codeComponent: 'InputNumber',
     importPath: 'primereact/inputnumber',
-    staticProps: {},
+    staticProps: {}
   },
   Calendar: {
     codeComponent: 'Calendar',
     importPath: 'primereact/calendar',
-    staticProps: { placeholder: 'Select Date' },
+    staticProps: { placeholder: 'Select Date' }
   },
   Checkbox: {
     codeComponent: 'Checkbox',
     importPath: 'primereact/checkbox',
-    staticProps: {},
+    staticProps: {}
   },
   RadioButton: {
     codeComponent: 'RadioButton',
     importPath: 'primereact/radiobutton',
-    staticProps: {},
+    staticProps: {}
   },
   Slider: {
     codeComponent: 'Slider',
     importPath: 'primereact/slider',
-    staticProps: { value: 50 },
+    staticProps: { value: 50 }
   },
   TabView: {
     codeComponent: 'TabView',
     importPath: 'primereact/tabview',
-    staticProps: {},
+    staticProps: {}
   },
   Message: {
     codeComponent: 'Message',
     importPath: 'primereact/message',
-    staticProps: { severity: 'info', text: 'Info' },
+    staticProps: { severity: 'info', text: 'Info' }
   },
   Divider: {
     codeComponent: 'Divider',
     importPath: 'primereact/divider',
-    staticProps: {},
+    staticProps: {}
   },
+  Avatar: {
+    codeComponent: 'Avatar',
+    importPath: 'primereact/avatar',
+    staticProps: { label: 'A' }
+  },
+  MultiSelect: {
+    codeComponent: 'MultiSelect',
+    importPath: 'primereact/multiselect',
+    staticProps: { placeholder: 'Select options' }
+  },
+  InputTextarea: {
+    codeComponent: 'InputTextarea',
+    importPath: 'primereact/inputtextarea',
+    staticProps: { placeholder: 'Type details...' }
+  },
+  SelectButton: {
+    codeComponent: 'SelectButton',
+    importPath: 'primereact/selectbutton',
+    staticProps: {}
+  }
 }

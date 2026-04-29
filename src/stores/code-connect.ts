@@ -14,9 +14,10 @@
  */
 
 import { shallowRef, computed } from 'vue'
-import type { ShallowRef, ComputedRef } from 'vue'
 
 import { libraryRegistry } from '@norka/core'
+
+import type { ShallowRef, ComputedRef } from 'vue'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,13 +33,13 @@ export interface ComponentRule {
 }
 
 export interface CodeConnectEntry {
-  componentNodeId: string          // ID of the COMPONENT node in the library graph
-  designName: string               // e.g. "Button/Primary" — display only
-  libraryId: string                // which library this component belongs to
-  codeComponent: string            // e.g. "Button" — emitted in generated JSX/TSX/Vue
-  importPath: string               // e.g. "@ds/ui" or "~/components/Button.vue"
-  staticProps: Record<string, unknown>  // e.g. { variant: "primary", size: "md" }
-  rules: ComponentRule | null      // usage rules; null = not yet defined
+  componentNodeId: string // ID of the COMPONENT node in the library graph
+  designName: string // e.g. "Button/Primary" — display only
+  libraryId: string // which library this component belongs to
+  codeComponent: string // e.g. "Button" — emitted in generated JSX/TSX/Vue
+  importPath: string // e.g. "@ds/ui" or "~/components/Button.vue"
+  staticProps: Record<string, unknown> // e.g. { variant: "primary", size: "md" }
+  rules: ComponentRule | null // usage rules; null = not yet defined
 }
 
 export type CodeConnectMap = Record<string, CodeConnectEntry>
@@ -119,7 +120,7 @@ function seedFromLibrary(libraryId: string): void {
   const next = { ..._map.value }
 
   for (const { node } of components) {
-    if (Object.prototype.hasOwnProperty.call(next, node.id)) continue  // already mapped
+    if (Object.prototype.hasOwnProperty.call(next, node.id)) continue // already mapped
     next[node.id] = {
       componentNodeId: node.id,
       designName: node.name,
@@ -127,7 +128,7 @@ function seedFromLibrary(libraryId: string): void {
       codeComponent: '',
       importPath: '',
       staticProps: {},
-      rules: null,
+      rules: null
     }
     changed = true
   }
@@ -169,7 +170,7 @@ const reverseMap: ComputedRef<Map<string, { libraryId: string; itemId: string }>
     if (!entry.codeComponent) continue
     result.set(entry.codeComponent, {
       libraryId: entry.libraryId,
-      itemId: entry.componentNodeId,
+      itemId: entry.componentNodeId
     })
   }
   return result
@@ -186,7 +187,7 @@ const store: CodeConnectStore = {
   getEntry,
   seedFromLibrary,
   pruneLibrary,
-  reverseMap,
+  reverseMap
 }
 
 export function useCodeConnectStore(): CodeConnectStore {

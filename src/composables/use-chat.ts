@@ -7,10 +7,11 @@ import { useLocalStorage } from '@vueuse/core'
 import { DirectChatTransport, stepCountIs, ToolLoopAgent } from 'ai'
 import { computed, ref, watch } from 'vue'
 
-import SYSTEM_PROMPT from '@/ai/system-prompt.md?raw'
 import { createProtoAITools } from '@/ai/proto-tools'
+import SYSTEM_PROMPT from '@/ai/system-prompt.md?raw'
 import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/ai/tools'
 import { useChatSessions } from '@/composables/use-chat-sessions'
+import { useProjects } from '@/composables/use-projects'
 import { getActiveEditorStore } from '@/stores/editor'
 import {
   ACP_AGENTS,
@@ -23,9 +24,9 @@ import {
   setUnsplashAccessKey
 } from '@norka/core'
 
-import type { ACPAgentID, AIProviderID } from '@norka/core'
-import type { LanguageModel, UIMessage } from 'ai'
 import type { ProtoStore } from '@/composables/use-proto-store'
+import type { ACPAgentID, AIProviderID } from '@norka/core'
+import type { ChatTransport, LanguageModel, UIMessage } from 'ai'
 
 const STORAGE_PREFIX = 'norka:'
 const LEGACY_KEY_STORAGE = `${STORAGE_PREFIX}openrouter-api-key`
@@ -64,7 +65,12 @@ const maxOutputTokens = useLocalStorage(`${STORAGE_PREFIX}ai-max-output-tokens`,
 const pexelsApiKey = useLocalStorage(`${STORAGE_PREFIX}pexels-api-key`, '')
 const unsplashAccessKey = useLocalStorage(`${STORAGE_PREFIX}unsplash-access-key`, '')
 const activeTab = ref<'design' | 'code' | 'ai' | 'lint' | 'snapshots'>('design')
-type ChatTarget = 'editor' | 'proto'
+type ChatTarget = 'editor' | 'proto' | 'analytics'
+export type ProtoDesignMode = 'auto-scene' | 'code-components'
+const protoDesignMode = useLocalStorage<ProtoDesignMode>(
+  `${STORAGE_PREFIX}proto-design-mode`,
+  'auto-scene'
+)
 
 const providerDef = computed(
   () => AI_PROVIDERS.find((p) => p.id === providerID.value) ?? AI_PROVIDERS[0]
@@ -95,12 +101,20 @@ let transportDirty = false
 let editorChatStore: ReturnType<typeof getActiveEditorStore> | null = null
 let stopMessageWatcherEditor: (() => void) | null = null
 let stopMessageWatcherProto: (() => void) | null = null
+let stopMessageWatcherAnalytics: (() => void) | null = null
 
 const chatSessions = useChatSessions()
+const { context } = useProjects()
 
 function markTransportDirty() {
   transportDirty = true
   editorChatStore = null
+}
+
+function getChatScopeKey(target: ChatTarget): string {
+  if (!context.value) return `${target}:global`
+  const { productId, screenId, featureId } = context.value
+  return `${target}:${productId}:${screenId}:${featureId}`
 }
 
 watch(
@@ -133,6 +147,7 @@ watch(customAPIType, markTransportDirty)
 watch(apiKey, markTransportDirty)
 watch(customBaseURL, markTransportDirty)
 watch(chatSessions.activeSessionId, markTransportDirty)
+watch(context, markTransportDirty, { deep: true })
 
 function setAPIKey(key: string) {
   apiKey.value = key
@@ -218,6 +233,10 @@ export { createModel }
 let overrideTransport: (() => any) | null = null
 let editorChat: Chat<UIMessage> | null = null
 let protoChat: Chat<UIMessage> | null = null
+let analyticsChat: Chat<UIMessage> | null = null
+let editorScopeKey = ''
+let protoScopeKey = ''
+let analyticsScopeKey = ''
 
 const ANTHROPIC_CACHE_CONTROL = {
   anthropic: { cacheControl: { type: 'ephemeral' } }
@@ -229,9 +248,9 @@ You MUST build layouts by calling tools, not by describing steps only.
 
 Canvas protocol:
 1) Call get_components() to discover available library components
-2) Create a frame with render(...)
-3) Place PrimeReact components with create_instance({ component_id, x, y })
-4) Refine spacing/alignment with set_layout / batch_update
+2) Create structure with create_instance(...) and tree operations (move_node / move_before / move_after / move_inside)
+3) Refine props with set_props(...)
+4) Validate structure with describe(...) before final response
 5) Call describe(...) to verify result and fix issues
 
 Rules:
@@ -323,14 +342,34 @@ function createProtoTransport(protoStore: ProtoStore) {
   const cacheProviderOptions = supportsAnthropicCaching() ? ANTHROPIC_CACHE_CONTROL : undefined
   const isLMStudio = providerID.value === 'lm-studio'
   const effectiveMaxOutputTokens = isLMStudio ? undefined : maxOutputTokens.value
+  const modeInstructions =
+    protoDesignMode.value === 'auto-scene'
+      ? [
+          'Design mode: auto-scene.',
+          'Select scene automatically based on analytics intent. Use deterministic fallback scene "overview-dashboard" if confidence is low.',
+          'Build internal contracts first: screen-plan -> assembly-plan -> quality-gate.',
+          'Assemble with sequential step runner and per-step validation.',
+          'If a component is missing, create a Panel placeholder and set props __missingComponent=true, __missingReason, __suggestedComponent.'
+        ]
+      : [
+          'Design mode: code-components.',
+          'Use only available real components from get_components.',
+          'For unavailable components, create Panel placeholder with __missingComponent metadata.'
+        ]
   const protoInstructions = [
     EXECUTION_FIRST_CANVAS_PREFIX,
     'You are editing the PrimeReact proto canvas.',
     'Always execute tools to make concrete changes.',
     'You and the user are co-editing the same canvas state in real time.',
-    'Call get_components first, then create_instance / set_props / remove_node / move_node / move_before / move_after / move_inside as needed.',
+    'Execution order: get_components -> build_layout_scaffold -> run_assembly_steps(section_node_map, steps) -> publish_component_fit -> validate_quality_gate -> describe.',
+    'Call get_components first, then scaffold and run assembly steps with section_node_map returned by scaffold.',
     'When user asks to modify selected element, call get_selection first and operate on that node.',
-    'After each mutation, call describe to verify the result exists on canvas.',
+    'After each mutation batch, call describe to verify tree and fix obvious structural issues.',
+    'Do not report final success when validate_quality_gate.passed=false.',
+    'When gate fails, run a short repair pass (max 2 attempts) and mark status "Черновик неполный".',
+    'If there is no mutation progress after initial calls, immediately execute deterministic scaffold+assembly and continue.',
+    'Use deterministic_assemble({ sections, steps }) as watchdog fallback when step execution stalls.',
+    ...modeInstructions
   ].join('\n\n')
 
   const agent = new ToolLoopAgent({
@@ -343,11 +382,130 @@ function createProtoTransport(protoStore: ProtoStore) {
     prepareCall: (options) => ({
       ...options,
       maxOutputTokens: effectiveMaxOutputTokens,
-      providerOptions: cacheProviderOptions,
-    }),
+      providerOptions: cacheProviderOptions
+    })
   })
 
   return new DirectChatTransport({ agent })
+}
+
+function createAnalyticsTransport() {
+  const isLMStudio = providerID.value === 'lm-studio'
+  const effectiveMaxOutputTokens = isLMStudio ? undefined : Math.min(maxOutputTokens.value, 4096)
+  const instructions = [
+    'Ты — продуктовый аналитик и UX-исследователь.',
+    'Помогай формировать аналитический бриф для фичи: задача, пользователь, сценарии, состояния, ограничения, метрики и открытые вопросы.',
+    'Работай по разделам строго в порядке: task -> users -> scenarios -> states -> constraints -> metrics -> questions.',
+    'Не перескакивай между разделами, пока в текущем разделе нет достаточной конкретики.',
+    'Всегда отвечай только на русском языке.',
+    'Возвращай строго один JSON-объект без markdown и без текста до/после JSON.',
+    'Строгая схема JSON: {"section":"task|users|scenarios|states|constraints|metrics|questions","answer":"...","nextQuestion":"...","readyToSave":true|false}.',
+    'section — только один активный раздел для текущего шага.',
+    'Ключевая привязка: section всегда должен соответствовать последнему заданному пользователю вопросу и активному разделу.',
+    'Если пользователь отвечает коротко или неопределённо (например: «предложи сам», «сам предложи», «на твой выбор», «как считаешь»), не перескакивай в другой раздел и не смешивай секции.',
+    'Для таких ответов: сохраняй текущий section; если можно безопасно предложить реалистичный рабочий вариант внутри текущего раздела — верни его в answer и readyToSave=true; если уверенности недостаточно — readyToSave=false и задай один уточняющий вопрос в рамках того же section.',
+    'Никогда не заполняй constraints/metrics/questions, если текущий вопрос был про task/users/scenarios/states, и наоборот.',
+    'answer — только подтверждённый факт для записи в analytics.md, без предположений.',
+    'Если факт подтверждён, ставь readyToSave=true и заполняй answer.',
+    'Если данных недостаточно, ставь readyToSave=false, answer делай пустой строкой и задай ровно один следующий вопрос в nextQuestion.',
+    'Не добавляй никаких дополнительных ключей.',
+    'Не генерируй код и не управляй канвасом — только аналитический контент.',
+    'Не делай финальную сводку без явной просьбы пользователя.'
+  ].join('\n')
+
+  const agent = new ToolLoopAgent({
+    model: createModel(),
+    instructions,
+    stopWhen: stepCountIs(12),
+    maxOutputTokens: effectiveMaxOutputTokens
+  })
+
+  return new DirectChatTransport({ agent }) as unknown as ChatTransport<UIMessage>
+}
+
+interface TargetState {
+  isEditorTarget: boolean
+  isProtoTarget: boolean
+  store: ReturnType<typeof getActiveEditorStore> | null
+  currentChat: Chat<UIMessage> | null
+  currentScopeKey: string
+}
+
+function getTargetState(target: ChatTarget): TargetState {
+  const isEditorTarget = target === 'editor'
+  const isProtoTarget = target === 'proto'
+  const store = isEditorTarget ? getActiveEditorStore() : null
+  let currentChat = analyticsChat
+  let currentScopeKey = analyticsScopeKey
+  if (isEditorTarget) {
+    currentChat = editorChat
+    currentScopeKey = editorScopeKey
+  } else if (isProtoTarget) {
+    currentChat = protoChat
+    currentScopeKey = protoScopeKey
+  }
+  return { isEditorTarget, isProtoTarget, store, currentChat, currentScopeKey }
+}
+
+function clearTargetWatcher(state: TargetState) {
+  if (state.isEditorTarget) {
+    stopMessageWatcherEditor?.()
+    stopMessageWatcherEditor = null
+    return
+  }
+  if (state.isProtoTarget) {
+    stopMessageWatcherProto?.()
+    stopMessageWatcherProto = null
+    return
+  }
+  stopMessageWatcherAnalytics?.()
+  stopMessageWatcherAnalytics = null
+}
+
+async function createTargetTransport(
+  state: TargetState,
+  options?: { protoStore?: ProtoStore }
+): Promise<ChatTransport<UIMessage>> {
+  if (isACPProvider.value) {
+    return await createACPTransport()
+  }
+  if (state.isProtoTarget) {
+    if (!options?.protoStore) throw new Error('Proto chat requires proto store')
+    return createProtoTransport(options.protoStore) as unknown as ChatTransport<UIMessage>
+  }
+  const activeStore = getActiveEditorStore()
+  if (state.isEditorTarget) {
+    editorChatStore = activeStore
+    return createTransport(activeStore)
+  }
+  return createAnalyticsTransport()
+}
+
+function assignTargetChat(state: TargetState, chat: Chat<UIMessage>, scopeKey: string) {
+  if (state.isEditorTarget) {
+    editorChat = chat
+    editorScopeKey = scopeKey
+    return
+  }
+  if (state.isProtoTarget) {
+    protoChat = chat
+    protoScopeKey = scopeKey
+    return
+  }
+  analyticsChat = chat
+  analyticsScopeKey = scopeKey
+}
+
+function assignTargetWatcher(state: TargetState, stop: () => void) {
+  if (state.isEditorTarget) {
+    stopMessageWatcherEditor = stop
+    return
+  }
+  if (state.isProtoTarget) {
+    stopMessageWatcherProto = stop
+    return
+  }
+  stopMessageWatcherAnalytics = stop
 }
 
 async function ensureChat(
@@ -356,56 +514,45 @@ async function ensureChat(
 ): Promise<Chat<UIMessage> | null> {
   if (!isConfigured.value) return null
 
-  const isEditorTarget = target === 'editor'
-  const store = isEditorTarget ? getActiveEditorStore() : null
-  const current = isEditorTarget ? editorChat : protoChat
-  const needsRecreate = isEditorTarget
-    ? !current || transportDirty || editorChatStore !== store
-    : !current || transportDirty
+  const state = getTargetState(target)
+  const scopeKey = getChatScopeKey(target)
+  const needsRecreate = state.isEditorTarget
+    ? !state.currentChat ||
+      transportDirty ||
+      editorChatStore !== state.store ||
+      state.currentScopeKey !== scopeKey
+    : !state.currentChat || transportDirty || state.currentScopeKey !== scopeKey
 
   if (needsRecreate) {
-    if (isEditorTarget) {
-      stopMessageWatcherEditor?.()
-      stopMessageWatcherEditor = null
-    } else {
-      stopMessageWatcherProto?.()
-      stopMessageWatcherProto = null
-    }
-    const messages = chatSessions.getMessages(chatSessions.activeSessionId.value)
-    let transport: DirectChatTransport | Awaited<ReturnType<typeof createACPTransport>>
-    if (isACPProvider.value) {
-      transport = await createACPTransport()
-    } else if (!isEditorTarget) {
-      if (!options?.protoStore) {
-        throw new Error('Proto chat requires proto store')
-      }
-      transport = createProtoTransport(options.protoStore)
-    } else {
-      const activeStore = getActiveEditorStore()
-      transport = createTransport(activeStore)
-      editorChatStore = activeStore
-    }
+    clearTargetWatcher(state)
+    const messages = chatSessions.getMessages(scopeKey)
+    const transport = await createTargetTransport(state, options)
     const nextChat = new Chat<UIMessage>({ transport, messages })
-    if (isEditorTarget) {
-      editorChat = nextChat
-    } else {
-      protoChat = nextChat
-    }
+    assignTargetChat(state, nextChat, scopeKey)
     transportDirty = false
 
     const savedChat = nextChat
+    const savedScope = scopeKey
     const stop = watch(
       () => savedChat.messages,
-      (msgs) => chatSessions.saveMessages(chatSessions.activeSessionId.value, msgs),
+      (msgs) => chatSessions.saveMessages(savedScope, msgs),
       { deep: true }
     )
-    if (isEditorTarget) {
-      stopMessageWatcherEditor = stop
-    } else {
-      stopMessageWatcherProto = stop
-    }
+    assignTargetWatcher(state, stop)
   }
-  return isEditorTarget ? editorChat : protoChat
+  if (state.isEditorTarget) return editorChat
+  if (state.isProtoTarget) return protoChat
+  return analyticsChat
+}
+
+async function stopAndRecreateChat(
+  target: ChatTarget = 'editor',
+  options?: { protoStore?: ProtoStore }
+): Promise<Chat<UIMessage> | null> {
+  const state = getTargetState(target)
+  state.currentChat?.stop()
+  markTransportDirty()
+  return ensureChat(target, options)
 }
 
 function resetChat() {
@@ -413,9 +560,17 @@ function resetChat() {
   stopMessageWatcherEditor = null
   stopMessageWatcherProto?.()
   stopMessageWatcherProto = null
-  chatSessions.saveMessages(chatSessions.activeSessionId.value, [])
+  stopMessageWatcherAnalytics?.()
+  stopMessageWatcherAnalytics = null
+  chatSessions.saveMessages(editorScopeKey || 'editor:global', [])
+  chatSessions.saveMessages(protoScopeKey || 'proto:global', [])
+  chatSessions.saveMessages(analyticsScopeKey || 'analytics:global', [])
   editorChat = null
   protoChat = null
+  analyticsChat = null
+  editorScopeKey = ''
+  protoScopeKey = ''
+  analyticsScopeKey = ''
   editorChatStore = null
   transportDirty = false
 }
@@ -440,9 +595,12 @@ export function useAIChat() {
     pexelsApiKey,
     unsplashAccessKey,
     activeTab,
+    protoDesignMode,
     isConfigured,
     markACPReady,
     ensureChat,
+    getChatScopeKeyForTarget: getChatScopeKey,
+    stopAndRecreateChat,
     resetChat,
     chatSessions
   }

@@ -64,11 +64,7 @@ function resolveInstance(
   return entry
 }
 
-function emitInstanceCode(
-  node: SceneNode,
-  entry: CodeConnectMapEntry,
-  indent: number
-): string {
+function emitInstanceCode(entry: CodeConnectMapEntry, indent: number): string {
   const prefix = '  '.repeat(indent)
   const tag = entry.codeComponent
   const propParts = Object.entries(entry.staticProps).map(([k, v]) => formatStaticProp(k, v))
@@ -86,7 +82,10 @@ function emitFallbackCode(
   const raw = sceneNodeToJSX(nodeId, graph, jsxFormat)
   // Indent the raw JSX lines
   const pad = '  '.repeat(indent)
-  return raw.split('\n').map((line) => `${pad}${line}`).join('\n')
+  return raw
+    .split('\n')
+    .map((line) => `${pad}${line}`)
+    .join('\n')
 }
 
 interface NodeCodeResult {
@@ -107,7 +106,7 @@ function nodeToCode(
   const entry = node.type === 'INSTANCE' ? resolveInstance(node, codeMap) : null
 
   if (entry) {
-    return { jsx: emitInstanceCode(node, entry, indent), resolved: true }
+    return { jsx: emitInstanceCode(entry, indent), resolved: true }
   }
 
   return { jsx: emitFallbackCode(nodeId, graph, indent, framework), resolved: false }
@@ -147,20 +146,15 @@ function wrapInFramework(
       '',
       'export default function Component() {',
       `  return ${componentBody}`,
-      '}',
-    ].filter(Boolean).join('\n')
+      '}'
+    ]
+      .filter(Boolean)
+      .join('\n')
   }
 
   if (framework === 'vue-sfc') {
-    const scriptBlock = importBlock
-      ? `<script setup lang="ts">\n${importBlock}\n</script>\n`
-      : ''
-    return [
-      scriptBlock,
-      '<template>',
-      body,
-      '</template>',
-    ].filter(Boolean).join('\n')
+    const scriptBlock = importBlock ? `<script setup lang="ts">\n${importBlock}\n</script>\n` : ''
+    return [scriptBlock, '<template>', body, '</template>'].filter(Boolean).join('\n')
   }
 
   // html-tailwind — no wrapper, no imports
@@ -186,7 +180,13 @@ export function selectionToCode(
   const bodyLines: string[] = []
 
   for (const id of nodeIds) {
-    const { jsx, resolved } = nodeToCode(id, graph, codeMap, framework, framework === 'vue-sfc' ? 1 : 1)
+    const { jsx, resolved } = nodeToCode(
+      id,
+      graph,
+      codeMap,
+      framework,
+      framework === 'vue-sfc' ? 1 : 1
+    )
 
     if (!jsx) continue
 

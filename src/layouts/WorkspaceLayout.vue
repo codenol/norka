@@ -5,6 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import AISettingsDialog from '@/components/AISettingsDialog.vue'
 import WorkspaceBar from '@/components/WorkspaceBar.vue'
 import { useProjects, type PipelineStep } from '@/composables/use-projects'
+import { buildWorkspacePath, isPipelineStep } from '@/utils/workspace-route'
 
 const route = useRoute()
 const {
@@ -14,15 +15,42 @@ const {
   currentScreen,
   PIPELINE_STEPS,
   markStepVisited,
+  setContext
 } = useProjects()
 
 const currentStep = computed(() => {
-  const segment = route.path.split('/workspace/')[1]?.split('/')[0]
-  if (!segment) return null
-  return PIPELINE_STEPS.find(s => s.key === segment) ?? null
+  const stepSegment = route.path.split('/').filter(Boolean).at(-1)
+  if (!isPipelineStep(stepSegment)) return null
+  return PIPELINE_STEPS.find((s) => s.key === stepSegment) ?? null
 })
 
 const isWorkspaceRoute = computed(() => route.path.startsWith('/workspace/'))
+const routeContext = computed(() => {
+  const productId = route.params.productId
+  const screenId = route.params.screenId
+  const featureId = route.params.featureId
+  if (
+    typeof productId !== 'string' ||
+    typeof screenId !== 'string' ||
+    typeof featureId !== 'string'
+  ) {
+    return null
+  }
+  return { productId, screenId, featureId }
+})
+
+function stepLink(step: PipelineStep): string {
+  return routeContext.value ? buildWorkspacePath(step, routeContext.value) : '/projects'
+}
+
+watch(
+  routeContext,
+  (next) => {
+    if (!next) return
+    setContext(next.productId, next.screenId, next.featureId)
+  },
+  { immediate: true }
+)
 
 // Record step visits automatically when route changes
 watch(
@@ -32,7 +60,7 @@ watch(
     const { productId, screenId, featureId } = context.value
     markStepVisited(productId, screenId, featureId, currentStep.value.key as PipelineStep)
   },
-  { immediate: true },
+  { immediate: true }
 )
 </script>
 
@@ -40,9 +68,7 @@ watch(
   <div class="flex h-screen w-screen overflow-hidden">
     <WorkspaceBar />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header
-        class="flex h-10 shrink-0 items-center gap-1 border-b border-border bg-panel px-3"
-      >
+      <header class="flex h-10 shrink-0 items-center gap-1 border-b border-border bg-panel px-3">
         <RouterLink
           to="/projects"
           class="rounded px-1.5 py-0.5 text-[11px] text-muted transition-colors hover:bg-hover hover:text-surface"
@@ -76,7 +102,7 @@ watch(
           </span>
           <RouterLink
             v-else
-            :to="`/workspace/${step.key}`"
+            :to="stepLink(step.key)"
             class="rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted transition-colors hover:bg-hover hover:text-surface"
           >
             {{ step.label }}

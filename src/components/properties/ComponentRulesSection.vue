@@ -26,10 +26,7 @@ const rules = computed(() => entry.value?.rules ?? null)
       <span class="text-[10px] font-medium uppercase tracking-wide text-muted">
         {{ entry.codeComponent || entry.designName }}
       </span>
-      <button
-        class="text-[10px] text-accent hover:underline"
-        @click="emit('openCodeConnect')"
-      >
+      <button class="text-[10px] text-accent hover:underline" @click="emit('openCodeConnect')">
         {{ dialogs.codeConnect }}
       </button>
     </div>
@@ -58,7 +55,8 @@ const rules = computed(() => entry.value?.rules ?? null)
         </li>
       </ul>
       <p class="mt-0.5 text-[9px] text-muted/60">
-        {{ dialogs.rulesUpdatedBy }}: {{ rules.updatedBy }} · {{ new Date(rules.updatedAt).toLocaleDateString() }}
+        {{ dialogs.rulesUpdatedBy }}: {{ rules.updatedBy }} ·
+        {{ new Date(rules.updatedAt).toLocaleDateString() }}
       </p>
     </div>
   </div>

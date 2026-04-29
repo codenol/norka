@@ -15,7 +15,7 @@ import {
   libraryRegistry,
   LibraryRegistry,
   buildPrimeReactGraph,
-  PRIMEREACT_CONNECT_DEFS,
+  PRIMEREACT_CONNECT_DEFS
 } from '@norka/core'
 
 import { useCodeConnectStore } from './code-connect'
@@ -37,7 +37,7 @@ export function isBuiltinLibrary(id: string): boolean {
 // ---------------------------------------------------------------------------
 
 export function initBuiltinLibraries(): void {
-  if (libraryRegistry.has(BUILTIN_PRIMEREACT_ID)) return  // idempotent
+  if (libraryRegistry.has(BUILTIN_PRIMEREACT_ID)) return // idempotent
 
   const graph = buildPrimeReactGraph()
   const manifest = LibraryRegistry.buildManifest(BUILTIN_PRIMEREACT_ID, 'PrimeReact (Core)', graph)
@@ -49,7 +49,7 @@ export function initBuiltinLibraries(): void {
   for (const node of graph.getAllNodes()) {
     if (node.type !== 'COMPONENT') continue
     const def = PRIMEREACT_CONNECT_DEFS[node.name]
-    if (codeConnect.getEntry(node.id)) continue  // preserve user overrides
+    if (codeConnect.getEntry(node.id)) continue // preserve user overrides
     codeConnect.upsertEntry({
       componentNodeId: node.id,
       designName: node.name,
@@ -57,7 +57,7 @@ export function initBuiltinLibraries(): void {
       codeComponent: def.codeComponent,
       importPath: def.importPath,
       staticProps: def.staticProps,
-      rules: null,
+      rules: null
     })
   }
 }

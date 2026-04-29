@@ -11,12 +11,20 @@
  */
 
 import { shallowRef, computed, type ComputedRef } from 'vue'
-import { exportFigFile, parseFigFile, readFigFile, readPenFile, libraryRegistry, LibraryRegistry } from '@norka/core'
+
+import {
+  exportFigFile,
+  parseFigFile,
+  readFigFile,
+  readPenFile,
+  libraryRegistry,
+  LibraryRegistry
+} from '@norka/core'
+
+import { isBuiltinLibrary, injectBuiltinComponentsToGraph } from './builtin-library'
+import { useCodeConnectStore } from './code-connect'
 
 import type { LibraryManifest, SceneGraph } from '@norka/core'
-
-import { useCodeConnectStore } from './code-connect'
-import { isBuiltinLibrary, injectBuiltinComponentsToGraph } from './builtin-library'
 
 // Code Connect store — seeded/pruned alongside library registration
 const _codeConnect = useCodeConnectStore()
@@ -144,7 +152,7 @@ async function addLibraryFromFile(file: File): Promise<void> {
  * Remove a library.
  */
 function removeLibrary(id: string): void {
-  if (isBuiltinLibrary(id)) return  // built-in libraries cannot be removed
+  if (isBuiltinLibrary(id)) return // built-in libraries cannot be removed
   libraryRegistry.unregister(id)
   _codeConnect.pruneLibrary(id)
   removeLibraryData(id)
@@ -197,11 +205,7 @@ function insertComponent(
  * Copy a variable collection (+ its variables) from a library into the local
  * graph as a proper local collection (no libraryId marker — user-owned copy).
  */
-function importCollectionToDoc(
-  libraryId: string,
-  collectionId: string,
-  graph: SceneGraph
-): void {
+function importCollectionToDoc(libraryId: string, collectionId: string, graph: SceneGraph): void {
   const libGraph = libraryRegistry.getGraph(libraryId)
   if (!libGraph) return
   const col = libGraph.variableCollections.get(collectionId)
@@ -220,11 +224,7 @@ function importCollectionToDoc(
 /**
  * Copy a style from a library into the local graph as a user-owned copy.
  */
-function importStyleToDoc(
-  libraryId: string,
-  styleId: string,
-  graph: SceneGraph
-): void {
+function importStyleToDoc(libraryId: string, styleId: string, graph: SceneGraph): void {
   const libGraph = libraryRegistry.getGraph(libraryId)
   if (!libGraph) return
   const style = libGraph.styles.get(styleId)
@@ -386,7 +386,7 @@ const store: LibraryStore = {
   insertComponent,
   importCollectionToDoc,
   importStyleToDoc,
-  init,
+  init
 }
 
 export function useLibraryStore(): LibraryStore {

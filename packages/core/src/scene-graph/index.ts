@@ -17,8 +17,6 @@ import {
 } from './instances'
 
 export type { GUID, Color } from '../types'
-import type { Matrix, Vector, Color, Rect } from '../types'
-import type { Emitter } from 'nanoevents'
 import type {
   ArchetypeCodeBinding,
   ArchetypeDesignBinding,
@@ -26,6 +24,8 @@ import type {
   ComponentArchetype,
   ComponentRule
 } from '../components/archetypes'
+import type { Matrix, Vector, Color, Rect } from '../types'
+import type { Emitter } from 'nanoevents'
 
 export interface SceneGraphEvents {
   'node:created': (node: SceneNode) => void
@@ -411,7 +411,7 @@ export interface VariableCollection {
   modes: VariableCollectionMode[]
   defaultModeId: string
   variableIds: string[]
-  libraryId?: string  // set when injected from a design library; excluded from .fig export
+  libraryId?: string // set when injected from a design library; excluded from .fig export
 }
 
 // --- Named Styles ---
@@ -424,7 +424,7 @@ export interface FillStyle {
   type: 'FILL'
   description: string
   fills: Fill[]
-  libraryId?: string  // set when injected from a design library; excluded from .fig export
+  libraryId?: string // set when injected from a design library; excluded from .fig export
 }
 
 export interface TextStyle {
@@ -771,7 +771,10 @@ export class SceneGraph {
     return style
   }
 
-  createTextStyle(name: string, props: Partial<Omit<TextStyle, 'id' | 'name' | 'type' | 'description'>> = {}): TextStyle {
+  createTextStyle(
+    name: string,
+    props: Partial<Omit<TextStyle, 'id' | 'name' | 'type' | 'description'>> = {}
+  ): TextStyle {
     const style: TextStyle = {
       id: generateId(),
       name,
@@ -785,7 +788,9 @@ export class SceneGraph {
       letterSpacing: props.letterSpacing ?? 0,
       textCase: props.textCase ?? 'ORIGINAL',
       textDecoration: props.textDecoration ?? 'NONE',
-      fills: props.fills ?? [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }]
+      fills: props.fills ?? [
+        { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+      ]
     }
     this.addStyle(style)
     return style

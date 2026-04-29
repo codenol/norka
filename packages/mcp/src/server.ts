@@ -15,10 +15,10 @@ import {
   resolveToTree
 } from '@norka/core'
 
-import type { ParamDef, ParamType } from '@norka/core'
-
 // Version is read via static import so bun --compile can bundle it correctly.
 import mcpPkg from '../package.json' with { type: 'json' }
+
+import type { ParamDef, ParamType } from '@norka/core'
 const MCP_VERSION: string = mcpPkg.version
 
 type MCPContent = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }

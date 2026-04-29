@@ -25,7 +25,10 @@
  */
 
 import { ref, watch } from 'vue'
+
 import { IS_TAURI } from '@/constants'
+import { migrateLegacyLocalStorageValue } from '@/utils/local-storage'
+
 import type { Product } from './use-projects'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -33,7 +36,6 @@ import type { Product } from './use-projects'
 export type FeatureFile =
   | 'analytics.md'
   | 'analytics-source.md'
-  | 'implementation-ready.md'
   | 'concept.tsx'
   | 'discussion.md'
   | 'handoff.md'
@@ -86,9 +88,13 @@ interface NorkaJson {
 
 // ── Singleton workspace path ───────────────────────────────────────────────────
 
-const LS_WORKSPACE = 'bereста:workspacePath'
+const LS_WORKSPACE = 'norka:workspace-path'
+const LS_FEATURE_FILE_PREFIX = 'norka:feature-file:'
+const LEGACY_WORKSPACE_KEYS = ['bereста:workspacePath']
 
-export const workspacePath = ref<string | null>(localStorage.getItem(LS_WORKSPACE))
+export const workspacePath = ref<string | null>(
+  migrateLegacyLocalStorageValue(LS_WORKSPACE, LEGACY_WORKSPACE_KEYS)
+)
 
 watch(workspacePath, (v) => {
   if (v) localStorage.setItem(LS_WORKSPACE, v)
@@ -99,6 +105,45 @@ watch(workspacePath, (v) => {
 
 function join(...parts: string[]): string {
   return parts.join('/').replace(/\/+/g, '/')
+}
+
+function featureFileStorageKey(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  file: FeatureFile
+): string {
+  return `${LS_FEATURE_FILE_PREFIX}${rootPath}:${productId}:${screenId}:${featureId}:${file}`
+}
+
+function readFeatureFileFromStorage(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  file: FeatureFile
+): string {
+  try {
+    return localStorage.getItem(featureFileStorageKey(rootPath, productId, screenId, featureId, file)) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function writeFeatureFileToStorage(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  file: FeatureFile,
+  content: string
+): void {
+  try {
+    localStorage.setItem(featureFileStorageKey(rootPath, productId, screenId, featureId, file), content)
+  } catch (error) {
+    console.warn('[workspace-fs] Failed to persist feature file cache.', error)
+  }
 }
 
 async function ensureDir(path: string): Promise<void> {
@@ -261,7 +306,11 @@ function defaultScreenMd(title: string): string {
 export async function openWorkspaceDialog(): Promise<string | null> {
   if (!IS_TAURI) return null
   const { open } = await import('@tauri-apps/plugin-dialog')
-  const result = await open({ directory: true, multiple: false, title: 'Выберите папку рабочего пространства' })
+  const result = await open({
+    directory: true,
+    multiple: false,
+    title: 'Выберите папку рабочего пространства'
+  })
   return typeof result === 'string' ? result : null
 }
 
@@ -289,7 +338,10 @@ export async function writeNorkaJson(rootPath: string, products: Product[]): Pro
  * Ensure all folders and stub markdown files exist for the given product tree.
  * Safe to call on every save — only creates what's missing.
  */
-export async function ensureWorkspaceStructure(rootPath: string, products: Product[]): Promise<void> {
+export async function ensureWorkspaceStructure(
+  rootPath: string,
+  products: Product[]
+): Promise<void> {
   if (!IS_TAURI) return
 
   // DESIGN.md
@@ -320,16 +372,40 @@ export async function ensureWorkspaceStructure(rootPath: string, products: Produ
         const featureDir = join(screenDir, 'features', feature.id)
         await ensureDir(featureDir)
         const defaults: Array<[FeatureFile, string]> = [
-          ['feature-meta.json', JSON.stringify({
-            jiraIssueKey: feature.jiraIssueKey ?? '',
-            jiraUrl: feature.jiraUrl ?? '',
-            designerFullName: feature.designerFullName ?? '',
-            confluenceUrl: feature.confluenceUrl ?? '',
-          }, null, 2)],
-          ['analytics-source.md', '# Analytics Source\n\n<!-- Paste source analytics from Confluence -->\n'],
-          ['implementation-ready.md', '# Implementation Ready\n\n<!-- Final aligned document for engineering handoff -->\n'],
+          [
+            'feature-meta.json',
+            JSON.stringify(
+              {
+                jiraIssueKey: feature.jiraIssueKey ?? '',
+                jiraUrl: feature.jiraUrl ?? '',
+                designerFullName: feature.designerFullName ?? '',
+                confluenceUrl: feature.confluenceUrl ?? ''
+              },
+              null,
+              2
+            )
+          ],
+          ['analytics.md', '# Аналитика\n\n<!-- Заполните аналитический бриф -->\n'],
+          [
+            'analytics-source.md',
+            '# Analytics Source\n\n<!-- Paste source analytics from Confluence -->\n'
+          ],
           ['comments.json', JSON.stringify([], null, 2)],
-          ['versions.json', JSON.stringify([{ id: 'v1', title: 'v1', createdAt: new Date().toISOString(), notes: 'Initial version' }], null, 2)],
+          [
+            'versions.json',
+            JSON.stringify(
+              [
+                {
+                  id: 'v1',
+                  title: 'v1',
+                  createdAt: new Date().toISOString(),
+                  notes: 'Initial version'
+                }
+              ],
+              null,
+              2
+            )
+          ]
         ]
         for (const [file, content] of defaults) {
           const filePath = join(featureDir, file)
@@ -361,20 +437,35 @@ export async function readProjectMd(rootPath: string, productId: string): Promis
 }
 
 /** Write project.md */
-export async function writeProjectMd(rootPath: string, productId: string, content: string): Promise<void> {
+export async function writeProjectMd(
+  rootPath: string,
+  productId: string,
+  content: string
+): Promise<void> {
   if (!IS_TAURI) return
   await ensureDir(join(rootPath, 'projects', productId))
   await writeText(join(rootPath, 'projects', productId, 'project.md'), content)
 }
 
 /** Read screen.md */
-export async function readScreenMd(rootPath: string, productId: string, screenId: string): Promise<string> {
+export async function readScreenMd(
+  rootPath: string,
+  productId: string,
+  screenId: string
+): Promise<string> {
   if (!IS_TAURI) return ''
-  return (await readText(join(rootPath, 'projects', productId, 'screens', screenId, 'screen.md'))) ?? ''
+  return (
+    (await readText(join(rootPath, 'projects', productId, 'screens', screenId, 'screen.md'))) ?? ''
+  )
 }
 
 /** Write screen.md */
-export async function writeScreenMd(rootPath: string, productId: string, screenId: string, content: string): Promise<void> {
+export async function writeScreenMd(
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  content: string
+): Promise<void> {
   if (!IS_TAURI) return
   await ensureDir(join(rootPath, 'projects', productId, 'screens', screenId))
   await writeText(join(rootPath, 'projects', productId, 'screens', screenId, 'screen.md'), content)
@@ -382,19 +473,35 @@ export async function writeScreenMd(rootPath: string, productId: string, screenI
 
 /** Read a feature file (analytics.md, concept.tsx, discussion.md, handoff.md) */
 export async function readFeatureFile(
-  rootPath: string, productId: string, screenId: string, featureId: string, file: FeatureFile,
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  file: FeatureFile
 ): Promise<string> {
-  if (!IS_TAURI) return ''
+  if (!IS_TAURI) {
+    return readFeatureFileFromStorage(rootPath, productId, screenId, featureId, file)
+  }
   return (
-    await readText(join(rootPath, 'projects', productId, 'screens', screenId, 'features', featureId, file))
-  ) ?? ''
+    (await readText(
+      join(rootPath, 'projects', productId, 'screens', screenId, 'features', featureId, file)
+    )) ?? ''
+  )
 }
 
 /** Write a feature file */
 export async function writeFeatureFile(
-  rootPath: string, productId: string, screenId: string, featureId: string, file: FeatureFile, content: string,
+  rootPath: string,
+  productId: string,
+  screenId: string,
+  featureId: string,
+  file: FeatureFile,
+  content: string
 ): Promise<void> {
-  if (!IS_TAURI) return
+  if (!IS_TAURI) {
+    writeFeatureFileToStorage(rootPath, productId, screenId, featureId, file, content)
+    return
+  }
   const dir = join(rootPath, 'projects', productId, 'screens', screenId, 'features', featureId)
   await ensureDir(dir)
   await writeText(join(dir, file), content)
@@ -404,7 +511,7 @@ export async function readFeatureComments(
   rootPath: string,
   productId: string,
   screenId: string,
-  featureId: string,
+  featureId: string
 ): Promise<FeatureComment[]> {
   const raw = await readFeatureFile(rootPath, productId, screenId, featureId, 'comments.json')
   if (!raw.trim()) return []
@@ -421,7 +528,7 @@ export async function writeFeatureComments(
   productId: string,
   screenId: string,
   featureId: string,
-  comments: FeatureComment[],
+  comments: FeatureComment[]
 ): Promise<void> {
   await writeFeatureFile(
     rootPath,
@@ -429,7 +536,7 @@ export async function writeFeatureComments(
     screenId,
     featureId,
     'comments.json',
-    JSON.stringify(comments, null, 2),
+    JSON.stringify(comments, null, 2)
   )
 }
 
@@ -437,7 +544,7 @@ export async function readFeatureVersions(
   rootPath: string,
   productId: string,
   screenId: string,
-  featureId: string,
+  featureId: string
 ): Promise<FeatureVersion[]> {
   const raw = await readFeatureFile(rootPath, productId, screenId, featureId, 'versions.json')
   if (!raw.trim()) return []
@@ -454,7 +561,7 @@ export async function writeFeatureVersions(
   productId: string,
   screenId: string,
   featureId: string,
-  versions: FeatureVersion[],
+  versions: FeatureVersion[]
 ): Promise<void> {
   await writeFeatureFile(
     rootPath,
@@ -462,7 +569,7 @@ export async function writeFeatureVersions(
     screenId,
     featureId,
     'versions.json',
-    JSON.stringify(versions, null, 2),
+    JSON.stringify(versions, null, 2)
   )
 }
 
@@ -475,7 +582,11 @@ export async function readComponentMd(rootPath: string, id: string): Promise<str
 }
 
 /** Write a component spec markdown */
-export async function writeComponentMd(rootPath: string, id: string, content: string): Promise<void> {
+export async function writeComponentMd(
+  rootPath: string,
+  id: string,
+  content: string
+): Promise<void> {
   if (!IS_TAURI) return
   const dir = join(rootPath, 'library', 'components')
   await ensureDir(dir)
@@ -541,7 +652,10 @@ function defaultPreviewPropsFor(name: string): Record<string, unknown> {
       return { tabs: [{ header: 'Tab 1', content: 'Tab content' }] }
     case 'Dropdown':
       return {
-        options: [{ label: 'Option 1', value: '1' }, { label: 'Option 2', value: '2' }],
+        options: [
+          { label: 'Option 1', value: '1' },
+          { label: 'Option 2', value: '2' }
+        ],
         optionLabel: 'label',
         placeholder: 'Select'
       }
@@ -554,19 +668,21 @@ function buildCoreRuntimeManifest(components: CoreComponentSpec[]): CoreRuntimeM
   return {
     version: '1',
     generatedAt: new Date().toISOString(),
-    components: components.map(comp => ({
+    components: components.map((comp) => ({
       id: comp.id,
       name: comp.name,
       importPath: comp.primeReactImport,
       exportName: comp.primeReactExport,
       description: comp.description,
       rules: comp.rules,
-      previewDefaults: defaultPreviewPropsFor(comp.primeReactExport),
+      previewDefaults: defaultPreviewPropsFor(comp.primeReactExport)
     }))
   }
 }
 
-export function validateCoreRuntimeManifest(manifest: CoreRuntimeManifest): { ok: true } | { ok: false, errors: string[] } {
+export function validateCoreRuntimeManifest(
+  manifest: CoreRuntimeManifest
+): { ok: true } | { ok: false; errors: string[] } {
   const errors: string[] = []
   if (manifest.version !== '1') errors.push('Unsupported manifest version')
   if (!Array.isArray(manifest.components) || manifest.components.length === 0) {
@@ -580,7 +696,9 @@ export function validateCoreRuntimeManifest(manifest: CoreRuntimeManifest): { ok
   return errors.length === 0 ? { ok: true } : { ok: false, errors }
 }
 
-export async function readCoreRuntimeManifest(rootPath: string): Promise<CoreRuntimeManifest | null> {
+export async function readCoreRuntimeManifest(
+  rootPath: string
+): Promise<CoreRuntimeManifest | null> {
   if (!IS_TAURI) return null
   const raw = await readText(join(rootPath, 'core', 'runtime-manifest.json'))
   if (!raw) return null
@@ -600,14 +718,21 @@ export async function readCoreRuntimeManifest(rootPath: string): Promise<CoreRun
  *   core/index.ts     — barrel re-exports
  *   core/README.md    — component table + rules
  */
-export async function exportCoreComponents(rootPath: string, components: CoreComponentSpec[]): Promise<void> {
+export async function exportCoreComponents(
+  rootPath: string,
+  components: CoreComponentSpec[]
+): Promise<void> {
   if (!IS_TAURI) return
   const coreDir = join(rootPath, 'core')
   await ensureDir(coreDir)
 
   for (const comp of components) {
     const rulesLines = comp.rules
-      ? comp.rules.split('\n').filter(Boolean).map(l => ` * ${l}`).join('\n')
+      ? comp.rules
+          .split('\n')
+          .filter(Boolean)
+          .map((l) => ` * ${l}`)
+          .join('\n')
       : ' * (нет правил)'
 
     const content = [
@@ -621,7 +746,7 @@ export async function exportCoreComponents(rootPath: string, components: CoreCom
       ``,
       `export { ${comp.primeReactExport} } from '${comp.primeReactImport}'`,
       `export type { ${comp.primeReactExport}Props } from '${comp.primeReactImport}'`,
-      ``,
+      ``
     ].join('\n')
 
     await writeText(join(coreDir, `${comp.primeReactExport}.tsx`), content)
@@ -631,14 +756,14 @@ export async function exportCoreComponents(rootPath: string, components: CoreCom
   const indexLines = [
     `// Generated by Береста Core Library — DO NOT EDIT`,
     ``,
-    ...components.map(c => `export { ${c.primeReactExport} } from './${c.primeReactExport}'`),
-    ``,
+    ...components.map((c) => `export { ${c.primeReactExport} } from './${c.primeReactExport}'`),
+    ``
   ]
   await writeText(join(coreDir, 'index.ts'), indexLines.join('\n'))
 
   // README.md
-  const tableRows = components.map(c =>
-    `| \`${c.name}\` | \`${c.primeReactImport}\` | ${c.description} |`
+  const tableRows = components.map(
+    (c) => `| \`${c.name}\` | \`${c.primeReactImport}\` | ${c.description} |`
   )
   const readmeLines = [
     `# Core Library`,
@@ -653,12 +778,12 @@ export async function exportCoreComponents(rootPath: string, components: CoreCom
     ``,
     `## Правила использования`,
     ``,
-    ...components.flatMap(c => [
+    ...components.flatMap((c) => [
       `### ${c.name}`,
       ``,
       ...(c.rules ? c.rules.split('\n').filter(Boolean) : ['(нет правил)']),
-      ``,
-    ]),
+      ``
+    ])
   ]
   await writeText(join(coreDir, 'README.md'), readmeLines.join('\n'))
 
@@ -693,6 +818,6 @@ export function useWorkspaceFs() {
     writeComponentMd,
     readAllComponentRules,
     readCoreRuntimeManifest,
-    exportCoreComponents,
+    exportCoreComponents
   }
 }

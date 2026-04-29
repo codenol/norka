@@ -20,7 +20,7 @@ import type {
   TextStyle,
   EffectStyle,
   Color,
-  Effect,
+  Effect
 } from '../../../scene-graph'
 
 // ---------------------------------------------------------------------------
@@ -70,7 +70,11 @@ function resolveValue(
   return val
 }
 
-function getDefaultResolved(variable: Variable, col: VariableCollection, graph: SceneGraph): VariableValue | null {
+function getDefaultResolved(
+  variable: Variable,
+  col: VariableCollection,
+  graph: SceneGraph
+): VariableValue | null {
   const modes = variable.valuesByMode as Record<string, VariableValue | undefined>
   const rawValue = modes[col.defaultModeId]
   if (!rawValue) return null
@@ -231,7 +235,8 @@ function tailwindStyles(
     const shadows = style.effects.filter(
       (e) => e.visible && (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW')
     )
-    if (shadows.length > 0) boxShadow[toSlug(style.name)] = shadows.map(effectToBoxShadow).join(', ')
+    if (shadows.length > 0)
+      boxShadow[toSlug(style.name)] = shadows.map(effectToBoxShadow).join(', ')
   }
 }
 
@@ -255,7 +260,7 @@ export function exportTailwindTheme(graph: SceneGraph): string {
     jsonBlock('spacing', spacing),
     jsonBlock('fontFamily', fontFamily),
     jsonBlock('fontSize', fontSize),
-    jsonBlock('boxShadow', boxShadow),
+    jsonBlock('boxShadow', boxShadow)
   ].filter(Boolean)
 
   return [
@@ -266,7 +271,7 @@ export function exportTailwindTheme(graph: SceneGraph): string {
     ...sections,
     '    },',
     '  },',
-    '}',
+    '}'
   ].join('\n')
 }
 
@@ -274,8 +279,14 @@ export function exportTailwindTheme(graph: SceneGraph): string {
 // W3C Design Tokens JSON
 // ---------------------------------------------------------------------------
 
-interface TokenLeaf { $value: unknown; $type: string; $description?: string }
-interface TokenGroup { [key: string]: TokenLeaf | TokenGroup }
+interface TokenLeaf {
+  $value: unknown
+  $type: string
+  $description?: string
+}
+interface TokenGroup {
+  [key: string]: TokenLeaf | TokenGroup
+}
 
 function setNestedToken(root: TokenGroup, path: string[], token: TokenLeaf): void {
   let node: TokenGroup = root
@@ -288,10 +299,17 @@ function setNestedToken(root: TokenGroup, path: string[], token: TokenLeaf): voi
 }
 
 function pathOf(name: string): string[] {
-  return name.split(/[\s/\\]+/).map(toSlug).filter(Boolean)
+  return name
+    .split(/[\s/\\]+/)
+    .map(toSlug)
+    .filter(Boolean)
 }
 
-function tokenForVariable(variable: Variable, col: VariableCollection, graph: SceneGraph): TokenLeaf | null {
+function tokenForVariable(
+  variable: Variable,
+  col: VariableCollection,
+  graph: SceneGraph
+): TokenLeaf | null {
   if (variable.hiddenFromPublishing) return null
   const resolved = getDefaultResolved(variable, col, graph)
   if (resolved === null) return null
@@ -350,9 +368,9 @@ function tokensJSONStyles(graph: SceneGraph, root: TokenGroup): void {
         fontSize: `${style.fontSize}px`,
         fontWeight: style.fontWeight,
         lineHeight: style.lineHeight !== null ? `${style.lineHeight}px` : 'normal',
-        letterSpacing: `${style.letterSpacing}px`,
+        letterSpacing: `${style.letterSpacing}px`
       },
-      $type: 'typography',
+      $type: 'typography'
     }
     if (style.description) token.$description = style.description
     setNestedToken(root, ['styles', ...pathOf(style.name)], token)
@@ -371,9 +389,9 @@ function tokensJSONStyles(graph: SceneGraph, root: TokenGroup): void {
         offsetY: `${Math.round(e.offset.y)}px`,
         blur: `${Math.round(e.radius)}px`,
         spread: `${Math.round(e.spread)}px`,
-        inset: e.type === 'INNER_SHADOW',
+        inset: e.type === 'INNER_SHADOW'
       })),
-      $type: 'shadow',
+      $type: 'shadow'
     }
     if (style.description) token.$description = style.description
     setNestedToken(root, ['styles', ...pathOf(style.name)], token)

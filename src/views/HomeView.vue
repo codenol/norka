@@ -16,11 +16,11 @@ function workspaceName(path: string): string {
 }
 
 function connectedProjectCount(libId: string): number {
-  return products.value.filter(p => p.connectedLibraryIds.includes(libId)).length
+  return products.value.filter((p) => p.connectedLibraryIds.includes(libId)).length
 }
 
 function productLibraries(product: Product) {
-  return libraries.value.filter(l => product.connectedLibraryIds.includes(l.id))
+  return libraries.value.filter((l) => product.connectedLibraryIds.includes(l.id))
 }
 
 function featureCount(product: Product): number {
@@ -41,7 +41,10 @@ function pluralProjects(n: number): string {
       <icon-lucide-pencil class="size-4 text-accent" />
       <span class="text-sm font-semibold text-surface">Norka</span>
 
-      <div v-if="workspacePath" class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted">
+      <div
+        v-if="workspacePath"
+        class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted"
+      >
         <icon-lucide-folder-open class="size-3 text-accent" />
         <span class="max-w-48 truncate">{{ workspaceName(workspacePath) }}</span>
       </div>
@@ -59,7 +62,6 @@ function pluralProjects(n: number): string {
     <!-- Hub cards -->
     <div class="flex flex-1 items-center justify-center overflow-auto px-6 py-8">
       <div class="grid w-full max-w-4xl grid-cols-2 gap-5">
-
         <!-- Libraries card -->
         <RouterLink
           to="/libraries"
@@ -78,26 +80,28 @@ function pluralProjects(n: number): string {
 
           <!-- Library list -->
           <div class="flex flex-col gap-1.5">
-            <div
-              v-for="lib in libraries.slice(0, 4)"
-              :key="lib.id"
-              class="flex items-center gap-2"
-            >
-              <div class="size-1.5 shrink-0 rounded-full" :class="LIBRARY_TYPE_COLORS[lib.type].text.replace('text-', 'bg-')" />
+            <div v-for="lib in libraries.slice(0, 4)" :key="lib.id" class="flex items-center gap-2">
+              <div
+                class="size-1.5 shrink-0 rounded-full"
+                :class="LIBRARY_TYPE_COLORS[lib.type].text.replace('text-', 'bg-')"
+              />
               <span class="flex-1 truncate text-xs text-surface">{{ lib.name }}</span>
               <span
                 class="rounded px-1.5 py-0.5 text-[10px]"
                 :class="[LIBRARY_TYPE_COLORS[lib.type].bg, LIBRARY_TYPE_COLORS[lib.type].text]"
-              >{{ LIBRARY_TYPE_LABELS[lib.type] }}</span>
-              <span class="text-[11px] text-muted">{{ pluralProjects(connectedProjectCount(lib.id)) }}</span>
+                >{{ LIBRARY_TYPE_LABELS[lib.type] }}</span
+              >
+              <span class="text-[11px] text-muted">{{
+                pluralProjects(connectedProjectCount(lib.id))
+              }}</span>
             </div>
-            <div v-if="libraries.length === 0" class="text-xs text-muted/50">
-              Нет библиотек
-            </div>
+            <div v-if="libraries.length === 0" class="text-xs text-muted/50">Нет библиотек</div>
           </div>
 
           <!-- Footer -->
-          <div class="mt-auto flex items-center gap-1 text-xs text-accent transition-colors group-hover:text-accent/80">
+          <div
+            class="mt-auto flex items-center gap-1 text-xs text-accent transition-colors group-hover:text-accent/80"
+          >
             <span>Открыть библиотеки</span>
             <icon-lucide-arrow-right class="size-3.5" />
           </div>
@@ -115,7 +119,11 @@ function pluralProjects(n: number): string {
             </div>
             <div>
               <p class="text-sm font-semibold text-surface">Проекты</p>
-              <p class="text-[11px] text-muted">{{ products.length }} продукт{{ products.length === 1 ? '' : products.length < 5 ? 'а' : 'ов' }}</p>
+              <p class="text-[11px] text-muted">
+                {{ products.length }} продукт{{
+                  products.length === 1 ? '' : products.length < 5 ? 'а' : 'ов'
+                }}
+              </p>
             </div>
           </div>
 
@@ -128,7 +136,9 @@ function pluralProjects(n: number): string {
             >
               <div class="flex items-center gap-2">
                 <icon-lucide-folder class="size-3.5 shrink-0 text-accent/60" />
-                <span class="flex-1 truncate text-xs font-medium text-surface">{{ product.title }}</span>
+                <span class="flex-1 truncate text-xs font-medium text-surface">{{
+                  product.title
+                }}</span>
                 <span class="text-[11px] text-muted">{{ featureCount(product) }} фич</span>
               </div>
               <!-- Library badges -->
@@ -138,24 +148,24 @@ function pluralProjects(n: number): string {
                   :key="lib.id"
                   class="rounded px-1.5 py-0.5 text-[10px]"
                   :class="[LIBRARY_TYPE_COLORS[lib.type].bg, LIBRARY_TYPE_COLORS[lib.type].text]"
-                >{{ lib.name }}</span>
+                  >{{ lib.name }}</span
+                >
                 <span v-if="productLibraries(product).length > 3" class="text-[10px] text-muted">
                   +{{ productLibraries(product).length - 3 }}
                 </span>
               </div>
             </div>
-            <div v-if="products.length === 0" class="text-xs text-muted/50">
-              Нет продуктов
-            </div>
+            <div v-if="products.length === 0" class="text-xs text-muted/50">Нет продуктов</div>
           </div>
 
           <!-- Footer -->
-          <div class="mt-auto flex items-center gap-1 text-xs text-accent transition-colors group-hover:text-accent/80">
+          <div
+            class="mt-auto flex items-center gap-1 text-xs text-accent transition-colors group-hover:text-accent/80"
+          >
             <span>Открыть проекты</span>
             <icon-lucide-arrow-right class="size-3.5" />
           </div>
         </RouterLink>
-
       </div>
     </div>
   </div>

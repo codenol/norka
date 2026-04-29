@@ -83,7 +83,11 @@ function update(index: number, item: ArrayItemType) {
   for (const n of targetNodes()) {
     const arr = [...n[props.propKey]] as ArrayItemType[]
     arr[index] = item
-    editor.updateNodeWithUndo(n.id, { [props.propKey]: arr } as Partial<SceneNode>, `Change ${props.propKey}`)
+    editor.updateNodeWithUndo(
+      n.id,
+      { [props.propKey]: arr } as Partial<SceneNode>,
+      `Change ${props.propKey}`
+    )
   }
 }
 
@@ -92,7 +96,11 @@ function patch(index: number, changes: Record<string, unknown>) {
   for (const n of targetNodes()) {
     const arr = [...n[props.propKey]] as ArrayItemType[]
     arr[index] = { ...arr[index], ...changes } as ArrayItemType
-    editor.updateNodeWithUndo(n.id, { [props.propKey]: arr } as Partial<SceneNode>, `Change ${props.propKey}`)
+    editor.updateNodeWithUndo(
+      n.id,
+      { [props.propKey]: arr } as Partial<SceneNode>,
+      `Change ${props.propKey}`
+    )
   }
 }
 

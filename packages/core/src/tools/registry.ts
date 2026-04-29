@@ -83,6 +83,16 @@ import {
   batchUpdate
 } from './structure'
 import {
+  listStyles,
+  getStyle,
+  createFillStyle,
+  createTextStyle,
+  createEffectStyle,
+  applyStyle,
+  deleteStyle,
+  findStyles
+} from './styles'
+import {
   listVariables,
   listCollections,
   getVariable,
@@ -111,16 +121,6 @@ import {
   exportSvg,
   exportImage
 } from './vector'
-import {
-  listStyles,
-  getStyle,
-  createFillStyle,
-  createTextStyle,
-  createEffectStyle,
-  applyStyle,
-  deleteStyle,
-  findStyles
-} from './styles'
 
 import type { ToolDef } from './schema'
 

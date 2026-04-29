@@ -70,7 +70,7 @@ async function createSnapshot(name: string, editor: EditorLike): Promise<void> {
       timestamp: Date.now(),
       buffer,
       pageCount: editor.graph.getPages().length,
-      nodeCount: editor.graph.nodes.size,
+      nodeCount: editor.graph.nodes.size
     }
     _snapshots.value = [..._snapshots.value, snap]
   } catch (e) {
@@ -146,7 +146,7 @@ const store: SnapshotStore = {
   restoreSnapshot,
   deleteSnapshot,
   renameSnapshot,
-  clearError,
+  clearError
 }
 
 export function useSnapshotStore(): SnapshotStore {

@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { TreeRoot, TreeItem, ContextMenuRoot, ContextMenuTrigger, ContextMenuPortal } from 'reka-ui'
 
-import {
-  LayerTreeRoot,
-  LayerTreeItem,
-  useI18n,
-  useInlineRename,
-  useLayerDrag
-} from '@norka/vue'
+import { LayerTreeRoot, LayerTreeItem, useI18n, useInlineRename, useLayerDrag } from '@norka/vue'
 import { useEditorStore } from '@/stores/editor'
 import { nodeIcon, COMPONENT_TYPES } from '@/utils/layer-icons'
 import CanvasMenu from './CanvasMenu.vue'

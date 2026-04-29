@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, toRef } from 'vue'
+import type { Ref } from 'vue'
 import { useEventListener } from '@vueuse/core'
 
 import { provideScrubInput } from './context'
@@ -31,7 +32,7 @@ const emit = defineEmits<{
 
 const editing = ref(false)
 const scrubbing = ref(false)
-const inputRef = ref<HTMLInputElement | null>(null)
+const inputRef = ref(null) as Ref<HTMLInputElement | null>
 
 const isMixed = computed(() => typeof props.modelValue === 'symbol')
 const numericValue = computed(() => (isMixed.value ? 0 : (props.modelValue as number)))

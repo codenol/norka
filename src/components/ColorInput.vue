@@ -26,7 +26,14 @@ const emit = defineEmits<{ update: [color: Color] }>()
     @update="emit('update', $event)"
   >
     <template
-      #default="{ color: slotColor, editable: isEditable, hex, updateFromHex, updateColor, okhcl: okhclControls }"
+      #default="{
+        color: slotColor,
+        editable: isEditable,
+        hex,
+        updateFromHex,
+        updateColor,
+        okhcl: okhclControls
+      }"
     >
       <div class="flex items-center gap-1.5">
         <ColorPicker :color="slotColor" :okhcl="okhclControls" @update="updateColor($event)" />

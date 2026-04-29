@@ -22,7 +22,7 @@ import { shallowRef } from 'vue'
 export interface GitHubConfig {
   token: string
   owner: string // GitHub username
-  repo: string  // repository name
+  repo: string // repository name
 }
 
 // ---------------------------------------------------------------------------
@@ -68,11 +68,7 @@ const _publishedUrls = new Map<string, string>()
 const GH_API = 'https://api.github.com'
 const DEFAULT_REPO = 'norka-libraries'
 
-async function ghFetch<T>(
-  path: string,
-  token: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function ghFetch<T>(path: string, token: string, options: RequestInit = {}): Promise<T> {
   const resp = await fetch(`${GH_API}${path}`, {
     ...options,
     headers: {
@@ -80,15 +76,17 @@ async function ghFetch<T>(
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers as Record<string, string>),
-    },
+      ...(options.headers as Record<string, string>)
+    }
   })
   if (!resp.ok) {
     let msg = `GitHub API ${resp.status}`
     try {
       const data = (await resp.json()) as { message?: string }
       if (data.message) msg = data.message
-    } catch (parseErr) { console.warn('[library-github] Could not parse error body:', parseErr) }
+    } catch (parseErr) {
+      console.warn('[library-github] Could not parse error body:', parseErr)
+    }
     throw new Error(msg)
   }
   return resp.json() as Promise<T>
@@ -113,8 +111,8 @@ async function ensureRepo(token: string, owner: string, repo: string): Promise<v
       name: repo,
       description: 'Nork — shared design libraries',
       private: false,
-      auto_init: true,
-    }),
+      auto_init: true
+    })
   })
   // Wait briefly for GitHub to initialise the default branch
   await new Promise<void>((r) => setTimeout(r, 1500))
@@ -191,14 +189,18 @@ export async function publishLibrary(
 
     const body: Record<string, string> = {
       message: `Update library: ${name}`,
-      content: bufToBase64(buf),
+      content: bufToBase64(buf)
     }
     if (sha) body['sha'] = sha
 
-    await ghFetch<GhFileResponse>(`/repos/${cfg.owner}/${cfg.repo}/contents/${filename}`, cfg.token, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    })
+    await ghFetch<GhFileResponse>(
+      `/repos/${cfg.owner}/${cfg.repo}/contents/${filename}`,
+      cfg.token,
+      {
+        method: 'PUT',
+        body: JSON.stringify(body)
+      }
+    )
 
     const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${filename}`
     _publishedUrls.set(libraryId, rawUrl)
@@ -255,7 +257,7 @@ const store: LibraryGitHubStore = {
   publishLibrary,
   getPublishedUrl,
   disconnectGitHub,
-  clearError,
+  clearError
 }
 
 export function useLibraryGitHubStore(): LibraryGitHubStore {

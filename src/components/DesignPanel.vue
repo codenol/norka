@@ -63,7 +63,8 @@ const manualCategories: { key: ManualCategory; label: string }[] = [
 
 function classifyComponent(name: string): Exclude<ManualCategory, 'all'> {
   const lower = name.toLowerCase()
-  if (/(input|dropdown|checkbox|radio|select|password|textarea|slider|calendar)/.test(lower)) return 'form'
+  if (/(input|dropdown|checkbox|radio|select|password|textarea|slider|calendar)/.test(lower))
+    return 'form'
   if (/(table|chart|list|tree|grid|menu|tab|accordion)/.test(lower)) return 'data'
   if (/(dialog|toast|badge|tag|message|alert|progress|skeleton)/.test(lower)) return 'feedback'
   return 'layout'
@@ -234,7 +235,10 @@ const { panels } = useI18n()
     </div>
 
     <PageSection />
-    <VariablesSection @open-dialog="variablesOpen = true" @open-token-export="tokenExportOpen = true" />
+    <VariablesSection
+      @open-dialog="variablesOpen = true"
+      @open-token-export="tokenExportOpen = true"
+    />
     <StylesSection @open-dialog="stylesOpen = true" />
     <LibrarySection @open-panel="libraryPanelOpen = true" @open-dialog="libraryDialogOpen = true" />
     <LintSection @open-panel="activeTab = 'lint'" />

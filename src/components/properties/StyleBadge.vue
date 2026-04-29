@@ -31,10 +31,7 @@ const style = useSceneComputed(() => {
 </script>
 
 <template>
-  <div
-    v-if="style"
-    class="flex items-center gap-1.5 px-3 py-1"
-  >
+  <div v-if="style" class="flex items-center gap-1.5 px-3 py-1">
     <icon-lucide-bookmark class="size-3 shrink-0 text-accent" />
     <button
       class="flex-1 cursor-pointer truncate border-none bg-transparent text-left text-[11px] text-accent hover:underline"
@@ -45,7 +42,13 @@ const style = useSceneComputed(() => {
     <Tip :label="dialogs.detachStyle">
       <button
         class="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
-        @click="styleType === 'FILL' ? editor.graph.detachFillStyle(selectedNode!.id) : styleType === 'TEXT' ? editor.graph.detachTextStyle(selectedNode!.id) : editor.graph.detachEffectStyle(selectedNode!.id)"
+        @click="
+          styleType === 'FILL'
+            ? editor.graph.detachFillStyle(selectedNode!.id)
+            : styleType === 'TEXT'
+              ? editor.graph.detachTextStyle(selectedNode!.id)
+              : editor.graph.detachEffectStyle(selectedNode!.id)
+        "
       >
         <icon-lucide-unlink class="size-3" />
       </button>

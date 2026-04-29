@@ -15,9 +15,15 @@ import { ACP_AGENTS } from '@norka/core'
 const { providerID, providerDef, modelID, customModelID } = useAIChat()
 const { dialogs } = useI18n()
 
-const { status } = defineProps<{
+const props = withDefaults(
+  defineProps<{
   status: 'ready' | 'submitted' | 'streaming' | 'error'
-}>()
+  isThinking?: boolean
+  }>(),
+  {
+    isThinking: false
+  }
+)
 
 const emit = defineEmits<{
   submit: [text: string]
@@ -26,7 +32,10 @@ const emit = defineEmits<{
 
 const input = ref('')
 
-const isStreaming = computed(() => status === 'streaming' || status === 'submitted')
+const isStreaming = computed(
+  () =>
+    props.isThinking || props.status === 'streaming' || props.status === 'submitted'
+)
 const isACPProvider = computed(() => providerID.value.startsWith('acp:'))
 const acpAgentName = computed(() => {
   const agentId = providerID.value.replace('acp:', '')
@@ -95,38 +104,28 @@ function handleSubmit(e: Event) {
           @copy.stop
           @cut.stop
         />
-        <Tip v-if="isStreaming" :label="dialogs.stopGenerating">
+        <Tip :label="isStreaming ? dialogs.stopGenerating : dialogs.sendMessage">
           <button
-            type="button"
-            data-test-id="chat-stop-button"
-            :class="
-              useButtonUI({
-                tone: 'ghost',
-                shape: 'rounded',
-                size: 'sm',
-                ui: { base: 'shrink-0 border border-border px-2 py-1.5' }
-              }).base
-            "
-            @click="emit('stop')"
-          >
-            <icon-lucide-square class="size-3" />
-          </button>
-        </Tip>
-        <Tip v-else :label="dialogs.sendMessage">
-          <button
-            type="submit"
+            :type="isStreaming ? 'button' : 'submit'"
             data-test-id="chat-send-button"
             :class="
               useButtonUI({
                 tone: 'accent',
                 shape: 'rounded',
                 size: 'sm',
-                ui: { base: 'shrink-0 px-2.5 py-1.5 font-medium' }
+                ui: {
+                  base: isStreaming
+                    ? 'shrink-0 gap-1.5 border border-danger/40 bg-danger/10 px-2.5 py-1.5 text-danger hover:bg-danger/15'
+                    : 'shrink-0 px-2.5 py-1.5 font-medium'
+                }
               }).base
             "
-            :disabled="!input.trim()"
+            :disabled="isStreaming ? false : !input.trim()"
+            @click="isStreaming ? emit('stop') : undefined"
           >
-            <icon-lucide-send class="size-3" />
+            <icon-lucide-square v-if="isStreaming" class="size-3" />
+            <span v-if="isStreaming" class="text-xs font-medium">Стоп</span>
+            <icon-lucide-send v-else class="size-3" />
           </button>
         </Tip>
       </form>

@@ -30,10 +30,13 @@ onUnmounted(() => {
 
 // ── Preset buttons ────────────────────────────────────────────────────────────
 
-const PRESETS: Array<{ value: LintPreset; labelKey: 'lintPresetRecommended' | 'lintPresetStrict' | 'lintPresetAccessibility' }> = [
+const PRESETS: Array<{
+  value: LintPreset
+  labelKey: 'lintPresetRecommended' | 'lintPresetStrict' | 'lintPresetAccessibility'
+}> = [
   { value: 'recommended', labelKey: 'lintPresetRecommended' },
   { value: 'strict', labelKey: 'lintPresetStrict' },
-  { value: 'accessibility', labelKey: 'lintPresetAccessibility' },
+  { value: 'accessibility', labelKey: 'lintPresetAccessibility' }
 ]
 
 function selectPreset(preset: LintPreset) {
@@ -63,7 +66,10 @@ const infos = computed<LintMessage[]>(() =>
 )
 
 const totalCount = computed(
-  () => (linter.results.value?.errorCount ?? 0) + (linter.results.value?.warningCount ?? 0) + (linter.results.value?.infoCount ?? 0)
+  () =>
+    (linter.results.value?.errorCount ?? 0) +
+    (linter.results.value?.warningCount ?? 0) +
+    (linter.results.value?.infoCount ?? 0)
 )
 
 // ── Node selection ────────────────────────────────────────────────────────────
@@ -159,7 +165,9 @@ function selectNode(nodeId: string) {
     <!-- Issue list -->
     <template v-else-if="linter.results.value">
       <!-- Summary bar -->
-      <div class="flex shrink-0 items-center gap-3 border-b border-border/50 px-3 py-1.5 text-[10px]">
+      <div
+        class="flex shrink-0 items-center gap-3 border-b border-border/50 px-3 py-1.5 text-[10px]"
+      >
         <span v-if="errors.length > 0" class="flex items-center gap-1 text-error">
           <icon-lucide-circle-x class="size-3" />
           {{ errors.length }} {{ panels.lintErrors }}
@@ -176,7 +184,9 @@ function selectNode(nodeId: string) {
 
       <!-- Errors -->
       <template v-if="errors.length > 0">
-        <div class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1">
+        <div
+          class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1"
+        >
           <icon-lucide-circle-x class="size-3 shrink-0 text-error" />
           <span class="text-[10px] font-semibold uppercase tracking-wider text-error">
             {{ panels.lintErrors }} ({{ errors.length }})
@@ -198,7 +208,9 @@ function selectNode(nodeId: string) {
 
       <!-- Warnings -->
       <template v-if="warnings.length > 0">
-        <div class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1">
+        <div
+          class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1"
+        >
           <icon-lucide-triangle-alert class="size-3 shrink-0 text-warning" />
           <span class="text-[10px] font-semibold uppercase tracking-wider text-warning">
             {{ panels.lintWarnings }} ({{ warnings.length }})
@@ -220,7 +232,9 @@ function selectNode(nodeId: string) {
 
       <!-- Infos -->
       <template v-if="infos.length > 0">
-        <div class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1">
+        <div
+          class="sticky top-0 z-10 flex items-center gap-1.5 border-b border-border/50 bg-panel px-3 py-1"
+        >
           <icon-lucide-info class="size-3 shrink-0 text-muted" />
           <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
             {{ panels.lintInfos }} ({{ infos.length }})

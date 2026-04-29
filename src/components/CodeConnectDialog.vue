@@ -6,7 +6,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from 'reka-ui'
 
 import { useI18n } from '@norka/vue'
@@ -29,11 +29,11 @@ const libStore = useLibraryStore()
 interface EntryDraft {
   codeComponent: string
   importPath: string
-  staticPropsRaw: string   // JSON string
+  staticPropsRaw: string // JSON string
   staticPropsError: boolean
   rulesOpen: boolean
   ruleUsage: string
-  ruleConstraints: string  // newline-separated
+  ruleConstraints: string // newline-separated
   ruleExamples: string
   ruleAntiPatterns: string
 }
@@ -53,7 +53,7 @@ function getDraft(entry: CodeConnectEntry): EntryDraft {
       ruleUsage: entry.rules?.usage ?? '',
       ruleConstraints: entry.rules?.constraints.join('\n') ?? '',
       ruleExamples: entry.rules?.examples.join('\n') ?? '',
-      ruleAntiPatterns: entry.rules?.antiPatterns.join('\n') ?? '',
+      ruleAntiPatterns: entry.rules?.antiPatterns.join('\n') ?? ''
     }
   }
   return drafts.value[entry.componentNodeId]
@@ -65,7 +65,7 @@ const libraryGroups = computed(() => {
   const groups: Array<{ libraryId: string; name: string; entries: CodeConnectEntry[] }> = []
   const mapEntries = Object.values(codeConnect.map.value)
 
-  for (const manifest of libStore.manifests.value) {
+  for (const manifest of libStore.manifests.value ?? []) {
     const entries = mapEntries.filter((e) => e.libraryId === manifest.id)
     if (entries.length === 0) continue
     groups.push({ libraryId: manifest.id, name: manifest.name, entries })
@@ -105,7 +105,10 @@ function saveRules(entry: CodeConnectEntry): void {
   const draft = getDraft(entry)
 
   const splitLines = (s: string): string[] =>
-    s.split('\n').map((l) => l.trim()).filter(Boolean)
+    s
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
 
   const rule: ComponentRule = {
     usage: draft.ruleUsage.trim(),
@@ -113,7 +116,7 @@ function saveRules(entry: CodeConnectEntry): void {
     examples: splitLines(draft.ruleExamples),
     antiPatterns: splitLines(draft.ruleAntiPatterns),
     updatedAt: new Date().toISOString(),
-    updatedBy: 'designer',
+    updatedBy: 'designer'
   }
 
   codeConnect.upsertEntry({ ...entry, rules: rule })
@@ -140,7 +143,6 @@ const duplicateNames = computed(() => {
     <DialogPortal>
       <DialogOverlay :class="cls.overlay" />
       <DialogContent :class="cls.content">
-
         <!-- Header -->
         <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
           <DialogTitle class="text-sm font-semibold text-surface">
@@ -155,7 +157,6 @@ const duplicateNames = computed(() => {
 
         <!-- Body -->
         <div class="min-h-0 flex-1 overflow-y-auto">
-
           <!-- Empty state -->
           <div
             v-if="libraryGroups.length === 0"
@@ -180,11 +181,21 @@ const duplicateNames = computed(() => {
               </div>
 
               <!-- Column headers -->
-              <div class="grid grid-cols-[1fr_1fr_1fr_80px] gap-2 border-b border-border/50 px-4 py-1.5">
-                <span class="text-[10px] font-medium text-muted">{{ dialogs.codeConnectDesignName }}</span>
-                <span class="text-[10px] font-medium text-muted">{{ dialogs.codeConnectCodeComponent }}</span>
-                <span class="text-[10px] font-medium text-muted">{{ dialogs.codeConnectImportPath }}</span>
-                <span class="text-[10px] font-medium text-muted">{{ dialogs.codeConnectProps }}</span>
+              <div
+                class="grid grid-cols-[1fr_1fr_1fr_80px] gap-2 border-b border-border/50 px-4 py-1.5"
+              >
+                <span class="text-[10px] font-medium text-muted">{{
+                  dialogs.codeConnectDesignName
+                }}</span>
+                <span class="text-[10px] font-medium text-muted">{{
+                  dialogs.codeConnectCodeComponent
+                }}</span>
+                <span class="text-[10px] font-medium text-muted">{{
+                  dialogs.codeConnectImportPath
+                }}</span>
+                <span class="text-[10px] font-medium text-muted">{{
+                  dialogs.codeConnectProps
+                }}</span>
               </div>
 
               <!-- Entries -->
@@ -194,7 +205,9 @@ const duplicateNames = computed(() => {
                 class="border-b border-border/30 last:border-0"
               >
                 <!-- Main row -->
-                <div class="grid grid-cols-[1fr_1fr_1fr_80px] items-center gap-2 px-4 py-2 hover:bg-hover/30">
+                <div
+                  class="grid grid-cols-[1fr_1fr_1fr_80px] items-center gap-2 px-4 py-2 hover:bg-hover/30"
+                >
                   <!-- Design name (read-only) -->
                   <div class="flex min-w-0 items-center gap-1">
                     <span class="truncate text-xs text-surface">{{ entry.designName }}</span>
@@ -207,15 +220,25 @@ const duplicateNames = computed(() => {
                       type="text"
                       placeholder="Button"
                       class="w-full min-w-0 rounded border border-border bg-panel px-1.5 py-1 text-xs text-surface placeholder-muted outline-none focus:border-accent"
-                      :class="{ 'border-warning': duplicateNames.has(getDraft(entry).codeComponent) && getDraft(entry).codeComponent }"
-                      @input="getDraft(entry).codeComponent = ($event.target as HTMLInputElement).value"
+                      :class="{
+                        'border-warning':
+                          duplicateNames.has(getDraft(entry).codeComponent) &&
+                          getDraft(entry).codeComponent
+                      }"
+                      @input="
+                        getDraft(entry).codeComponent = ($event.target as HTMLInputElement).value
+                      "
                       @blur="saveField(entry, 'codeComponent')"
                     />
                     <span
-                      v-if="duplicateNames.has(getDraft(entry).codeComponent) && getDraft(entry).codeComponent"
+                      v-if="
+                        duplicateNames.has(getDraft(entry).codeComponent) &&
+                        getDraft(entry).codeComponent
+                      "
                       class="shrink-0 text-[10px] text-warning"
                       title="Duplicate component name"
-                    >⚠</span>
+                      >⚠</span
+                    >
                   </div>
 
                   <!-- Import path -->
@@ -236,7 +259,9 @@ const duplicateNames = computed(() => {
                       placeholder="{}"
                       class="min-w-0 flex-1 rounded border bg-panel px-1.5 py-1 font-mono text-[10px] text-surface placeholder-muted outline-none focus:border-accent"
                       :class="getDraft(entry).staticPropsError ? 'border-error' : 'border-border'"
-                      @input="getDraft(entry).staticPropsRaw = ($event.target as HTMLInputElement).value"
+                      @input="
+                        getDraft(entry).staticPropsRaw = ($event.target as HTMLInputElement).value
+                      "
                       @blur="saveProps(entry)"
                     />
                   </div>
@@ -270,7 +295,9 @@ const duplicateNames = computed(() => {
                     class="mt-2 flex flex-col gap-2 rounded border border-border bg-hover/20 p-3"
                   >
                     <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-medium text-muted">{{ dialogs.ruleUsage }}</label>
+                      <label class="text-[10px] font-medium text-muted">{{
+                        dialogs.ruleUsage
+                      }}</label>
                       <textarea
                         v-model="getDraft(entry).ruleUsage"
                         rows="2"
@@ -279,7 +306,9 @@ const duplicateNames = computed(() => {
                       />
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-medium text-muted">{{ dialogs.ruleConstraints }}</label>
+                      <label class="text-[10px] font-medium text-muted">{{
+                        dialogs.ruleConstraints
+                      }}</label>
                       <textarea
                         v-model="getDraft(entry).ruleConstraints"
                         rows="2"
@@ -288,7 +317,9 @@ const duplicateNames = computed(() => {
                       />
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-medium text-muted">{{ dialogs.ruleExamples }}</label>
+                      <label class="text-[10px] font-medium text-muted">{{
+                        dialogs.ruleExamples
+                      }}</label>
                       <textarea
                         v-model="getDraft(entry).ruleExamples"
                         rows="2"
@@ -297,7 +328,9 @@ const duplicateNames = computed(() => {
                       />
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="text-[10px] font-medium text-muted">{{ dialogs.ruleAntiPatterns }}</label>
+                      <label class="text-[10px] font-medium text-muted">{{
+                        dialogs.ruleAntiPatterns
+                      }}</label>
                       <textarea
                         v-model="getDraft(entry).ruleAntiPatterns"
                         rows="2"
@@ -317,7 +350,6 @@ const duplicateNames = computed(() => {
             </div>
           </template>
         </div>
-
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

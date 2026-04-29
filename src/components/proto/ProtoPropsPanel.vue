@@ -34,9 +34,23 @@ const fields = computed<PropField[]>(() => {
     type: def?.propSchema?.[key]?.type ?? getFieldType(value),
     value,
     options: def?.propSchema?.[key]?.options,
-    defaultValue: def?.previewProps?.[key],
+    defaultValue: def?.previewProps?.[key]
   }))
 })
+
+const statePresets = computed<string[]>(() => {
+  const node = selectedNode.value
+  if (!node) return []
+  const def = getPrimePreviewDef(node.componentName)
+  return Object.keys(def?.statePresets ?? {})
+})
+
+const missingNodes = computed(() =>
+  store.nodes.filter(
+    (node) =>
+      typeof node.props.__missingComponent === 'boolean' && node.props.__missingComponent === true
+  )
+)
 
 function onStringChange(key: string, e: Event) {
   const val = (e.target as HTMLInputElement).value
@@ -62,8 +76,9 @@ function onJsonChange(key: string, e: Event) {
   try {
     const parsed = JSON.parse(text)
     store.setProp(node.id, key, parsed)
-  } catch {
+  } catch (error) {
     // Keep input editable until JSON is valid.
+    console.warn('Invalid JSON prop value', error)
   }
 }
 
@@ -73,10 +88,32 @@ function resetField(field: PropField) {
   if (field.defaultValue === undefined) return
   store.setProp(node.id, field.key, field.defaultValue)
 }
+
+function applyPreset(state: string) {
+  const node = selectedNode.value
+  if (!node) return
+  store.applyStatePreset(node.id, state)
+}
+
+function onAssumptionToggle(value: boolean) {
+  const node = selectedNode.value
+  if (!node) return
+  store.setAssumption(node.id, value, node.assumptionLabel ?? 'Assumption')
+}
+
+function onAssumptionLabelChange(e: Event) {
+  const node = selectedNode.value
+  if (!node) return
+  const value = (e.target as HTMLInputElement).value
+  store.setAssumption(node.id, node.source === 'assumed', value)
+}
 </script>
 
 <template>
-  <div class="flex h-full w-56 shrink-0 flex-col border-l border-border/60 bg-panel/80" style="contain: paint layout style">
+  <div
+    class="flex h-full w-56 shrink-0 flex-col border-l border-border/60 bg-panel/80"
+    style="contain: paint layout style"
+  >
     <div class="flex shrink-0 items-center border-b border-border/60 px-3 py-2">
       <span class="text-[11px] font-medium text-surface">Свойства</span>
     </div>
@@ -93,6 +130,37 @@ function resetField(field: PropField) {
             <icon-lucide-component class="size-3 text-accent" />
           </div>
           <span class="text-[12px] font-medium text-surface">{{ selectedNode.componentName }}</span>
+        </div>
+        <div class="mt-2 flex items-center justify-between rounded border border-border/60 px-2 py-1">
+          <span class="text-[10px] uppercase tracking-wider text-muted">Assumed</span>
+          <button
+            class="relative inline-flex h-4 w-8 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none"
+            :class="selectedNode.source === 'assumed' ? 'bg-pink-500' : 'bg-border'"
+            role="switch"
+            :aria-checked="selectedNode.source === 'assumed'"
+            @click="onAssumptionToggle(selectedNode.source !== 'assumed')"
+          >
+            <span
+              class="pointer-events-none inline-block size-3 rounded-full bg-white shadow-lg transition-transform"
+              :class="selectedNode.source === 'assumed' ? 'translate-x-4' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+        <input
+          v-if="selectedNode.source === 'assumed'"
+          :value="selectedNode.assumptionLabel ?? 'Assumption'"
+          class="mt-2 w-full rounded border border-pink-500/50 bg-pink-500/10 px-2 py-1 text-[11px] text-pink-200 outline-none focus:border-pink-400"
+          @input="onAssumptionLabelChange"
+        />
+        <div v-if="statePresets.length > 0" class="mt-2 flex flex-wrap gap-1">
+          <button
+            v-for="state in statePresets"
+            :key="state"
+            class="rounded border border-border/60 px-1.5 py-0.5 text-[10px] text-muted hover:border-accent/50 hover:text-surface"
+            @click="applyPreset(state)"
+          >
+            {{ state }}
+          </button>
         </div>
       </div>
 
@@ -153,13 +221,10 @@ function resetField(field: PropField) {
               v-else-if="field.type === 'enum'"
               :value="field.value as string"
               class="w-full rounded border border-border bg-canvas px-2 py-1 text-[11px] text-surface outline-none focus:border-accent/60"
+              :disabled="field.key === 'layoutDirection'"
               @change="onStringChange(field.key, $event)"
             >
-              <option
-                v-for="opt in field.options ?? []"
-                :key="opt"
-                :value="opt"
-              >
+              <option v-for="opt in field.options ?? []" :key="opt" :value="opt">
                 {{ opt }}
               </option>
             </select>
@@ -177,6 +242,20 @@ function resetField(field: PropField) {
 
       <!-- Delete node button -->
       <div class="shrink-0 border-t border-border/60 px-3 py-2">
+        <div v-if="missingNodes.length > 0" class="mb-2 rounded border border-amber-500/50 bg-amber-500/10 p-2">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-amber-200">
+            Нужно разработать
+          </p>
+          <button
+            v-for="node in missingNodes"
+            :key="node.id"
+            class="mt-1 block w-full rounded border border-border/60 px-2 py-1 text-left text-[10px] text-surface hover:bg-hover"
+            @click="store.selectNode(node.id)"
+          >
+            {{ node.props.__suggestedComponent ?? node.componentName }} —
+            {{ node.props.__missingReason ?? 'нет runtime маппинга' }}
+          </button>
+        </div>
         <button
           class="flex w-full items-center justify-center gap-1.5 rounded border border-red-500/30 py-1 text-[11px] text-red-400 transition-colors hover:bg-red-500/10"
           @click="store.removeNode(selectedNode.id)"

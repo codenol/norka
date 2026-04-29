@@ -115,6 +115,65 @@ export const AUTO_LAYOUT_BREAK_THRESHOLD = 8
 export const HANDLE_HIT_RADIUS = 6
 
 export const ACP_PERMISSION_TIMEOUT_MS = 60_000
+export const ASSUMPTION_HIGHLIGHT_HEX = '#FF00A8'
+
+const ANALYTICS_BRIEF_SECTIONS = [
+  'Задача',
+  'Пользователь',
+  'Сценарии',
+  'Состояния',
+  'Ограничения',
+  'Метрики',
+  'Открытые вопросы'
+].join(', ')
+
+/** Первое пользовательское сообщение при запуске guided-сессии в режиме Аналитика */
+export interface AnalyticsPromptContext {
+  featureTitle: string
+  screenTitle?: string
+  projectTitle?: string
+  screenDescription?: string
+  projectDescription?: string
+}
+
+/** Первое пользовательское сообщение при запуске guided-сессии в режиме Аналитика */
+export function buildAnalyticsFeatureAnalysisPrompt(context: AnalyticsPromptContext): string {
+  const featureTitle = context.featureTitle.trim() || 'Без названия'
+  const screenTitle = context.screenTitle?.trim() || 'Без названия'
+  const projectTitle = context.projectTitle?.trim() || 'Без названия'
+  const screenDescription = context.screenDescription?.trim()
+  const projectDescription = context.projectDescription?.trim()
+  const scopeLines = [
+    `Проект: «${projectTitle}».`,
+    projectDescription ? `Описание проекта: ${projectDescription}` : null,
+    `Страница: «${screenTitle}».`,
+    screenDescription ? `Описание страницы: ${screenDescription}` : null,
+    `Фича: «${featureTitle}».`
+  ].filter(Boolean)
+
+  return [
+    ...scopeLines,
+    'Мы пошагово заполним бриф analytics.md для правой панели редактора.',
+    `Разделы: ${ANALYTICS_BRIEF_SECTIONS}.`,
+    'Веди диалог последовательно по разделам справа и не перескакивай к следующему разделу, пока текущий не прояснён.',
+    'Формат каждого ответа: короткое подтверждение уже собранного факта, затем ровно один следующий конкретный вопрос.',
+    'Если пользователь пишет «предложи сам» или аналогично, предложи только один рабочий вариант В РАМКАХ текущего раздела и не меняй раздел.',
+    'Не переноси ответ в другой раздел только из-за того, что формулировка пользователя короткая или неполная.',
+    'Если данных мало, сначала задай один вопрос, который поможет сформулировать раздел «Задача».',
+    'Не пиши код, не предлагай решения интерфейса и не делай длинных сводок до завершения интервью.'
+  ].join('\n')
+}
+
+/** Сообщение для продолжения guided-сессии, если история analytics уже существует */
+export function buildAnalyticsContinuePrompt(): string {
+  return [
+    'Продолжим заполнять analytics.md по текущей истории.',
+    `Проверь, какой из разделов ещё недостаточно конкретизирован: ${ANALYTICS_BRIEF_SECTIONS}.`,
+    'Коротко зафиксируй, что уже ясно, и задай ровно один следующий вопрос по самому незаполненному разделу.',
+    'Ответы вроде «предложи сам» трактуй как разрешение предложить вариант в текущем разделе, но не как переход в другой раздел.',
+    'Если текущий раздел уже прояснён, только тогда переходи к следующему.'
+  ].join('\n')
+}
 
 export const ACP_DESIGN_CONTEXT = `You are inside Nork, a design editor (like Figma). \
 Use the norka MCP tools to create and modify designs on the live canvas. \

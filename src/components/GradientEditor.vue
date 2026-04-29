@@ -4,12 +4,7 @@ import Tip from './ui/Tip.vue'
 import ColorPickerPanel from './ColorPickerPanel.vue'
 import ScrubInput from './ScrubInput.vue'
 import { colorToCSS } from '@norka/core'
-import {
-  GradientEditorRoot,
-  GradientEditorBar,
-  GradientEditorStop,
-  useI18n
-} from '@norka/vue'
+import { GradientEditorRoot, GradientEditorBar, GradientEditorStop, useI18n } from '@norka/vue'
 
 import type { Fill } from '@norka/core'
 

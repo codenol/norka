@@ -1,5 +1,12 @@
 import { reactive, ref, computed, inject, provide } from 'vue'
-import { PRIME_PREVIEW_DEFS, getPrimePreviewDef } from '@/composables/use-primereact-preview'
+
+import {
+  PRIME_PREVIEW_DEFS,
+  applyPrimeStatePreset,
+  getPrimePreviewDef,
+  sanitizePrimeProps
+} from '@/composables/use-primereact-preview'
+
 import type { PrimePreviewDef } from '@/composables/use-primereact-preview'
 
 export interface ProtoNode {
@@ -7,11 +14,14 @@ export interface ProtoNode {
   componentName: string
   importPath: string
   exportName: string
+  renderKind?: 'runtime'
   props: Record<string, unknown>
   order: number
   parentId: string | null
   childrenIds: string[]
   slotName?: string | null
+  source?: 'explicit' | 'assumed'
+  assumptionLabel?: string | null
 }
 
 export interface ProtoDropTarget {
@@ -23,8 +33,11 @@ export interface ProtoDropTarget {
 export interface ProtoSerializedNode {
   id: string
   component: string
+  renderKind?: 'runtime'
   props: Record<string, unknown>
   slotName?: string | null
+  source?: 'explicit' | 'assumed'
+  assumptionLabel?: string | null
   children: ProtoSerializedNode[]
 }
 
@@ -44,11 +57,11 @@ function createProtoStore() {
   })
 
   const selectedNode = computed<ProtoNode | null>(
-    () => nodes.find((n) => n.id === selectedId.value) ?? null,
+    () => nodes.find((n) => n.id === selectedId.value) ?? null
   )
 
-  const rootNodes = computed<ProtoNode[]>(
-    () => nodes.filter((n) => n.parentId === null).sort((a, b) => a.order - b.order),
+  const rootNodes = computed<ProtoNode[]>(() =>
+    nodes.filter((n) => n.parentId === null).sort((a, b) => a.order - b.order)
   )
 
   const sortedNodes = computed<ProtoNode[]>(() => {
@@ -77,7 +90,9 @@ function createProtoStore() {
 
   function reindexSiblings(parentId: string | null) {
     const siblings = getSiblings(parentId)
-    siblings.forEach((n, i) => { n.order = i })
+    siblings.forEach((n, i) => {
+      n.order = i
+    })
     if (parentId) {
       const parent = getNode(parentId)
       if (parent) {
@@ -127,11 +142,14 @@ function createProtoStore() {
       componentName: def.name,
       importPath: def.importPath,
       exportName: def.exportName,
+      renderKind: 'runtime',
       props: { ...def.previewProps },
       order: index,
       parentId,
       childrenIds: [],
       slotName: normalized.slotName ?? null,
+      source: 'explicit',
+      assumptionLabel: null
     }
     nodes.push(node)
     syncAllChildrenRefs()
@@ -177,13 +195,38 @@ function createProtoStore() {
   function updateProps(id: string, updates: Record<string, unknown>) {
     const node = nodes.find((n) => n.id === id)
     if (!node) return
-    Object.assign(node.props, updates)
+    const sanitized = sanitizePrimeProps(node.componentName, updates)
+    Object.assign(node.props, sanitized.props)
+    for (const [key, value] of Object.entries(updates)) {
+      if (!key.startsWith('__')) continue
+      node.props[key] = value
+    }
   }
 
   function setProp(id: string, key: string, value: unknown) {
     const node = nodes.find((n) => n.id === id)
     if (!node) return
-    node.props[key] = value
+    if (key.startsWith('__')) {
+      node.props[key] = value
+      return
+    }
+    const sanitized = sanitizePrimeProps(node.componentName, { [key]: value })
+    if (!(key in sanitized.props)) return
+    node.props[key] = sanitized.props[key]
+  }
+
+  function applyStatePreset(id: string, state: string) {
+    const node = nodes.find((n) => n.id === id)
+    if (!node) return
+    const merged = applyPrimeStatePreset(node.componentName, state, node.props)
+    node.props = sanitizePrimeProps(node.componentName, merged).props
+  }
+
+  function setAssumption(id: string, assumed: boolean, label?: string | null) {
+    const node = nodes.find((n) => n.id === id)
+    if (!node) return
+    node.source = assumed ? 'assumed' : 'explicit'
+    node.assumptionLabel = assumed ? (label?.trim() || 'Assumption') : null
   }
 
   function selectNode(id: string | null) {
@@ -203,14 +246,18 @@ function createProtoStore() {
     const oldIndex = oldSiblings.findIndex((n) => n.id === nodeId)
     if (oldIndex === -1) return false
     oldSiblings.splice(oldIndex, 1)
-    oldSiblings.forEach((s, i) => { s.order = i })
+    oldSiblings.forEach((s, i) => {
+      s.order = i
+    })
 
     node.parentId = normalizedTarget.parentId
     node.slotName = normalizedTarget.slotName ?? null
     const nextSiblings = getSiblings(normalizedTarget.parentId).filter((n) => n.id !== nodeId)
     const insertIndex = Math.max(0, Math.min(normalizedTarget.index, nextSiblings.length))
     nextSiblings.splice(insertIndex, 0, node)
-    nextSiblings.forEach((s, i) => { s.order = i })
+    nextSiblings.forEach((s, i) => {
+      s.order = i
+    })
 
     reindexSiblings(oldParentId)
     reindexSiblings(normalizedTarget.parentId)
@@ -224,7 +271,11 @@ function createProtoStore() {
     const siblings = getSiblings(sibling.parentId)
     const idx = siblings.findIndex((s) => s.id === siblingId)
     if (idx === -1) return false
-    return moveNode(nodeId, { parentId: sibling.parentId, index: idx, slotName: sibling.slotName ?? null })
+    return moveNode(nodeId, {
+      parentId: sibling.parentId,
+      index: idx,
+      slotName: sibling.slotName ?? null
+    })
   }
 
   function moveAfter(nodeId: string, siblingId: string): boolean {
@@ -233,7 +284,11 @@ function createProtoStore() {
     const siblings = getSiblings(sibling.parentId)
     const idx = siblings.findIndex((s) => s.id === siblingId)
     if (idx === -1) return false
-    return moveNode(nodeId, { parentId: sibling.parentId, index: idx + 1, slotName: sibling.slotName ?? null })
+    return moveNode(nodeId, {
+      parentId: sibling.parentId,
+      index: idx + 1,
+      slotName: sibling.slotName ?? null
+    })
   }
 
   function moveInside(nodeId: string, parentId: string, slotName?: string | null): boolean {
@@ -248,9 +303,14 @@ function createProtoStore() {
     return {
       id: node.id,
       component: node.componentName,
+      renderKind: node.renderKind ?? 'runtime',
       props: { ...node.props },
       slotName: node.slotName ?? null,
-      children: getChildren(node.id).map((child) => serializeNode(child.id)).filter((v): v is ProtoSerializedNode => !!v),
+      source: node.source ?? 'explicit',
+      assumptionLabel: node.assumptionLabel ?? null,
+      children: getChildren(node.id)
+        .map((child) => serializeNode(child.id))
+        .filter((v): v is ProtoSerializedNode => !!v)
     }
   }
 
@@ -289,6 +349,8 @@ function createProtoStore() {
     removeNode,
     updateProps,
     setProp,
+    applyStatePreset,
+    setAssumption,
     selectNode,
     moveNode,
     moveBefore,
@@ -297,14 +359,14 @@ function createProtoStore() {
     normalizeTarget,
     toSerializedTree,
     reorder,
-    clearAll,
+    clearAll
   }
 }
 
 export type ProtoStore = ReturnType<typeof createProtoStore>
 
 export const __TEST_ONLY__ = {
-  createProtoStore,
+  createProtoStore
 }
 
 // Module-level singleton — survives HMR of this file because the store is

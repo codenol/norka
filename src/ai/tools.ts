@@ -3,8 +3,8 @@ import { tool } from 'ai'
 import * as v from 'valibot'
 
 import { makeFigmaFromStore } from '@/automation/figma-factory'
-import { getActiveEditorStore } from '@/stores/editor'
 import { useCodeConnectStore } from '@/stores/code-connect'
+import { getActiveEditorStore } from '@/stores/editor'
 import {
   CORE_TOOLS,
   collectFontKeys,
@@ -99,7 +99,7 @@ function makeSaveComponentRulesTool() {
     usage: v.string('Short description of when and why to use this component'),
     constraints: v.optional(v.array(v.string())),
     examples: v.optional(v.array(v.string())),
-    anti_patterns: v.optional(v.array(v.string())),
+    anti_patterns: v.optional(v.array(v.string()))
   })
 
   return (tool as (...args: unknown[]) => unknown)({
@@ -123,11 +123,11 @@ function makeSaveComponentRulesTool() {
         examples: examples ?? [],
         antiPatterns: anti_patterns ?? [],
         updatedAt: new Date().toISOString(),
-        updatedBy: 'ai' as const,
+        updatedBy: 'ai' as const
       }
       codeConnect.upsertEntry({ ...existing, rules: rule })
       return { ok: true, message: `Rules saved for component "${existing.designName}"` }
-    },
+    }
   })
 }
 
@@ -139,64 +139,64 @@ export function createAITools(store: EditorStore) {
 
   return {
     ...toolsToAI(
-    CORE_TOOLS,
-    {
-      getFigma: () => makeFigmaFromStore(store),
-      onBeforeExecute: (def) => {
-        if (def.mutates) {
-          beforeSnapshot = store.snapshotPage()
-        }
-      },
-      onAfterExecute: async (def) => {
-        if (def.mutates) {
-          const pageId = store.state.currentPageId
-          const pageNode = store.graph.getNode(pageId)
-          if (pageNode) {
-            const fontKeys = collectFontKeys(store.graph, pageNode.childIds)
-            const missing = fontKeys.filter(([family]) => !isFontLoaded(family))
-            if (missing.length > 0) {
-              const results = await Promise.all(
-                missing.map(([family, style]) => loadFont(family, style))
-              )
-              if (results.some((r) => r !== null)) {
-                for (const [, node] of store.graph.nodes) {
-                  if (node.type === 'TEXT' && node.textPicture) node.textPicture = null
+      CORE_TOOLS,
+      {
+        getFigma: () => makeFigmaFromStore(store),
+        onBeforeExecute: (def) => {
+          if (def.mutates) {
+            beforeSnapshot = store.snapshotPage()
+          }
+        },
+        onAfterExecute: async (def) => {
+          if (def.mutates) {
+            const pageId = store.state.currentPageId
+            const pageNode = store.graph.getNode(pageId)
+            if (pageNode) {
+              const fontKeys = collectFontKeys(store.graph, pageNode.childIds)
+              const missing = fontKeys.filter(([family]) => !isFontLoaded(family))
+              if (missing.length > 0) {
+                const results = await Promise.all(
+                  missing.map(([family, style]) => loadFont(family, style))
+                )
+                if (results.some((r) => r !== null)) {
+                  for (const [, node] of store.graph.nodes) {
+                    if (node.type === 'TEXT' && node.textPicture) node.textPicture = null
+                  }
                 }
               }
             }
+            computeAllLayouts(store.graph, pageId)
+            store.requestRender()
+            if (beforeSnapshot) {
+              const before = beforeSnapshot
+              const after = store.snapshotPage()
+              store.pushUndoEntry({
+                label: `AI: ${def.name}`,
+                forward: () => store.restorePageFromSnapshot(after),
+                inverse: () => store.restorePageFromSnapshot(before)
+              })
+              beforeSnapshot = null
+            }
           }
-          computeAllLayouts(store.graph, pageId)
-          store.requestRender()
-          if (beforeSnapshot) {
-            const before = beforeSnapshot
-            const after = store.snapshotPage()
-            store.pushUndoEntry({
-              label: `AI: ${def.name}`,
-              forward: () => store.restorePageFromSnapshot(after),
-              inverse: () => store.restorePageFromSnapshot(before)
-            })
-            beforeSnapshot = null
+        },
+        onFlashNodes: (nodeIds) => {
+          store.renderer?.aiClearActive()
+          if (nodeIds.length > 0) {
+            store.aiFlashDone(nodeIds)
           }
-        }
+        },
+        onToolLog: (entry) => {
+          runState.toolLog.push(entry)
+        },
+        getStepBudget: (): StepBudget => ({
+          current: runState.currentSteps,
+          max: MAX_AGENT_STEPS
+        })
       },
-      onFlashNodes: (nodeIds) => {
-        store.renderer?.aiClearActive()
-        if (nodeIds.length > 0) {
-          store.aiFlashDone(nodeIds)
-        }
-      },
-      onToolLog: (entry) => {
-        runState.toolLog.push(entry)
-      },
-      getStepBudget: (): StepBudget => ({
-        current: runState.currentSteps,
-        max: MAX_AGENT_STEPS
-      })
-    },
-    { v, valibotSchema, tool }
-  ),
+      { v, valibotSchema, tool }
+    ),
     // eslint-disable-next-line typescript-eslint/no-explicit-any -- unknown cast required to satisfy ToolSet's CoreTool constraint
-    save_component_rules: saveComponentRules as any,
+    save_component_rules: saveComponentRules as any
   }
 }
 

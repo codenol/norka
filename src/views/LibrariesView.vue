@@ -4,7 +4,12 @@ import { useRouter } from 'vue-router'
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui'
 
 import Tip from '@/components/ui/Tip.vue'
-import { useLibraries, LIBRARY_TYPE_COLORS, LIBRARY_TYPE_LABELS, type LibraryType } from '@/composables/use-libraries'
+import {
+  useLibraries,
+  LIBRARY_TYPE_COLORS,
+  LIBRARY_TYPE_LABELS,
+  type LibraryType
+} from '@/composables/use-libraries'
 import { useProjects, type Product } from '@/composables/use-projects'
 import { useWorkspaceFs } from '@/composables/use-workspace-fs'
 
@@ -18,20 +23,20 @@ function workspaceName(path: string): string {
 }
 
 function connectedProjects(libId: string): Product[] {
-  return products.value.filter(p => p.connectedLibraryIds.includes(libId))
+  return products.value.filter((p) => p.connectedLibraryIds.includes(libId))
 }
 
 // ── Inline creation ────────────────────────────────────────────────────────────
 
 const creatingLibrary = ref(false)
-const newLibName      = ref('')
-const newLibType      = ref<LibraryType>('extension')
+const newLibName = ref('')
+const newLibType = ref<LibraryType>('extension')
 
 const LIB_TYPES: { type: LibraryType; label: string }[] = [
-  { type: 'core',         label: 'Core' },
-  { type: 'extension',    label: 'Extension' },
-  { type: 'white-label',  label: 'White-label' },
-  { type: 'project',      label: 'Project' },
+  { type: 'core', label: 'Core' },
+  { type: 'extension', label: 'Extension' },
+  { type: 'white-label', label: 'White-label' },
+  { type: 'project', label: 'Project' }
 ]
 
 function startCreate() {
@@ -42,7 +47,10 @@ function startCreate() {
 
 function confirmCreate() {
   const name = newLibName.value.trim()
-  if (!name) { creatingLibrary.value = false; return }
+  if (!name) {
+    creatingLibrary.value = false
+    return
+  }
   addLibrary(name, newLibType.value)
   newLibName.value = ''
   creatingLibrary.value = false
@@ -67,7 +75,10 @@ function confirmCreate() {
       <icon-lucide-library class="size-4 text-accent" />
       <span class="text-sm font-semibold text-surface">Библиотеки</span>
 
-      <div v-if="workspacePath" class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted">
+      <div
+        v-if="workspacePath"
+        class="flex items-center gap-1.5 rounded-lg bg-hover px-2.5 py-1 text-[11px] text-muted"
+      >
         <icon-lucide-folder-open class="size-3 text-accent" />
         <span class="max-w-48 truncate">{{ workspaceName(workspacePath) }}</span>
       </div>
@@ -86,7 +97,6 @@ function confirmCreate() {
     <ScrollAreaRoot class="flex-1">
       <ScrollAreaViewport class="h-full">
         <div class="mx-auto max-w-3xl px-5 py-6">
-
           <!-- Inline creation -->
           <div
             v-if="creatingLibrary"
@@ -102,8 +112,15 @@ function confirmCreate() {
                 @keydown.enter="confirmCreate"
                 @keydown.escape="creatingLibrary = false"
               />
-              <button class="text-xs text-accent hover:underline" @click="confirmCreate">Создать</button>
-              <button class="text-xs text-muted hover:text-surface" @click="creatingLibrary = false">Отмена</button>
+              <button class="text-xs text-accent hover:underline" @click="confirmCreate">
+                Создать
+              </button>
+              <button
+                class="text-xs text-muted hover:text-surface"
+                @click="creatingLibrary = false"
+              >
+                Отмена
+              </button>
             </div>
             <!-- Type selector -->
             <div class="flex items-center gap-1.5 border-t border-accent/20 px-4 py-2">
@@ -112,9 +129,15 @@ function confirmCreate() {
                 v-for="t in LIB_TYPES"
                 :key="t.type"
                 class="rounded-lg border px-2.5 py-1 text-[11px] transition-colors"
-                :class="newLibType === t.type
-                  ? [LIBRARY_TYPE_COLORS[t.type].bg, LIBRARY_TYPE_COLORS[t.type].text, LIBRARY_TYPE_COLORS[t.type].border]
-                  : 'border-border text-muted hover:bg-hover hover:text-surface'"
+                :class="
+                  newLibType === t.type
+                    ? [
+                        LIBRARY_TYPE_COLORS[t.type].bg,
+                        LIBRARY_TYPE_COLORS[t.type].text,
+                        LIBRARY_TYPE_COLORS[t.type].border
+                      ]
+                    : 'border-border text-muted hover:bg-hover hover:text-surface'
+                "
                 @click="newLibType = t.type"
               >
                 {{ t.label }}
@@ -130,7 +153,9 @@ function confirmCreate() {
               class="overflow-hidden rounded-xl border border-border bg-panel"
             >
               <!-- Library header row -->
-              <div class="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-hover/40">
+              <div
+                class="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-hover/40"
+              >
                 <!-- Type dot -->
                 <div
                   class="size-2.5 shrink-0 rounded-full"
@@ -143,18 +168,28 @@ function confirmCreate() {
                     <span class="truncate text-sm font-medium text-surface">{{ lib.name }}</span>
                     <span
                       class="shrink-0 rounded px-1.5 py-0.5 text-[10px]"
-                      :class="[LIBRARY_TYPE_COLORS[lib.type].bg, LIBRARY_TYPE_COLORS[lib.type].text]"
-                    >{{ LIBRARY_TYPE_LABELS[lib.type] }}</span>
+                      :class="[
+                        LIBRARY_TYPE_COLORS[lib.type].bg,
+                        LIBRARY_TYPE_COLORS[lib.type].text
+                      ]"
+                      >{{ LIBRARY_TYPE_LABELS[lib.type] }}</span
+                    >
                   </div>
                   <span class="truncate text-xs text-muted">{{ lib.description || '—' }}</span>
                 </div>
 
                 <!-- Stats -->
-                <span class="shrink-0 text-xs text-muted">{{ lib.componentCount }} компонентов</span>
-                <span class="shrink-0 text-xs text-muted">{{ connectedProjects(lib.id).length }} проектов</span>
+                <span class="shrink-0 text-xs text-muted"
+                  >{{ lib.componentCount }} компонентов</span
+                >
+                <span class="shrink-0 text-xs text-muted"
+                  >{{ connectedProjects(lib.id).length }} проектов</span
+                >
 
                 <!-- Hover actions -->
-                <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <div
+                  class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                >
                   <Tip label="Открыть библиотеку" side="top">
                     <button
                       class="flex size-6 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
@@ -177,7 +212,10 @@ function confirmCreate() {
               <!-- Connected projects sub-row -->
               <div class="border-t border-border/60 bg-canvas/30 px-4 py-2.5">
                 <span class="text-[11px] text-muted">Подключено к:</span>
-                <div v-if="connectedProjects(lib.id).length === 0" class="mt-1 text-[11px] text-muted/40">
+                <div
+                  v-if="connectedProjects(lib.id).length === 0"
+                  class="mt-1 text-[11px] text-muted/40"
+                >
                   Не подключено ни к одному проекту
                 </div>
                 <div v-else class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
@@ -195,12 +233,14 @@ function confirmCreate() {
             </div>
 
             <!-- Empty state -->
-            <div v-if="libraries.length === 0" class="flex flex-col items-center gap-4 py-16 text-center">
+            <div
+              v-if="libraries.length === 0"
+              class="flex flex-col items-center gap-4 py-16 text-center"
+            >
               <icon-lucide-library class="size-10 text-muted opacity-30" />
               <p class="text-sm text-muted">Нет библиотек. Создайте первую.</p>
             </div>
           </div>
-
         </div>
       </ScrollAreaViewport>
       <ScrollAreaScrollbar orientation="vertical" class="w-1.5">

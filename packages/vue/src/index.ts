@@ -1,10 +1,4 @@
-export type {
-  Editor,
-  EditorState,
-  EditorOptions,
-  Tool,
-  EditorToolDef
-} from '@norka/core/editor'
+export type { Editor, EditorState, EditorOptions, Tool, EditorToolDef } from '@norka/core/editor'
 export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@norka/core/editor'
 
 /**

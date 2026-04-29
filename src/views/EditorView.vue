@@ -16,14 +16,11 @@ import { createDemoShapes } from '@/demo'
 import { useEditorStore } from '@/stores/editor'
 import { createTab, activeTab, getActiveStore } from '@/stores/tabs'
 
-import CollabPanel from '@/components/CollabPanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud.vue'
 import PreviewPanel from '@/components/PreviewPanel.vue'
-import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import SafariBanner from '@/components/SafariBanner.vue'
-import TabBar from '@/components/TabBar.vue'
 import Toolbar from '@/components/Toolbar.vue'
 
 const { designShell = false } = defineProps<{
@@ -34,7 +31,7 @@ const route = useRoute()
 const params = useUrlSearchParams('history')
 const showChrome = params['no-chrome'] !== '1' && params['no-chrome'] !== 'true'
 const useDesignShell = designShell
-const forceDesktopPanels = route.path.startsWith('/workspace/design')
+const forceDesktopPanels = route.path.endsWith('/design')
 
 const firstTab = createTab()
 const store = useEditorStore()
@@ -87,7 +84,9 @@ onUnmounted(() => {
 
     <!-- Desktop layout -->
     <SplitterGroup
-      v-if="!useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI"
+      v-if="
+        !useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI
+      "
       :key="activeTab?.id"
       direction="horizontal"
       class="flex-1 overflow-hidden"
@@ -104,7 +103,9 @@ onUnmounted(() => {
 
     <!-- Embedded canvas layout for design shell -->
     <div
-      v-else-if="useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI"
+      v-else-if="
+        useDesignShell && (!isMobile || forceDesktopPanels) && showChrome && store.state.showUI
+      "
       :key="'design-shell-' + activeTab?.id"
       class="flex flex-1 overflow-hidden"
     >

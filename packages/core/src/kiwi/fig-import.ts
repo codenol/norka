@@ -1,4 +1,5 @@
 import { SceneGraph, generateId } from '../scene-graph'
+import { styleToWeight } from '../text/fonts'
 import {
   guidToString,
   nodeChangeToProps,
@@ -11,7 +12,6 @@ import {
   convertLineHeight,
   convertLetterSpacing
 } from './convert'
-import { styleToWeight } from '../text/fonts'
 import { populateAndApplyOverrides } from './instance-overrides'
 
 import type { VariableType, VariableValue, TextCase } from '../scene-graph'

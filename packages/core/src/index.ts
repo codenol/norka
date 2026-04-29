@@ -85,7 +85,7 @@ export {
   type LibraryManifest,
   buildPrimeReactGraph,
   PRIMEREACT_CONNECT_DEFS,
-  type PrimeReactConnectDef,
+  type PrimeReactConnectDef
 } from './library'
 export {
   BUILT_IN_ARCHETYPES,
@@ -97,14 +97,14 @@ export {
   type ArchetypeCategory,
   type ComponentPropSchema,
   type ArchetypeDesignBinding,
-  type ArchetypeCodeBinding,
+  type ArchetypeCodeBinding
 } from './components/archetypes'
 export {
   exportTokens,
   exportCSSVariables,
   exportTailwindTheme,
   exportTokensJSON,
-  type TokenExportFormat,
+  type TokenExportFormat
 } from './io/formats/tokens'
 
 export { FigmaAPI, FigmaNodeProxy, computeImageHash, type FigmaFontName } from './figma-api'

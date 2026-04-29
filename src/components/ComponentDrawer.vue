@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot, TooltipTrigger } from 'reka-ui'
+import {
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger
+} from 'reka-ui'
 
 import {
   BUILT_IN_ARCHETYPES,
   ARCHETYPE_CATEGORIES,
   buildAliasMap,
   matchArchetype,
-  libraryRegistry,
+  libraryRegistry
 } from '@norka/core'
 import { useEditorStore } from '@/stores/editor'
 import { useLibraryStore } from '@/stores/library'
@@ -64,7 +70,7 @@ const CATEGORY_LABELS: Record<ArchetypeCategory, string> = {
   navigation: 'Навигация',
   feedback: 'Обратная связь',
   overlay: 'Оверлей',
-  data: 'Данные',
+  data: 'Данные'
 }
 
 const filteredArchetypes = computed(() => {
@@ -90,7 +96,7 @@ function insertComponent(archetypeId: string) {
     BUILTIN_PRIMEREACT_ID,
     componentId,
     editor.graph,
-    editor.state.currentPageId,
+    editor.state.currentPageId
   )
   if (instanceId) {
     editor.state.selectedIds = new Set([instanceId])
@@ -101,7 +107,6 @@ function insertComponent(archetypeId: string) {
 function toggleCategory(cat: ArchetypeCategory) {
   activeCategory.value = activeCategory.value === cat ? null : cat
 }
-
 </script>
 
 <template>
@@ -194,7 +199,9 @@ function toggleCategory(cat: ArchetypeCategory) {
                   :disabled="!archetypeToComponentId.has(archetype.id)"
                   @click="insertComponent(archetype.id)"
                 >
-                  <div class="flex size-7 items-center justify-center rounded bg-hover/60 text-muted">
+                  <div
+                    class="flex size-7 items-center justify-center rounded bg-hover/60 text-muted"
+                  >
                     <icon-lucide-component class="size-4" />
                   </div>
                   <span class="line-clamp-2 text-[10px] leading-tight text-surface">
@@ -210,7 +217,10 @@ function toggleCategory(cat: ArchetypeCategory) {
                 >
                   <p class="font-medium">{{ archetype.name }}</p>
                   <p class="mt-0.5 text-muted">{{ archetype.description }}</p>
-                  <p v-if="!archetypeToComponentId.has(archetype.id)" class="mt-1 text-[10px] text-muted/60">
+                  <p
+                    v-if="!archetypeToComponentId.has(archetype.id)"
+                    class="mt-1 text-[10px] text-muted/60"
+                  >
                     Нет в библиотеке
                   </p>
                 </TooltipContent>
@@ -222,9 +232,7 @@ function toggleCategory(cat: ArchetypeCategory) {
 
       <!-- Footer hint -->
       <div class="shrink-0 border-t border-border/60 px-3 py-2">
-        <p class="text-[10px] text-muted">
-          Нажмите на компонент, чтобы добавить его на холст
-        </p>
+        <p class="text-[10px] text-muted">Нажмите на компонент, чтобы добавить его на холст</p>
       </div>
     </template>
 

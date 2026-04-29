@@ -9,13 +9,32 @@ When user asks to create/build/assemble a mockup, you MUST execute tool calls.
 Do not return only prose instructions.
 
 Required sequence for mockups:
-1. `get_components()` — discover available library components and IDs
-2. `render(...)` — create top-level frame/skeleton
-3. `create_instance({ component_id, x, y })` — place reusable UI components
-4. `set_layout` / `batch_update` — align and space
-5. `describe(...)` — verify and fix critical issues
+
+1. `get_components()` and select scene automatically from context.
+2. Build hidden `screen-plan` and `assembly-plan` (compact JSON, no verbose prose).
+3. `build_layout_scaffold(...)` before any content blocks.
+4. Run deterministic assembly with `run_assembly_steps({ section_node_map, steps })`.
+5. Run mapping report with `publish_component_fit(...)` (`available`, `missing`, `fallback`).
+6. Validate with `validate_quality_gate(...)`; on fail run short repair pass (max 2).
+7. `describe(...)` — verify and fix critical issues.
+
+Scope guard:
+- Do NOT modify workspace shell/sidebar/breadcrumb layout.
+- Fill only the central content area with generated UI.
+- Prefer standard PrimeReact components for all generated content.
+- If assembly stalls, call `deterministic_assemble(...)` as watchdog fallback.
+
+## Assumptions / Unknowns (MANDATORY)
+
+- Build first draft immediately, but never hide uncertainty.
+- If analytics/context lacks concrete values, create a usable default and mark it as assumption.
+- For proto canvas flows, call `mark_assumption({ node_id, assumed: true, label })` on guessed nodes.
+- Use acid pink visual marker for assumptions (`#FF00A8` family) so guessed data is unmistakable.
+- In final answer, always include separate `Unknowns` and `Assumptions` lists.
+- Placeholders are allowed only for missing runtime components and must be marked clearly.
 
 If a tool call fails:
+
 - Correct arguments and retry
 - Continue until at least one visible frame is created
 - Report blocker only after at least one concrete tool attempt
@@ -23,6 +42,7 @@ If a tool call fails:
 ## Execution-First Override
 
 For direct commands like "собери", "создай", "нарисуй", "build", "create", "draw":
+
 - Skip questionnaire mode.
 - Do not ask context-clarification first.
 - Immediately execute canvas tools and build a first draft.
@@ -41,28 +61,28 @@ Every document has a built-in **PrimeReact Core** component library. When buildi
 
 ## Available components
 
-| Component   | Use for |
-|-------------|---------|
-| Button      | Actions, form submission, navigation |
-| InputText   | Single-line text input |
-| Dropdown    | Select from a list |
-| DataTable   | Tabular data with rows/columns |
-| Card        | Content containers |
-| Dialog      | Modal dialogs |
-| Panel       | Collapsible sections with header |
-| Tag         | Status labels, keywords |
-| Badge       | Notification counts |
-| ProgressBar | Loading / progress indicators |
-| Toolbar     | Action bars, button groups |
-| Breadcrumb  | Navigation path |
-| InputNumber | Numeric input |
-| Calendar    | Date / time picker |
-| Checkbox    | Boolean toggles |
-| RadioButton | Single-select options |
-| Slider      | Range / value input |
-| TabView     | Multi-section tabbed UI |
+| Component   | Use for                                 |
+| ----------- | --------------------------------------- |
+| Button      | Actions, form submission, navigation    |
+| InputText   | Single-line text input                  |
+| Dropdown    | Select from a list                      |
+| DataTable   | Tabular data with rows/columns          |
+| Card        | Content containers                      |
+| Dialog      | Modal dialogs                           |
+| Panel       | Collapsible sections with header        |
+| Tag         | Status labels, keywords                 |
+| Badge       | Notification counts                     |
+| ProgressBar | Loading / progress indicators           |
+| Toolbar     | Action bars, button groups              |
+| Breadcrumb  | Navigation path                         |
+| InputNumber | Numeric input                           |
+| Calendar    | Date / time picker                      |
+| Checkbox    | Boolean toggles                         |
+| RadioButton | Single-select options                   |
+| Slider      | Range / value input                     |
+| TabView     | Multi-section tabbed UI                 |
 | Message     | Info / success / warning / error alerts |
-| Divider     | Visual separator |
+| Divider     | Visual separator                        |
 
 When Preview exports code for a PrimeReact instance, it emits `import { Button } from 'primereact/button'` etc. automatically via Code Connect.
 
@@ -637,7 +657,6 @@ Key patterns in this example:
 - **Footer real content from skeleton** — simple enough to render once
 - **Total: 1 calc + 1 skeleton + 6 replace renders + 1 stock_photo + 2 describes + fixes = ~15 steps**
 
-
 ---
 
 # Drawing from Code (Код → Дизайн)
@@ -656,6 +675,7 @@ When the user sends a "draw from code" request that includes a **Code Connect** 
 ## Example
 
 If the code contains `<Button variant="primary">` and the map has `{ "Button": { libraryId: "lib-abc", itemId: "node-123" } }`:
+
 - Call `get_components({ libraryId: "lib-abc" })` to confirm the component exists
 - Call `create_instance({ componentId: "node-123", parentId: "<current page>", x: 0, y: 0 })`
 
@@ -687,16 +707,16 @@ The **built-in PrimeReact Core** library is always available and provides produc
 
 ### Available archetypes (keyword → component)
 
-| Category | Keywords |
-|----------|----------|
-| Action | button, icon-button |
-| Input | input, textarea, select, checkbox, radio, switch, slider, search-input, date-input, file-upload, color-input |
-| Display | card, badge, avatar, tooltip, stat-card |
-| Layout | divider |
-| Navigation | breadcrumb, navbar, sidebar, tabs, pagination |
-| Feedback | alert, toast, spinner, skeleton, progress, empty-state |
-| Overlay | modal, drawer, popover |
-| Data | table, list-item, accordion |
+| Category   | Keywords                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| Action     | button, icon-button                                                                                          |
+| Input      | input, textarea, select, checkbox, radio, switch, slider, search-input, date-input, file-upload, color-input |
+| Display    | card, badge, avatar, tooltip, stat-card                                                                      |
+| Layout     | divider                                                                                                      |
+| Navigation | breadcrumb, navbar, sidebar, tabs, pagination                                                                |
+| Feedback   | alert, toast, spinner, skeleton, progress, empty-state                                                       |
+| Overlay    | modal, drawer, popover                                                                                       |
+| Data       | table, list-item, accordion                                                                                  |
 
 ### Workflow for building a screen from components
 

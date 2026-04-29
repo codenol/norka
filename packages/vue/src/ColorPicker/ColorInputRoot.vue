@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ update: [color: Color] }>()
 
-const hex = computed(() => props.color ? colorToHexRaw(props.color) : 'f5f5f5')
+const hex = computed(() => (props.color ? colorToHexRaw(props.color) : 'f5f5f5'))
 
 function updateFromHex(value: string) {
   const parsed = parseColor(value.startsWith('#') ? value : `#${value}`)

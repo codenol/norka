@@ -23,10 +23,22 @@ const isDisabled = computed(() => {
 
 // Filter out our custom props from attrs so they don't land as HTML attributes
 const htmlAttrs = computed(() => {
-  const { archetypeName: _a, 'archetype-name': _b, modulePath: _c, 'module-path': _d,
-    exportName: _e, 'export-name': _f, previewProps: _g, 'preview-props': _h,
-    isContainer: _l, 'is-container': _m,
-    isDisabled: _i, 'is-disabled': _j, onClick: _k, ...rest } = attrs
+  const {
+    archetypeName: _a,
+    'archetype-name': _b,
+    modulePath: _c,
+    'module-path': _d,
+    exportName: _e,
+    'export-name': _f,
+    previewProps: _g,
+    'preview-props': _h,
+    isContainer: _l,
+    'is-container': _m,
+    isDisabled: _i,
+    'is-disabled': _j,
+    onClick: _k,
+    ...rest
+  } = attrs
   return rest
 })
 </script>

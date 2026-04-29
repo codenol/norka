@@ -98,7 +98,7 @@ const store: LinterStore = {
   cancelScheduled,
   setPreset,
   setActivePageOnly,
-  clear,
+  clear
 }
 
 export function useLinterStore(): LinterStore {

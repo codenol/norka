@@ -21,7 +21,7 @@ const { dialogs } = useI18n()
 
 const jsxFormat = ref<JSXFormat>('norka')
 const codeFramework = ref<CodeFramework>('react-tsx')
-const useCodeConnect = ref(true)  // use Code Connect map when available
+const useCodeConnect = ref(true) // use Code Connect map when available
 const codeConnectOpen = ref(false)
 
 function toggleFormat() {
@@ -67,10 +67,7 @@ const displayCode = computed(() => generatedCode.value?.code ?? jsxCode.value)
 const unmappedCount = computed(() => generatedCode.value?.unresolvedInstanceIds.length ?? 0)
 
 function escapeHtml(text: string): string {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
+  return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 }
 
 const highlightedLines = computed(() => {
@@ -88,12 +85,17 @@ function copyRaw() {
 
 function copyFull() {
   const code = generatedCode.value?.code ?? jsxCode.value
-  navigator.clipboard.writeText(code).then(() => {
-    copiedFull.value = true
-    setTimeout(() => { copiedFull.value = false }, 2000)
-  }).catch((err) => {
-    console.warn('[CodePanel] Clipboard write failed:', err)
-  })
+  navigator.clipboard
+    .writeText(code)
+    .then(() => {
+      copiedFull.value = true
+      setTimeout(() => {
+        copiedFull.value = false
+      }, 2000)
+    })
+    .catch((err) => {
+      console.warn('[CodePanel] Clipboard write failed:', err)
+    })
 }
 </script>
 
@@ -137,7 +139,11 @@ function copyFull() {
         <button
           v-if="hasCodeConnect"
           class="rounded px-1.5 py-0.5 text-[11px]"
-          :class="useCodeConnect ? 'bg-accent/15 text-accent' : 'text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            useCodeConnect
+              ? 'bg-accent/15 text-accent'
+              : 'text-muted hover:bg-hover hover:text-surface'
+          "
           @click="cycleFramework"
         >
           {{ frameworkLabel }}

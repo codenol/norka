@@ -58,15 +58,11 @@ function groupByLibrary<T extends { libraryId: string }>(
 
 // ── Components ────────────────────────────────────────────────────────────────
 
-const allComponents = computed(() =>
-  libraryRegistry.getComponents()
-)
+const allComponents = computed(() => libraryRegistry.getComponents())
 
 const filteredComponents = computed(() => {
   const q = searchTerm.value.toLowerCase()
-  return allComponents.value.filter(
-    ({ node }) => !q || node.name.toLowerCase().includes(q)
-  )
+  return allComponents.value.filter(({ node }) => !q || node.name.toLowerCase().includes(q))
 })
 
 const componentsByLibrary = computed(() => groupByLibrary(filteredComponents.value))
@@ -107,9 +103,7 @@ const allStyles = computed(() => libraryRegistry.getStyles())
 
 const filteredStyles = computed(() => {
   const q = searchTerm.value.toLowerCase()
-  return allStyles.value.filter(
-    ({ style }) => !q || style.name.toLowerCase().includes(q)
-  )
+  return allStyles.value.filter(({ style }) => !q || style.name.toLowerCase().includes(q))
 })
 
 const stylesByLibrary = computed(() => groupByLibrary(filteredStyles.value))
@@ -139,7 +133,11 @@ function onTabChange(tab: string) {
     <DialogPortal>
       <DialogOverlay :class="cls.overlay" />
       <DialogContent :class="cls.content">
-        <TabsRoot :model-value="activeTab" class="flex flex-1 flex-col overflow-hidden" @update:model-value="onTabChange">
+        <TabsRoot
+          :model-value="activeTab"
+          class="flex flex-1 flex-col overflow-hidden"
+          @update:model-value="onTabChange"
+        >
           <!-- Header -->
           <div class="flex shrink-0 items-center border-b border-border">
             <TabsList class="flex gap-0.5 px-3 py-1">
@@ -183,7 +181,10 @@ function onTabChange(tab: string) {
 
           <!-- ── Components tab ─────────────────────────────────────────────── -->
           <TabsContent value="COMPONENTS" class="flex flex-1 flex-col overflow-hidden outline-none">
-            <div v-if="componentsByLibrary.length === 0" class="flex flex-1 items-center justify-center">
+            <div
+              v-if="componentsByLibrary.length === 0"
+              class="flex flex-1 items-center justify-center"
+            >
               <p class="text-xs text-muted">{{ dialogs.noLibraryComponents }}</p>
             </div>
             <div v-else class="flex-1 overflow-y-auto">
@@ -205,10 +206,7 @@ function onTabChange(tab: string) {
                     v-if="node.type === 'COMPONENT'"
                     class="size-3.5 shrink-0 text-component"
                   />
-                  <icon-lucide-layers
-                    v-else
-                    class="size-3.5 shrink-0 text-component"
-                  />
+                  <icon-lucide-layers v-else class="size-3.5 shrink-0 text-component" />
                   <span class="flex-1 truncate text-xs text-surface">{{ node.name }}</span>
                   <Tip :label="dialogs.insertComponent">
                     <icon-lucide-plus class="size-3.5 text-muted" />
@@ -220,7 +218,10 @@ function onTabChange(tab: string) {
 
           <!-- ── Variables tab ──────────────────────────────────────────────── -->
           <TabsContent value="VARIABLES" class="flex flex-1 flex-col overflow-hidden outline-none">
-            <div v-if="collectionsByLibrary.length === 0" class="flex flex-1 items-center justify-center">
+            <div
+              v-if="collectionsByLibrary.length === 0"
+              class="flex flex-1 items-center justify-center"
+            >
               <p class="text-xs text-muted">{{ dialogs.noLibraryVariables }}</p>
             </div>
             <div v-else class="flex-1 overflow-y-auto">
@@ -240,7 +241,9 @@ function onTabChange(tab: string) {
                   <icon-lucide-folder class="size-3.5 shrink-0 text-muted" />
                   <div class="flex flex-1 flex-col gap-0.5">
                     <span class="text-xs text-surface">{{ collection.name }}</span>
-                    <span class="text-[10px] text-muted">{{ collection.variableIds.length }} variables</span>
+                    <span class="text-[10px] text-muted"
+                      >{{ collection.variableIds.length }} variables</span
+                    >
                   </div>
                   <Tip :label="dialogs.addToLocal">
                     <button
@@ -257,7 +260,10 @@ function onTabChange(tab: string) {
 
           <!-- ── Styles tab ─────────────────────────────────────────────────── -->
           <TabsContent value="STYLES" class="flex flex-1 flex-col overflow-hidden outline-none">
-            <div v-if="stylesByLibrary.length === 0" class="flex flex-1 items-center justify-center">
+            <div
+              v-if="stylesByLibrary.length === 0"
+              class="flex flex-1 items-center justify-center"
+            >
               <p class="text-xs text-muted">{{ dialogs.noLibraryStyles }}</p>
             </div>
             <div v-else class="flex-1 overflow-y-auto">
@@ -280,7 +286,10 @@ function onTabChange(tab: string) {
                     class="size-5 shrink-0 rounded border border-border"
                     :style="{ background: getFillColor(style) }"
                   />
-                  <icon-lucide-type v-else-if="style.type === 'TEXT'" class="size-4 shrink-0 text-muted" />
+                  <icon-lucide-type
+                    v-else-if="style.type === 'TEXT'"
+                    class="size-4 shrink-0 text-muted"
+                  />
                   <icon-lucide-sparkles v-else class="size-4 shrink-0 text-muted" />
 
                   <span class="flex-1 truncate text-xs text-surface">{{ style.name }}</span>

@@ -45,14 +45,15 @@ function handleDisconnect() {
 
 const selectedLibraryId = ref<string | null>(null)
 const copiedUrl = ref(false)
+const manifests = computed(() => libStore.manifests.value ?? [])
 
-const selectedLibrary = computed(() =>
-  libStore.manifests.value.find((m) => m.id === selectedLibraryId.value) ?? null
+const selectedLibrary = computed(
+  () => manifests.value.find((m) => m.id === selectedLibraryId.value) ?? null
 )
 
 // Auto-select first library if none selected
-if (libStore.manifests.value.length > 0 && !selectedLibraryId.value) {
-  selectedLibraryId.value = libStore.manifests.value[0]?.id ?? null
+if (manifests.value.length > 0 && !selectedLibraryId.value) {
+  selectedLibraryId.value = manifests.value[0]?.id ?? null
 }
 
 async function handlePublish() {
@@ -70,7 +71,9 @@ async function copyUrl(url: string) {
   try {
     await navigator.clipboard.writeText(url)
     copiedUrl.value = true
-    setTimeout(() => { copiedUrl.value = false }, 1800)
+    setTimeout(() => {
+      copiedUrl.value = false
+    }, 1800)
   } catch (err) {
     console.warn('[LibraryPublishTab] Clipboard write failed:', err)
   }
@@ -83,7 +86,6 @@ const publishedUrl = computed(() =>
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-0">
-
     <!-- GitHub connection section -->
     <div class="shrink-0 border-b border-border px-4 py-3">
       <p class="mb-2 text-[10px] font-medium uppercase tracking-wide text-muted">
@@ -184,7 +186,7 @@ const publishedUrl = computed(() =>
 
       <!-- No libraries -->
       <div
-        v-if="libStore.manifests.value.length === 0"
+        v-if="manifests.length === 0"
         class="flex flex-1 flex-col items-center justify-center gap-2 text-center"
       >
         <icon-lucide-library class="size-7 text-muted" />
@@ -195,7 +197,7 @@ const publishedUrl = computed(() =>
         <!-- Library list (radio-style selection) -->
         <ul class="flex flex-col gap-0.5">
           <li
-            v-for="manifest in libStore.manifests.value"
+            v-for="manifest in manifests"
             :key="manifest.id"
             class="flex cursor-pointer items-center gap-2.5 rounded px-2 py-1.5 hover:bg-hover/60"
             :class="selectedLibraryId === manifest.id ? 'bg-accent/10' : ''"
@@ -203,9 +205,11 @@ const publishedUrl = computed(() =>
           >
             <div
               class="size-3 shrink-0 rounded-full border"
-              :class="selectedLibraryId === manifest.id
-                ? 'border-accent bg-accent'
-                : 'border-muted bg-transparent'"
+              :class="
+                selectedLibraryId === manifest.id
+                  ? 'border-accent bg-accent'
+                  : 'border-muted bg-transparent'
+              "
             />
             <div class="min-w-0 flex-1">
               <p class="truncate text-xs font-medium text-surface">{{ manifest.name }}</p>

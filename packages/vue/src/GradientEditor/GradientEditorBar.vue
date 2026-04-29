@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { GradientStop } from '@norka/core'
 
@@ -39,18 +39,20 @@ function setBarRef(el: unknown) {
   barRef.value = el instanceof HTMLElement ? el : null
 }
 
+const slotProps = computed<Record<string, unknown>>(() => ({
+  stops: props.stops,
+  activeStopIndex: props.activeStopIndex,
+  barBackground: props.barBackground,
+  barRef: setBarRef,
+  onStopPointerDown,
+  onPointerMove,
+  onPointerUp,
+  draggingIndex: draggingIndex.value
+}))
+
 defineExpose({ barRef })
 </script>
 
 <template>
-  <slot
-    :stops="props.stops"
-    :active-stop-index="props.activeStopIndex"
-    :bar-background="props.barBackground"
-    :bar-ref="setBarRef"
-    :on-stop-pointer-down="onStopPointerDown"
-    :on-pointer-move="onPointerMove"
-    :on-pointer-up="onPointerUp"
-    :dragging-index="draggingIndex"
-  />
+  <slot v-bind="slotProps" />
 </template>

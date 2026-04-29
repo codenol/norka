@@ -27,12 +27,7 @@ import { TOOL_TO_NODE } from '@norka/vue/shared/input/types'
 
 import type { SceneNode, Vector, VectorSegment } from '@norka/core'
 import type { Editor } from '@norka/core/editor'
-import type {
-  DragMarquee,
-  DragPan,
-  DragRotate,
-  DragState
-} from '@norka/vue/shared/input/types'
+import type { DragMarquee, DragPan, DragRotate, DragState } from '@norka/vue/shared/input/types'
 
 type NodeEditState = {
   segments: VectorSegment[]

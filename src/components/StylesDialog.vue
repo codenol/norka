@@ -140,7 +140,7 @@ function getTextPreview(style: NamedStyle): string {
 
           <!-- Tab contents -->
           <TabsContent
-            v-for="tab in (['FILL', 'TEXT', 'EFFECT'] as const)"
+            v-for="tab in ['FILL', 'TEXT', 'EFFECT'] as const"
             :key="tab"
             :value="tab"
             class="flex flex-1 flex-col overflow-hidden outline-none"
@@ -161,7 +161,10 @@ function getTextPreview(style: NamedStyle): string {
                   :style="{ background: getFillColor(style) }"
                 />
                 <!-- Type icon for text styles -->
-                <icon-lucide-type v-else-if="style.type === 'TEXT'" class="size-4 shrink-0 text-muted" />
+                <icon-lucide-type
+                  v-else-if="style.type === 'TEXT'"
+                  class="size-4 shrink-0 text-muted"
+                />
                 <!-- Effect icon -->
                 <icon-lucide-sparkles v-else class="size-4 shrink-0 text-muted" />
 
