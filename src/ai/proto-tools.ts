@@ -88,7 +88,10 @@ export function createProtoAITools(store: ProtoStore) {
   const validateQualityGateSchema = v.object({
     required_sections: v.array(v.string()),
     min_node_count: v.optional(v.number()),
-    repair_attempts: v.optional(v.number())
+    repair_attempts: v.optional(v.number()),
+    expected_step_ids: v.optional(v.array(v.string())),
+    expected_table_rows_min: v.optional(v.number()),
+    expected_table_columns_min: v.optional(v.number())
   })
   const deterministicAssembleSchema = v.object({
     sections: v.array(v.string()),
@@ -393,6 +396,7 @@ export function createProtoAITools(store: ProtoStore) {
           store.updateProps(node.id, {
             ...(step.props ?? {}),
             __section: step.section,
+            __stepId: step.id,
             ...(componentId === 'Panel' && componentId !== step.component_id
               ? {
                   __missingComponent: true,
@@ -421,21 +425,54 @@ export function createProtoAITools(store: ProtoStore) {
         required_sections: string[]
         min_node_count?: number
         repair_attempts?: number
+        expected_step_ids?: string[]
+        expected_table_rows_min?: number
+        expected_table_columns_min?: number
       }) => {
         const serialized = store.toSerializedTree()
         const presentSections = new Set<string>()
         const missingComponentIds: string[] = []
         let unresolvedParentLinks = 0
+        let hasTable = false
+        let hasFilters = false
+        let hasActions = false
+        let hasSidebarContent = false
+        let hasBreadcrumbsContent = false
+        let tableRowCount = 0
+        let tableColumnCount = 0
+        const tableColumns = new Set<string>()
+        const stepIdsOnCanvas = new Set<string>()
         const stack = [...serialized]
         while (stack.length > 0) {
           const current = stack.pop()
           if (!current) continue
+          const stepId = current.props?.__stepId
+          if (typeof stepId === 'string' && stepId.trim()) stepIdsOnCanvas.add(stepId)
           const section = (current.props?.__section ?? current.props?.__scaffoldSection) as unknown
           if (typeof section === 'string' && section.trim()) presentSections.add(section)
+          if (current.componentName === 'DataTable') {
+            hasTable = true
+            const value = current.props?.value as unknown
+            if (Array.isArray(value)) tableRowCount = Math.max(tableRowCount, value.length)
+          }
+          if (current.componentName === 'Column') {
+            tableColumnCount += 1
+            const field = current.props?.field
+            if (typeof field === 'string' && field.trim()) tableColumns.add(field.trim().toLowerCase())
+          }
+          if (current.componentName === 'Dropdown' || current.componentName === 'Calendar') hasFilters = true
+          if (current.componentName === 'Toolbar' || current.componentName === 'Button') hasActions = true
+          if (section === 'sidebar') hasSidebarContent = true
+          if (section === 'breadcrumbs') hasBreadcrumbsContent = true
           if (current.props?.__missingComponent === true) missingComponentIds.push(current.id)
           if (current.props?.__unresolvedParent === true) unresolvedParentLinks += 1
           stack.push(...current.children)
         }
+        const requiredRows = args.expected_table_rows_min ?? 10
+        const requiredColumns = args.expected_table_columns_min ?? 4
+        const domainColumnsPresent = tableColumnCount >= requiredColumns
+        const expectedStepIds = Array.isArray(args.expected_step_ids) ? args.expected_step_ids : []
+        const jsonStructureMatch = expectedStepIds.every((id) => stepIdsOnCanvas.has(id))
         const minNodeCount = args.min_node_count ?? 6
         const gate = evaluateQualityGate({
           nodeCount: store.nodes.length,
@@ -443,7 +480,21 @@ export function createProtoAITools(store: ProtoStore) {
           presentSections: [...presentSections],
           missingComponents: missingComponentIds,
           unresolvedParentLinks,
-          repairAttempts: args.repair_attempts ?? 0
+          repairAttempts: args.repair_attempts ?? 0,
+          enterprise: {
+            hasDataSection: presentSections.has('main'),
+            hasTable,
+            hasFilters,
+            hasActions,
+            hasSidebarContent,
+            hasBreadcrumbsContent,
+            tableRowCount,
+            tableColumnCount,
+            minTableRows: requiredRows,
+            minTableColumns: requiredColumns,
+            domainColumnsPresent,
+            jsonStructureMatch
+          }
         })
         const minCountCheck = gate.checks.find((check) => check.id === 'min-node-count')
         if (minCountCheck) {
@@ -521,6 +572,7 @@ export function createProtoAITools(store: ProtoStore) {
             store.updateProps(node.id, {
               ...(step.props ?? {}),
               __section: step.section,
+              __stepId: step.id,
               ...(componentId === 'Panel' && componentId !== step.component_id
                 ? {
                     __missingComponent: true,

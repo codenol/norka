@@ -1,5 +1,33 @@
 export type PipelineStage = 'planning' | 'assembly' | 'validation' | 'complete' | 'failed'
 
+export type EnterpriseScreenKind =
+  | 'dashboard'
+  | 'list'
+  | 'detail'
+  | 'settings'
+  | 'workflow'
+  | 'approvals'
+
+export type EnterpriseSectionKind =
+  | 'navigation'
+  | 'data'
+  | 'status'
+  | 'filters'
+  | 'actions'
+  | 'header'
+  | 'form'
+
+export type EnterpriseBlockKind =
+  | 'summaryPanel'
+  | 'breadcrumbTrail'
+  | 'pageHeader'
+  | 'filtersBar'
+  | 'kpiRow'
+  | 'kpiCard'
+  | 'entityTable'
+  | 'bulkActions'
+  | 'primaryActions'
+
 export interface ScreenPlanSection {
   id: string
   title: string
@@ -19,6 +47,70 @@ export interface ScreenPlan {
   confidence: number
   requiredSections: ScreenPlanSection[]
   requiredBlocks: ScreenPlanBlock[]
+  unknowns: string[]
+  assumptions: string[]
+}
+
+export interface EnterpriseSection {
+  id: string
+  title: string
+  required: boolean
+  kind: EnterpriseSectionKind
+  items?: Array<{
+    id: string
+    component: string
+    title?: string
+    props?: Record<string, unknown>
+  }>
+}
+
+export interface EnterpriseBlock {
+  id: string
+  sectionId: string
+  kind: EnterpriseBlockKind
+  title: string
+  component?: string
+  props?: Record<string, unknown>
+}
+
+export interface EnterpriseTableSpec {
+  rowCountTarget?: number
+  density?: 'compact' | 'comfortable'
+  columns?: Array<{ key: string; label: string }>
+  sampleRows?: Array<Record<string, unknown>>
+}
+
+export interface EnterpriseDataField {
+  key: string
+  label: string
+  type: 'string' | 'number' | 'status' | 'date'
+}
+
+export interface EnterpriseScreenPlanV1 {
+  version: 'enterprise-screen-plan.v1'
+  screenMeta: {
+    kind: EnterpriseScreenKind
+    sceneId: string
+    confidence: number
+  }
+  layout: {
+    requiredSections: string[]
+  }
+  sections: EnterpriseSection[]
+  blocks: EnterpriseBlock[]
+  dataSchema: {
+    entityName: string
+    fields: EnterpriseDataField[]
+  }
+  tableSpec?: EnterpriseTableSpec
+  interactions: string[]
+  quality: {
+    mustHaveTable: boolean
+    mustHaveFilters: boolean
+    mustHaveActions: boolean
+    mustFillSidebar: boolean
+    mustFillBreadcrumbs: boolean
+  }
   unknowns: string[]
   assumptions: string[]
 }
@@ -48,289 +140,460 @@ export interface QualityGateResult {
   failReasons: string[]
 }
 
-function includesAny(source: string, words: string[]): boolean {
-  return words.some((word) => source.includes(word))
+export interface EnterpriseQualitySignals {
+  hasDataSection?: boolean
+  hasTable?: boolean
+  hasFilters?: boolean
+  hasActions?: boolean
+  hasSidebarContent?: boolean
+  hasBreadcrumbsContent?: boolean
+  tableRowCount?: number
+  tableColumnCount?: number
+  minTableRows?: number
+  minTableColumns?: number
+  domainColumnsPresent?: boolean
+  jsonStructureMatch?: boolean
 }
 
 export function buildDeterministicScreenPlan(brief: string, source: string): ScreenPlan {
-  const content = `${brief}\n${source}`.toLowerCase()
-  const hasTable = includesAny(content, ['табл', 'table', 'список'])
-  const hasStatus = includesAny(content, ['healthy', 'warning', 'critical', 'статус'])
-  const hasActions = includesAny(content, ['кноп', 'действ', 'cta', 'alert'])
-  const hasFilters = includesAny(content, ['фильтр', 'период', 'date', 'calendar'])
-  const confidenceSignals = [hasTable, hasStatus, hasActions, hasFilters].filter(Boolean).length
-  const confidence = Math.min(0.9, 0.55 + confidenceSignals * 0.1)
-  const sceneId = hasTable ? 'overview-dashboard' : 'form-workflow'
-  const requiredSections: ScreenPlanSection[] = [
-    { id: 'sidebar', title: 'Sidebar', required: true },
-    { id: 'breadcrumbs', title: 'Breadcrumbs', required: true },
-    { id: 'header', title: 'Header', required: true },
-    { id: 'kpis', title: 'KPI Cards', required: true },
-    { id: 'main', title: 'Main Content', required: true },
-    { id: 'actions', title: 'Actions', required: true }
+  const enterprise = buildEnterpriseScreenPlan(brief, source)
+  return enterprisePlanToScreenPlan(enterprise)
+}
+
+export function buildEnterpriseScreenPlan(brief: string, source: string): EnterpriseScreenPlanV1 {
+  const content = `${brief}\n${source}`.trim()
+  const confidence = content.length > 0 ? 0.7 : 0.55
+  const sections: EnterpriseSection[] = [
+    { id: 'sidebar', title: 'Sidebar', required: true, kind: 'navigation', items: [] },
+    { id: 'breadcrumbs', title: 'Breadcrumbs', required: true, kind: 'navigation', items: [] },
+    { id: 'header', title: 'Header', required: true, kind: 'header', items: [] },
+    { id: 'kpis', title: 'KPI Row', required: true, kind: 'status', items: [] },
+    { id: 'main', title: 'Main Content', required: true, kind: 'data', items: [] },
+    { id: 'actions', title: 'Actions', required: true, kind: 'actions', items: [] }
   ]
-  const mainComponent = hasTable ? 'DataTable' : 'Card'
-  const actionComponent = hasActions ? 'Toolbar' : 'Button'
-  const requiredBlocks: ScreenPlanBlock[] = [
+  const blocks: EnterpriseBlock[] = [
     {
-      id: 'sidebar-overview',
+      id: 'sidebar-summary',
       sectionId: 'sidebar',
-      name: 'Sidebar overview',
-      archetypeId: 'navigation',
-      preferredComponent: 'Card'
+      kind: 'summaryPanel',
+      title: 'Sidebar Summary',
+      component: 'Card',
+      props: { title: 'Sidebar Summary' }
     },
     {
-      id: 'breadcrumbs',
+      id: 'breadcrumbs-trail',
       sectionId: 'breadcrumbs',
-      name: 'Breadcrumb trail',
-      archetypeId: 'navigation',
-      preferredComponent: 'Breadcrumb'
+      kind: 'breadcrumbTrail',
+      title: 'Home / Screen',
+      component: 'Breadcrumb',
+      props: { model: [{ label: 'Home' }, { label: 'Screen' }] }
     },
     {
-      id: 'page-title',
+      id: 'header-title',
       sectionId: 'header',
-      name: 'Page title',
-      archetypeId: 'header',
-      preferredComponent: 'Card'
+      kind: 'pageHeader',
+      title: 'Page Title',
+      component: 'Card',
+      props: { title: 'Page Title' }
     },
     {
-      id: 'kpi-grid',
-      sectionId: 'kpis',
-      name: 'KPI grid',
-      archetypeId: 'metric',
-      preferredComponent: 'Card'
+      id: 'header-filters',
+      sectionId: 'header',
+      kind: 'filtersBar',
+      title: 'Filters',
+      component: 'Dropdown',
+      props: { placeholder: 'Filters' }
     },
     {
       id: 'main-table',
       sectionId: 'main',
-      name: 'Primary data table',
-      archetypeId: 'table',
-      preferredComponent: mainComponent
+      kind: 'entityTable',
+      title: 'Data Table',
+      component: 'DataTable',
+      props: { paginator: true, rows: 10, stripedRows: true }
     },
     {
-      id: 'quick-actions',
+      id: 'actions-toolbar',
       sectionId: 'actions',
-      name: 'Primary actions',
-      archetypeId: 'actions',
-      preferredComponent: actionComponent
+      kind: 'primaryActions',
+      title: 'Actions',
+      component: 'Toolbar',
+      props: {}
     }
   ]
-  if (hasFilters) {
-    requiredBlocks.push({
-      id: 'filters',
-      sectionId: 'header',
-      name: 'Filters',
-      archetypeId: 'filters',
-      preferredComponent: 'Dropdown'
-    })
-  }
-  const unknowns: string[] = []
-  if (!content.includes('warning') || !content.includes('critical')) {
-    unknowns.push('Threshold policy for warning/critical states is missing')
-  }
-  if (!content.includes('метрик') && !content.includes('metric')) {
-    unknowns.push('Detailed metrics interpretation is missing')
-  }
   return {
-    sceneId,
-    confidence,
-    requiredSections,
-    requiredBlocks,
-    unknowns,
-    assumptions: unknowns.map((u) => `Assumption: ${u}`)
+    version: 'enterprise-screen-plan.v1',
+    screenMeta: { kind: 'list', sceneId: 'overview-dashboard', confidence },
+    layout: {
+      requiredSections: sections.filter((section) => section.required).map((section) => section.id)
+    },
+    sections,
+    blocks,
+    dataSchema: {
+      entityName: 'items',
+      fields: [
+        { key: 'name', label: 'Элемент', type: 'string' },
+        { key: 'status', label: 'Статус', type: 'status' },
+        { key: 'updatedAt', label: 'Обновлено', type: 'date' }
+      ]
+    },
+    tableSpec: {
+      rowCountTarget: 10,
+      density: 'compact',
+      columns: []
+    },
+    interactions: [],
+    quality: {
+      mustHaveTable: true,
+      mustHaveFilters: true,
+      mustHaveActions: true,
+      mustFillSidebar: true,
+      mustFillBreadcrumbs: true
+    },
+    unknowns: [],
+    assumptions: []
   }
 }
 
 export function buildAssemblyPlanFromScreenPlan(screenPlan: ScreenPlan): AssemblyPlan {
-  const steps: AssemblyStep[] = [
-    {
-      id: 'sidebar-summary',
-      section: 'sidebar',
-      intent: 'Create sidebar summary card',
-      component_id: 'Card',
-      parent_section_id: 'sidebar',
-      props: { title: 'Слои экрана', subTitle: 'Сводка структуры' },
-      expectedChecks: ['sidebar-summary-created']
-    },
-    {
-      id: 'sidebar-nav-analytics',
-      section: 'sidebar',
-      intent: 'Create sidebar analytics nav action',
-      component_id: 'Button',
-      parent_section_id: 'sidebar',
-      props: { label: 'Аналитика', severity: 'secondary' },
-      expectedChecks: ['sidebar-nav-analytics-created']
-    },
-    {
-      id: 'sidebar-nav-design',
-      section: 'sidebar',
-      intent: 'Create sidebar design nav action',
-      component_id: 'Button',
-      parent_section_id: 'sidebar',
-      props: { label: 'Прототип', severity: 'secondary' },
-      expectedChecks: ['sidebar-nav-design-created']
-    },
-    {
-      id: 'breadcrumbs-main',
-      section: 'breadcrumbs',
-      intent: 'Create breadcrumb trail in existing header slot',
-      component_id: 'Breadcrumb',
-      parent_section_id: 'breadcrumbs',
-      props: { model: [{ label: 'Проекты' }, { label: 'Каталог' }, { label: 'Пагинация' }] },
-      expectedChecks: ['breadcrumbs-main-created']
-    },
-    {
-      id: 'header-title',
-      section: 'header',
-      intent: 'Create page header card',
-      component_id: 'Card',
-      parent_section_id: 'header',
-      props: { title: 'Корзина — обзор', subTitle: 'Сводка по состоянию товаров' },
-      expectedChecks: ['header-title-created']
-    },
-    {
-      id: 'header-filter',
-      section: 'header',
-      intent: 'Create header filter',
-      component_id: 'Dropdown',
-      parent_section_id: 'header',
-      props: { placeholder: 'Период' },
-      expectedChecks: ['header-filter-created']
-    },
-    {
-      id: 'kpi-row',
-      section: 'kpis',
-      intent: 'Create horizontal KPI frame',
-      component_id: 'Toolbar',
-      parent_section_id: 'kpis',
-      expectedChecks: ['kpi-row-created']
-    },
-    {
-      id: 'kpi-total',
-      section: 'kpis',
-      intent: 'Create total KPI card',
-      component_id: 'Card',
-      parent_step_id: 'kpi-row',
-      slot_name: 'start',
-      props: { title: 'Всего товаров', subTitle: '3' },
-      expectedChecks: ['kpi-total-created']
-    },
-    {
-      id: 'kpi-critical',
-      section: 'kpis',
-      intent: 'Create critical KPI card',
-      component_id: 'Card',
-      parent_step_id: 'kpi-row',
-      slot_name: 'start',
-      props: { title: 'Critical', subTitle: '1' },
-      expectedChecks: ['kpi-critical-created']
-    },
-    {
-      id: 'kpi-warning',
-      section: 'kpis',
-      intent: 'Create warning KPI card',
-      component_id: 'Card',
-      parent_step_id: 'kpi-row',
-      slot_name: 'start',
-      props: { title: 'Warning', subTitle: '1' },
-      expectedChecks: ['kpi-warning-created']
-    },
-    {
-      id: 'kpi-healthy',
-      section: 'kpis',
-      intent: 'Create healthy KPI card',
-      component_id: 'Card',
-      parent_step_id: 'kpi-row',
-      slot_name: 'start',
-      props: { title: 'Healthy', subTitle: '1' },
-      expectedChecks: ['kpi-healthy-created']
-    },
-    {
-      id: 'main-table',
-      section: 'main',
-      intent: 'Create items table',
-      component_id: 'DataTable',
-      parent_section_id: 'main',
-      props: {
-        paginator: true,
-        rows: 5,
-        stripedRows: true,
-        value: [
-          { name: 'Товар A', quantity: 10, price: 100, status: 'healthy' },
-          { name: 'Товар B', quantity: 2, price: 250, status: 'warning' },
-          { name: 'Товар C', quantity: 0, price: 500, status: 'critical' }
-        ]
-      },
-      expectedChecks: ['main-table-created']
-    },
-    {
-      id: 'main-col-name',
-      section: 'main',
-      intent: 'Create name column',
-      component_id: 'Column',
-      parent_step_id: 'main-table',
-      props: { field: 'name', header: 'Товар' },
-      expectedChecks: ['main-col-name-created']
-    },
-    {
-      id: 'main-col-quantity',
-      section: 'main',
-      intent: 'Create quantity column',
-      component_id: 'Column',
-      parent_step_id: 'main-table',
-      props: { field: 'quantity', header: 'Количество' },
-      expectedChecks: ['main-col-quantity-created']
-    },
-    {
-      id: 'main-col-price',
-      section: 'main',
-      intent: 'Create price column',
-      component_id: 'Column',
-      parent_step_id: 'main-table',
-      props: { field: 'price', header: 'Цена' },
-      expectedChecks: ['main-col-price-created']
-    },
-    {
-      id: 'main-col-status',
-      section: 'main',
-      intent: 'Create status column',
-      component_id: 'Column',
-      parent_step_id: 'main-table',
-      props: { field: 'status', header: 'Статус' },
-      expectedChecks: ['main-col-status-created']
-    },
-    {
-      id: 'actions-toolbar',
-      section: 'actions',
-      intent: 'Create actions toolbar',
-      component_id: 'Toolbar',
-      parent_section_id: 'actions',
-      expectedChecks: ['actions-toolbar-created']
-    },
-    {
-      id: 'actions-refresh',
-      section: 'actions',
-      intent: 'Create refresh action button',
-      component_id: 'Button',
-      parent_step_id: 'actions-toolbar',
-      slot_name: 'start',
-      props: { label: 'Обновить' },
-      expectedChecks: ['actions-refresh-created']
-    },
-    {
-      id: 'actions-alert',
-      section: 'actions',
-      intent: 'Create alert simulation action button',
-      component_id: 'Button',
-      parent_step_id: 'actions-toolbar',
-      slot_name: 'start',
-      props: { label: 'Симулировать алерт', severity: 'secondary' },
-      expectedChecks: ['actions-alert-created']
-    }
-  ]
+  return buildAssemblyPlanFromEnterprisePlan(screenPlanToEnterprisePlan(screenPlan))
+}
 
-  const required = new Set(screenPlan.requiredSections.map((section) => section.id))
-  return { steps: steps.filter((step) => required.has(step.section)) }
+export function enterprisePlanToScreenPlan(plan: EnterpriseScreenPlanV1): ScreenPlan {
+  const blockDefaults: Record<EnterpriseBlockKind, { archetypeId: string; preferredComponent: string }> = {
+    summaryPanel: { archetypeId: 'navigation', preferredComponent: 'Card' },
+    breadcrumbTrail: { archetypeId: 'navigation', preferredComponent: 'Breadcrumb' },
+    pageHeader: { archetypeId: 'header', preferredComponent: 'Card' },
+    filtersBar: { archetypeId: 'filters', preferredComponent: 'Dropdown' },
+    kpiRow: { archetypeId: 'metric', preferredComponent: 'Toolbar' },
+    kpiCard: { archetypeId: 'metric', preferredComponent: 'Card' },
+    entityTable: { archetypeId: 'table', preferredComponent: 'DataTable' },
+    bulkActions: { archetypeId: 'actions', preferredComponent: 'Toolbar' },
+    primaryActions: { archetypeId: 'actions', preferredComponent: 'Toolbar' }
+  }
+  return {
+    sceneId: plan.screenMeta.sceneId,
+    confidence: plan.screenMeta.confidence,
+    requiredSections: plan.sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+      required: section.required
+    })),
+    requiredBlocks: plan.blocks.map((block) => ({
+      id: block.id,
+      sectionId: block.sectionId,
+      name: block.title,
+      archetypeId: blockDefaults[block.kind].archetypeId,
+      preferredComponent: blockDefaults[block.kind].preferredComponent
+    })),
+    unknowns: [...plan.unknowns],
+    assumptions: [...plan.assumptions]
+  }
+}
+
+function screenPlanToEnterprisePlan(screenPlan: ScreenPlan): EnterpriseScreenPlanV1 {
+  const sections: EnterpriseSection[] = screenPlan.requiredSections.map((section) => ({
+    id: section.id,
+    title: section.title,
+    required: section.required,
+    kind:
+      section.id === 'sidebar' || section.id === 'breadcrumbs'
+        ? 'navigation'
+        : section.id === 'header'
+          ? 'header'
+          : section.id === 'actions'
+            ? 'actions'
+            : section.id === 'kpis'
+              ? 'status'
+              : 'data'
+  }))
+  const blocks: EnterpriseBlock[] = screenPlan.requiredBlocks.map((block) => ({
+    id: block.id,
+    sectionId: block.sectionId,
+    kind:
+      block.id.includes('breadcrumb')
+        ? 'breadcrumbTrail'
+        : block.id.includes('filter')
+          ? 'filtersBar'
+          : block.id.includes('kpi')
+            ? 'kpiCard'
+            : block.id.includes('table')
+              ? 'entityTable'
+              : block.sectionId === 'actions'
+                ? 'primaryActions'
+                : block.sectionId === 'header'
+                  ? 'pageHeader'
+                  : 'summaryPanel',
+    title: block.name
+  }))
+  return {
+    version: 'enterprise-screen-plan.v1',
+    screenMeta: {
+      kind: screenPlan.sceneId.includes('form') ? 'detail' : 'dashboard',
+      sceneId: screenPlan.sceneId,
+      confidence: screenPlan.confidence
+    },
+    layout: { requiredSections: sections.filter((section) => section.required).map((section) => section.id) },
+    sections,
+    blocks,
+    dataSchema: {
+      entityName: 'items',
+      fields: [
+        { key: 'name', label: 'Элемент', type: 'string' },
+        { key: 'status', label: 'Статус', type: 'status' }
+      ]
+    },
+    tableSpec: {
+      rowCountTarget: 10,
+      density: 'compact',
+      columns: []
+    },
+    interactions: [],
+    quality: {
+      mustHaveTable: true,
+      mustHaveFilters: true,
+      mustHaveActions: true,
+      mustFillSidebar: true,
+      mustFillBreadcrumbs: true
+    },
+    unknowns: [...screenPlan.unknowns],
+    assumptions: [...screenPlan.assumptions]
+  }
+}
+
+export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1): AssemblyPlan {
+  const requiredSections = new Set(plan.layout.requiredSections)
+  const fields = plan.dataSchema.fields.length > 0 ? plan.dataSchema.fields : []
+  const tableSpec = plan.tableSpec
+  const rowCountTarget = Math.max(1, tableSpec?.rowCountTarget ?? 10)
+  const toTitle = (value: string) =>
+    value
+      .split(/[-_]/g)
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase() + part.slice(1))
+      .join(' ')
+  const resolveComponent = (
+    preferred: string | undefined,
+    fallback: 'Card' | 'Toolbar' | 'Dropdown' | 'DataTable' | 'Button' | 'Breadcrumb'
+  ) => preferred ?? fallback
+  const buildRowsFromSchema = (count: number): Array<Record<string, unknown>> =>
+    Array.from({ length: count }, (_, index) => {
+      const row: Record<string, unknown> = {}
+      for (const field of fields) {
+        if (field.type === 'number') row[field.key] = index + 1
+        else if (field.type === 'date')
+          row[field.key] = `2026-01-${String((index % 28) + 1).padStart(2, '0')}`
+        else if (field.type === 'status')
+          row[field.key] = index % 4 === 0 ? 'critical' : index % 3 === 0 ? 'warning' : 'healthy'
+        else row[field.key] = `${field.label} ${index + 1}`
+      }
+      return row
+    })
+
+  const steps: AssemblyStep[] = []
+  const blocks = plan.blocks.filter((block) => requiredSections.has(block.sectionId))
+  const dataRows = Array.isArray(tableSpec?.sampleRows) && tableSpec.sampleRows.length > 0
+    ? tableSpec.sampleRows
+    : buildRowsFromSchema(rowCountTarget)
+
+  for (const section of plan.sections) {
+    if (!requiredSections.has(section.id)) continue
+    for (const item of section.items ?? []) {
+      steps.push({
+        id: item.id,
+        section: section.id,
+        intent: `Create section item ${item.id}`,
+        component_id: item.component,
+        parent_section_id: section.id,
+        props: item.props ?? (item.title ? { title: item.title } : {}),
+        expectedChecks: [`${item.id}-created`]
+      })
+    }
+  }
+
+  for (const block of blocks) {
+    if (block.kind === 'kpiCard') continue
+    if (block.kind === 'kpiRow') {
+      steps.push({
+        id: block.id,
+        section: block.sectionId,
+        intent: `Create block ${block.id}`,
+        component_id: resolveComponent(block.component, 'Toolbar'),
+        parent_section_id: block.sectionId,
+        props: block.props ?? {},
+        expectedChecks: [`${block.id}-created`]
+      })
+      continue
+    }
+
+    if (block.kind === 'entityTable') {
+      steps.push({
+        id: block.id,
+        section: block.sectionId,
+        intent: `Create block ${block.id}`,
+        component_id: resolveComponent(block.component, 'DataTable'),
+        parent_section_id: block.sectionId,
+        props: {
+          paginator: true,
+          stripedRows: true,
+          rows: Math.min(10, rowCountTarget),
+          value: dataRows,
+          ...(block.props ?? {})
+        },
+        expectedChecks: [`${block.id}-created`]
+      })
+      const columns =
+        tableSpec?.columns && tableSpec.columns.length > 0
+          ? tableSpec.columns
+          : fields.map((field) => ({ key: field.key, label: field.label }))
+      for (const column of columns) {
+        steps.push({
+          id: `${block.id}-col-${column.key}`,
+          section: block.sectionId,
+          intent: `Create column ${column.key}`,
+          component_id: 'Column',
+          parent_step_id: block.id,
+          props: { field: column.key, header: column.label },
+          expectedChecks: [`${block.id}-col-${column.key}-created`]
+        })
+      }
+      continue
+    }
+
+    if (block.kind === 'breadcrumbTrail') {
+      const breadcrumbProps =
+        block.props ??
+        ({
+          model: block.title
+            .split(/\s*[/>\-→]\s*/g)
+            .filter(Boolean)
+            .map((label) => ({ label }))
+        } as Record<string, unknown>)
+      steps.push({
+        id: block.id,
+        section: block.sectionId,
+        intent: `Create block ${block.id}`,
+        component_id: resolveComponent(block.component, 'Breadcrumb'),
+        parent_section_id: block.sectionId,
+        props: breadcrumbProps,
+        expectedChecks: [`${block.id}-created`]
+      })
+      continue
+    }
+
+    const fallbackComponent =
+      block.kind === 'filtersBar'
+        ? 'Dropdown'
+        : block.kind === 'primaryActions' || block.kind === 'bulkActions'
+          ? 'Toolbar'
+          : 'Card'
+    steps.push({
+      id: block.id,
+      section: block.sectionId,
+      intent: `Create block ${block.id}`,
+      component_id: resolveComponent(block.component, fallbackComponent),
+      parent_section_id: block.sectionId,
+      props: block.props ?? (block.title ? { title: block.title, placeholder: block.title } : {}),
+      expectedChecks: [`${block.id}-created`]
+    })
+  }
+
+  const kpiRow = blocks.find((block) => block.kind === 'kpiRow')
+  if (kpiRow) {
+    for (const kpi of blocks.filter((block) => block.kind === 'kpiCard')) {
+      steps.push({
+        id: kpi.id,
+        section: kpi.sectionId,
+        intent: `Create KPI ${kpi.id}`,
+        component_id: resolveComponent(kpi.component, 'Card'),
+        parent_step_id: kpiRow.id,
+        slot_name: 'start',
+        props: kpi.props ?? { title: kpi.title, subTitle: '—' },
+        expectedChecks: [`${kpi.id}-created`]
+      })
+    }
+  }
+
+  const actionContainers = blocks.filter(
+    (block) => block.kind === 'primaryActions' || block.kind === 'bulkActions'
+  )
+  for (const actionContainer of actionContainers) {
+    const containerId = actionContainer.id
+    for (const interaction of plan.interactions) {
+      const actionId = `${containerId}-${interaction}`
+      steps.push({
+        id: actionId,
+        section: actionContainer.sectionId,
+        intent: `Create action ${actionId}`,
+        component_id: 'Button',
+        parent_step_id: containerId,
+        slot_name: 'start',
+        props: { label: toTitle(interaction) || interaction },
+        expectedChecks: [`${actionId}-created`]
+      })
+    }
+  }
+
+  return { steps: steps.filter((step) => requiredSections.has(step.section)) }
+}
+
+export function repairEnterpriseScreenPlan(
+  plan: EnterpriseScreenPlanV1,
+  failReasons: string[]
+): EnterpriseScreenPlanV1 {
+  const normalized = failReasons.join(' ').toLowerCase()
+  const next: EnterpriseScreenPlanV1 = {
+    ...plan,
+    sections: [...plan.sections],
+    blocks: [...plan.blocks],
+    interactions: [...plan.interactions],
+    quality: { ...plan.quality },
+    unknowns: [...plan.unknowns],
+    assumptions: [...plan.assumptions]
+  }
+  const hasBlock = (kind: EnterpriseBlockKind) => next.blocks.some((block) => block.kind === kind)
+  if (normalized.includes('hastable=false') || normalized.includes('missing main table')) {
+    if (!hasBlock('entityTable')) {
+      next.blocks.push({
+        id: 'repair-main-table',
+        sectionId: 'main',
+        kind: 'entityTable',
+        title: 'Primary data table'
+      })
+    }
+    next.quality.mustHaveTable = true
+  }
+  if (normalized.includes('hasfilters=false') || normalized.includes('filters')) {
+    if (!hasBlock('filtersBar')) {
+      next.blocks.push({
+        id: 'repair-filters',
+        sectionId: 'header',
+        kind: 'filtersBar',
+        title: 'Filters'
+      })
+    }
+    next.quality.mustHaveFilters = true
+  }
+  if (normalized.includes('hasactions=false') || normalized.includes('actions')) {
+    if (!hasBlock('primaryActions')) {
+      next.blocks.push({
+        id: 'repair-actions',
+        sectionId: 'actions',
+        kind: 'primaryActions',
+        title: 'Primary actions'
+      })
+    }
+    next.quality.mustHaveActions = true
+  }
+  if (normalized.includes('hassidebarcontent=false')) {
+    if (!next.layout.requiredSections.includes('sidebar')) next.layout.requiredSections.push('sidebar')
+    next.quality.mustFillSidebar = true
+  }
+  if (normalized.includes('hasbreadcrumbscontent=false')) {
+    if (!next.layout.requiredSections.includes('breadcrumbs')) next.layout.requiredSections.push('breadcrumbs')
+    next.quality.mustFillBreadcrumbs = true
+  }
+  return next
 }
 
 export function evaluateQualityGate(args: {
@@ -340,6 +603,7 @@ export function evaluateQualityGate(args: {
   missingComponents: string[]
   unresolvedParentLinks?: number
   repairAttempts: number
+  enterprise?: EnterpriseQualitySignals
 }): QualityGateResult {
   const placeholderRatio = args.nodeCount === 0 ? 1 : args.missingComponents.length / args.nodeCount
   const checks = [
@@ -362,6 +626,58 @@ export function evaluateQualityGate(args: {
       id: 'unresolved-parent-links',
       passed: (args.unresolvedParentLinks ?? 0) === 0,
       detail: `unresolvedParentLinks=${args.unresolvedParentLinks ?? 0}`
+    },
+    {
+      id: 'enterprise-data-section',
+      passed: args.enterprise?.hasDataSection ?? true,
+      detail: `hasDataSection=${args.enterprise?.hasDataSection ?? true}`
+    },
+    {
+      id: 'enterprise-table',
+      passed: args.enterprise?.hasTable ?? true,
+      detail: `hasTable=${args.enterprise?.hasTable ?? true}`
+    },
+    {
+      id: 'enterprise-filters',
+      passed: args.enterprise?.hasFilters ?? true,
+      detail: `hasFilters=${args.enterprise?.hasFilters ?? true}`
+    },
+    {
+      id: 'enterprise-actions',
+      passed: args.enterprise?.hasActions ?? true,
+      detail: `hasActions=${args.enterprise?.hasActions ?? true}`
+    },
+    {
+      id: 'enterprise-sidebar',
+      passed: args.enterprise?.hasSidebarContent ?? true,
+      detail: `hasSidebarContent=${args.enterprise?.hasSidebarContent ?? true}`
+    },
+    {
+      id: 'enterprise-breadcrumbs',
+      passed: args.enterprise?.hasBreadcrumbsContent ?? true,
+      detail: `hasBreadcrumbsContent=${args.enterprise?.hasBreadcrumbsContent ?? true}`
+    },
+    {
+      id: 'enterprise-table-density',
+      passed: (args.enterprise?.tableRowCount ?? (args.enterprise?.minTableRows ?? 10)) >= (args.enterprise?.minTableRows ?? 10),
+      detail: `tableRowCount=${args.enterprise?.tableRowCount ?? 0} (required >= ${args.enterprise?.minTableRows ?? 10})`
+    },
+    {
+      id: 'enterprise-table-columns',
+      passed:
+        (args.enterprise?.tableColumnCount ?? (args.enterprise?.minTableColumns ?? 4)) >=
+        (args.enterprise?.minTableColumns ?? 4),
+      detail: `tableColumnCount=${args.enterprise?.tableColumnCount ?? 0} (required >= ${args.enterprise?.minTableColumns ?? 4})`
+    },
+    {
+      id: 'enterprise-domain-columns',
+      passed: args.enterprise?.domainColumnsPresent ?? true,
+      detail: `domainColumnsPresent=${args.enterprise?.domainColumnsPresent ?? true}`
+    },
+    {
+      id: 'json-structure-match',
+      passed: args.enterprise?.jsonStructureMatch ?? true,
+      detail: `jsonStructureMatch=${args.enterprise?.jsonStructureMatch ?? true}`
     }
   ]
   const failReasons = checks.filter((check) => !check.passed).map((check) => check.detail)

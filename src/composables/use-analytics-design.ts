@@ -14,9 +14,11 @@ import { useRouter } from 'vue-router'
 
 import { createAITools } from '@/ai/tools'
 import {
-  buildAssemblyPlanFromScreenPlan,
-  buildDeterministicScreenPlan,
-  evaluateQualityGate
+  buildAssemblyPlanFromEnterprisePlan,
+  buildEnterpriseScreenPlan,
+  enterprisePlanToScreenPlan,
+  evaluateQualityGate,
+  repairEnterpriseScreenPlan
 } from '@/ai/screen-pipeline'
 import { useProjects } from '@/composables/use-projects'
 import { workspacePath, writeFeatureFile } from '@/composables/use-workspace-fs'
@@ -31,6 +33,24 @@ export interface AnalyticsDesignSources {
   analyticsSourceMd: string
   mode?: 'auto-scene' | 'code-components'
 }
+
+export const GENOM_GOLDEN_REFERENCE = {
+  name: 'genom-firmware-report-light',
+  theme: 'light',
+  images: [
+    '/Users/a1111/.cursor/projects/Users-a1111-Documents-code-openpencil/assets/image-04094921-0d29-412c-a164-3c31e75167fb.png',
+    '/Users/a1111/.cursor/projects/Users-a1111-Documents-code-openpencil/assets/image-3f1c6737-52e3-4213-b1a8-c4d4c1b2f4de.png',
+    '/Users/a1111/.cursor/projects/Users-a1111-Documents-code-openpencil/assets/image-aab7b989-49cc-4a07-81b7-01fa7ed708ad.png',
+    '/Users/a1111/.cursor/projects/Users-a1111-Documents-code-openpencil/assets/image-120f9fa4-1b69-4ded-8149-2137c0a509bd.png',
+    '/Users/a1111/.cursor/projects/Users-a1111-Documents-code-openpencil/assets/image-3881efae-9e50-4082-9898-2bd29e140f68.png'
+  ],
+  checklist: [
+    'mini-sidebar + sidebar navigation are present',
+    'breadcrumbs row is present and populated',
+    'filters row and toolbar actions are present',
+    'firmware report table has enterprise density'
+  ]
+} as const
 
 interface AnalyticsGap {
   key: string
@@ -70,30 +90,8 @@ export function validateAnalyticsDesignSources(
 export function buildAnalyticsDesignPrompt(sources: AnalyticsDesignSources): string {
   const mode = sources.mode ?? 'auto-scene'
   const unknowns = detectAnalyticsUnknowns(sources.analyticsMd)
-  const screenPlan = buildDeterministicScreenPlan(sources.analyticsMd, sources.analyticsSourceMd)
-  const assemblyPlan = buildAssemblyPlanFromScreenPlan(screenPlan)
-  const compactPlan = JSON.stringify(
-    {
-      sceneId: screenPlan.sceneId,
-      confidence: Number(screenPlan.confidence.toFixed(2)),
-      requiredSections: screenPlan.requiredSections.map((section) => section.id),
-      requiredBlocks: screenPlan.requiredBlocks.map((block) => ({
-        id: block.id,
-        sectionId: block.sectionId,
-        preferredComponent: block.preferredComponent
-      })),
-      unknowns: screenPlan.unknowns
-    },
-    null,
-    2
-  )
-  const compactAssembly = JSON.stringify(
-    {
-      steps: assemblyPlan.steps
-    },
-    null,
-    2
-  )
+  const templatePlan = buildEnterpriseScreenPlan('', '')
+  const compactEnterprisePlan = JSON.stringify(templatePlan, null, 2)
   const compactBrief = sources.analyticsMd
     .replace(/\s+/g, ' ')
     .trim()
@@ -106,34 +104,36 @@ export function buildAnalyticsDesignPrompt(sources: AnalyticsDesignSources): str
     unknowns.length === 0
       ? ['- Нет критичных пробелов: можно строить без допущений.']
       : unknowns.map((gap, index) => `- ${index + 1}. [${gap.key}] ${gap.title}: ${gap.reason}`)
+  const isGenomFirmware = /геном|прошив/i.test(`${sources.analyticsMd}\n${sources.analyticsSourceMd}`)
+  const goldenReference = isGenomFirmware ? GENOM_GOLDEN_REFERENCE : null
   return [
-    'Собери макет экрана на канвасе на основе текущей аналитики.',
+    'Сформируй JSON-план экрана уровня Enterprise SaaS на основе текущей аналитики.',
     `mode: ${mode}`,
-    'Работай execution-first: сразу выполняй tool calls и собирай экран из стандартных PrimeReact компонентов.',
-    'Не меняй shell/layout workspace и левую панель компонентов. Заполняй только внутренний content-area в центре экрана.',
-    'Выбери сцену автоматически на основе аналитики. Если уверенность низкая, выбери fallback scene: overview-dashboard.',
-    'Собери экран без остановок и ручных подтверждений.',
-    'Используй скрытый pipeline: screen-plan -> assembly-plan -> step-by-step execution.',
-    'Используй get_components -> build_layout_scaffold -> run_assembly_steps({ section_node_map, steps }) -> publish_component_fit({ blocks }) -> validate_quality_gate -> describe.',
-    'Если прогресс остановился, вызови deterministic_assemble({ sections, steps }) как watchdog fallback.',
-    'Любой блок без соответствующего runtime компонента создай как Panel placeholder.',
-    'Для placeholder помечай props: __missingComponent=true, __missingReason, __suggestedComponent.',
-    'Любой узел, созданный на основе допущения, сразу помечай через mark_assumption({ assumed: true, label }).',
-    'После инструментов ответь кратко по-русски: какая сцена выбрана автоматически, что собрано, и что отсутствует.',
-    'Если validate_quality_gate возвращает passed=false, выполни repair pass (максимум 2 попытки) и пометь результат как "Черновик неполный".',
-    'В конце ответа обязательно отдельным списком: Unknowns и Assumptions, плюс статус pipeline.',
+    'Фаза PLAN: не выполняй мутации канваса и не вызывай create_instance/move_node/run_assembly_steps.',
+    'Верни только JSON-план enterprise-screen-plan.v1 (без markdown, без пояснений).',
+    'В плане обязательно укажи sections, blocks, dataSchema, tableSpec, interactions и quality.',
+    'Не меняй shell/layout workspace; план должен заполнять существующие зоны sidebar/breadcrumbs/header/main/actions.',
+    'Если данных не хватает, заполни unknowns и assumptions, но не пропускай обязательные секции.',
+    'JSON-план — единственный источник истины для сборки. Не рассчитывай на fallback-контент из кода.',
+    'Обязательно заполни sections[].items и blocks[].component/props для sidebar, breadcrumbs и main.',
+    ...(goldenReference
+      ? [
+          'Для этого экрана используй golden-reference как эталон структуры в светлой теме; в тёмной теме адаптируй палитру автоматически.',
+          `Golden checklist: ${goldenReference.checklist.join('; ')}`
+        ]
+      : []),
     '',
-    '# Compact screen plan (authoritative)',
-    compactPlan,
-    '',
-    '# Compact assembly plan (authoritative)',
-    compactAssembly,
+    '# Enterprise screen plan template (authoritative)',
+    compactEnterprisePlan,
     '',
     '# Analytics summary (compact)',
     compactBrief,
     '',
     '# Source digest',
     compactSource,
+    ...(goldenReference
+      ? ['', '# Golden reference (authoritative)', JSON.stringify(goldenReference, null, 2)]
+      : []),
     '',
     '# Unknowns (detect before build)',
     ...unknownBlock
@@ -257,6 +257,8 @@ export function useAnalyticsDesign() {
               steps: v.array(v.record(v.string(), v.unknown()))
             })
           ),
+          enterpriseScreenPlan: v.optional(v.record(v.string(), v.unknown())),
+          planVersions: v.optional(v.array(v.record(v.string(), v.unknown()))),
           assumptions: v.optional(
             v.array(
               v.object({
@@ -299,7 +301,8 @@ export function useAnalyticsDesign() {
               stage: v.picklist(['planning', 'assembly', 'validation', 'complete', 'failed']),
               status: v.string()
             })
-          )
+          ),
+          goldenReference: v.optional(v.record(v.string(), v.unknown()))
         })
       ),
       execute: async (payload: Record<string, unknown>) => {
@@ -311,10 +314,19 @@ export function useAnalyticsDesign() {
         const analyticsMd = typeof payload.analyticsMd === 'string' ? payload.analyticsMd : ''
         const analyticsSourceMd =
           typeof payload.analyticsSourceMd === 'string' ? payload.analyticsSourceMd : ''
-        const screenPlan =
-          payload.screenPlan ??
-          buildDeterministicScreenPlan(analyticsMd, analyticsSourceMd)
-        const assemblyPlan = payload.assemblyPlan ?? buildAssemblyPlanFromScreenPlan(screenPlan)
+        const enterpriseScreenPlan =
+          payload.enterpriseScreenPlan && typeof payload.enterpriseScreenPlan === 'object'
+            ? payload.enterpriseScreenPlan
+            : null
+        if (!enterpriseScreenPlan) {
+          return {
+            ok: false,
+            error: 'enterpriseScreenPlan is required in JSON-only mode'
+          }
+        }
+        const screenPlan = payload.screenPlan ?? enterprisePlanToScreenPlan(enterpriseScreenPlan)
+        const assemblyPlan =
+          payload.assemblyPlan ?? buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
         const fallbackGate = evaluateQualityGate({
           nodeCount: 0,
           requiredSections: (screenPlan as { requiredSections?: Array<{ id?: string }> }).requiredSections
@@ -324,17 +336,47 @@ export function useAnalyticsDesign() {
           missingComponents: [],
           repairAttempts: 0
         })
+        const incomingPlanVersions = Array.isArray(payload.planVersions) ? payload.planVersions : []
+        const incomingQualityGate = payload.qualityGate ?? fallbackGate
+        const shouldRepair =
+          incomingQualityGate.passed === false &&
+          (incomingQualityGate.repairAttempts ?? 0) < 2 &&
+          Array.isArray(incomingQualityGate.failReasons)
+        const repairedEnterprisePlan = shouldRepair
+          ? repairEnterpriseScreenPlan(enterpriseScreenPlan, incomingQualityGate.failReasons ?? [])
+          : null
+        const finalEnterprisePlan = repairedEnterprisePlan ?? enterpriseScreenPlan
+        const finalScreenPlan = repairedEnterprisePlan
+          ? enterprisePlanToScreenPlan(repairedEnterprisePlan)
+          : screenPlan
+        const finalAssemblyPlan = repairedEnterprisePlan
+          ? buildAssemblyPlanFromEnterprisePlan(repairedEnterprisePlan)
+          : assemblyPlan
         const normalizedPayload = {
           ...payload,
-          screenPlan,
-          assemblyPlan,
-          qualityGate: payload.qualityGate ?? fallbackGate,
+          enterpriseScreenPlan: finalEnterprisePlan,
+          screenPlan: finalScreenPlan,
+          assemblyPlan: finalAssemblyPlan,
+          planVersions: [
+            ...incomingPlanVersions,
+            {
+              version: incomingPlanVersions.length + 1,
+              createdAt: Date.now(),
+              stage: shouldRepair ? 'validation' : 'planning',
+              plan: finalEnterprisePlan,
+              reason: shouldRepair ? 'repair-pass' : 'initial'
+            }
+          ],
+          qualityGate: incomingQualityGate,
           flow: {
             planGenerated: true,
             assembled: false,
-            stage: 'planning',
-            status: 'Сборка'
-          }
+            stage: shouldRepair ? 'validation' : 'planning',
+            status: shouldRepair ? 'Repair pass подготовлен' : 'Сборка'
+          },
+          goldenReference:
+            payload.goldenReference ??
+            (/геном|прошив/i.test(`${analyticsMd}\n${analyticsSourceMd}`) ? GENOM_GOLDEN_REFERENCE : null)
         }
         await writeFeatureFile(
           root,

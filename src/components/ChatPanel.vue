@@ -289,6 +289,7 @@ async function handleSubmit(text: string) {
 }
 
 function applyDeterministicProtoAssembly(parsed: {
+  enterpriseScreenPlan?: Record<string, unknown>
   screenPlan?: { requiredSections?: Array<{ id?: string }> }
   assemblyPlan?: {
     steps?: Array<{
@@ -367,6 +368,7 @@ async function consumePendingDesignPrompt() {
       uiMode?: 'editor' | 'view'
       resetSession?: boolean
       autoBuildOnly?: boolean
+      enterpriseScreenPlan?: Record<string, unknown>
       screenPlan?: { requiredSections?: Array<{ id?: string }> }
       assemblyPlan?: {
         steps?: Array<{

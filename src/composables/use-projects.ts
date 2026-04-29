@@ -83,13 +83,33 @@ function loadContext(): ProjectContext | null {
 function migrateProduct(p: unknown): Product {
   const data = isRecord(p) ? p : {}
   const id = typeof data.id === 'string' ? data.id : `p-${crypto.randomUUID()}`
-  const title = typeof data.title === 'string' ? data.title : 'Новый продукт'
+  const rawTitle = typeof data.title === 'string' ? data.title : 'Новый продукт'
+  const title = id === 'p2' && rawTitle === 'Веб-дашборд' ? 'Геном 2.0' : rawTitle
   const screens = Array.isArray(data.screens)
     ? (data.screens as Screen[]).map((screen) => ({
         ...screen,
+        title:
+          id === 'p2' && screen.id === 's3' && screen.title === 'Главная'
+            ? 'Отчёт о прошивках'
+            : screen.title,
         features: Array.isArray(screen.features)
           ? screen.features.map((feature) => ({
               ...feature,
+              title:
+                id === 'p2' && screen.id === 's3' && feature.id === 'f6' && feature.title === 'Метрики DAU/MAU'
+                  ? 'Отчёт о прошивках'
+                  : id === 'p2' &&
+                      screen.id === 's3' &&
+                      feature.id === 'f7' &&
+                      feature.title === 'Когортный retention'
+                    ? 'Ролевая модель и токены доступа'
+                    : feature.title,
+              jiraIssueKey:
+                id === 'p2' && screen.id === 's3' && feature.id === 'f6'
+                  ? 'GEN-201'
+                  : id === 'p2' && screen.id === 's3' && feature.id === 'f7'
+                    ? 'GEN-202'
+                    : feature.jiraIssueKey,
               completedSteps: sanitizeCompletedSteps(feature.completedSteps)
             }))
           : []
@@ -184,30 +204,30 @@ function defaultProducts(): Product[] {
     },
     {
       id: 'p2',
-      title: 'Веб-дашборд',
+      title: 'Геном 2.0',
       connectedLibraryIds: ['lib-core'],
       screens: [
         {
           id: 's3',
-          title: 'Главная',
+          title: 'Отчёт о прошивках',
           features: [
             {
               id: 'f6',
-              title: 'Метрики DAU/MAU',
+              title: 'Отчёт о прошивках',
               completedSteps: [],
-              jiraIssueKey: 'DASH-201',
-              jiraUrl: 'https://jira.example.com/browse/DASH-201',
+              jiraIssueKey: 'GEN-201',
+              jiraUrl: 'https://jira.example.com/browse/GEN-201',
               designerFullName: 'Екатерина Миронова',
-              confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+201'
+              confluenceUrl: 'https://confluence.example.com/display/GEN/Firmware+Report+Screen'
             },
             {
               id: 'f7',
-              title: 'Когортный retention',
+              title: 'Ролевая модель и токены доступа',
               completedSteps: [],
-              jiraIssueKey: 'DASH-202',
-              jiraUrl: 'https://jira.example.com/browse/DASH-202',
+              jiraIssueKey: 'GEN-202',
+              jiraUrl: 'https://jira.example.com/browse/GEN-202',
               designerFullName: 'Екатерина Миронова',
-              confluenceUrl: 'https://confluence.example.com/display/DASH/Feature+202'
+              confluenceUrl: 'https://confluence.example.com/display/GEN/Access+Control'
             }
           ]
         }

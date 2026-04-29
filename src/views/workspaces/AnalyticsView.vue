@@ -21,11 +21,13 @@ import { useProjects } from '@/composables/use-projects'
 import { workspacePath, writeFeatureFile, readFeatureFile } from '@/composables/use-workspace-fs'
 import {
   buildAnalyticsDesignPrompt,
+  GENOM_GOLDEN_REFERENCE,
   validateAnalyticsDesignSources
 } from '@/composables/use-analytics-design'
 import {
-  buildAssemblyPlanFromScreenPlan,
-  buildDeterministicScreenPlan,
+  buildAssemblyPlanFromEnterprisePlan,
+  buildEnterpriseScreenPlan,
+  enterprisePlanToScreenPlan,
   evaluateQualityGate
 } from '@/ai/screen-pipeline'
 import {
@@ -517,14 +519,17 @@ async function generateDesignFromAnalytics() {
       analyticsSourceMd: analyticsSource.value,
       mode: 'auto-scene'
     })
-    let screenPlanPayload: ReturnType<typeof buildDeterministicScreenPlan> | null = null
-    let assemblyPlanPayload: ReturnType<typeof buildAssemblyPlanFromScreenPlan> | null = null
+    let enterprisePlanPayload: ReturnType<typeof buildEnterpriseScreenPlan> | null = null
+    let screenPlanPayload: ReturnType<typeof enterprisePlanToScreenPlan> | null = null
+    let assemblyPlanPayload: ReturnType<typeof buildAssemblyPlanFromEnterprisePlan> | null = null
     if (projectContext.value) {
       const root = getFeatureStorageRoot()
       if (root) {
         const { productId, screenId, featureId } = projectContext.value
-        const screenPlan = buildDeterministicScreenPlan(briefToMd(), analyticsSource.value)
-        const assemblyPlan = buildAssemblyPlanFromScreenPlan(screenPlan)
+        const enterpriseScreenPlan = buildEnterpriseScreenPlan(briefToMd(), analyticsSource.value)
+        const screenPlan = enterprisePlanToScreenPlan(enterpriseScreenPlan)
+        const assemblyPlan = buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
+        enterprisePlanPayload = enterpriseScreenPlan
         screenPlanPayload = screenPlan
         assemblyPlanPayload = assemblyPlan
         const qualityGate = evaluateQualityGate({
@@ -544,6 +549,15 @@ async function generateDesignFromAnalytics() {
             {
               mode: 'auto-scene',
               uiMode: 'editor',
+              enterpriseScreenPlan,
+              planVersions: [
+                {
+                  version: 1,
+                  createdAt: Date.now(),
+                  stage: 'planning',
+                  plan: enterpriseScreenPlan
+                }
+              ],
               screenPlan,
               assemblyPlan,
               componentMapping: {
@@ -558,7 +572,11 @@ async function generateDesignFromAnalytics() {
                 stage: 'planning',
                 status: 'Сборка'
               },
-              qualityGate
+              qualityGate,
+              goldenReference:
+                /геном|прошив/i.test(`${briefToMd()}\n${analyticsSource.value}`)
+                  ? GENOM_GOLDEN_REFERENCE
+                  : null
             },
             null,
             2
@@ -576,8 +594,13 @@ async function generateDesignFromAnalytics() {
         uiMode: 'editor',
         resetSession: true,
         autoBuildOnly: true,
+        enterpriseScreenPlan: enterprisePlanPayload,
         screenPlan: screenPlanPayload,
         assemblyPlan: assemblyPlanPayload,
+        goldenReference:
+          /геном|прошив/i.test(`${briefToMd()}\n${analyticsSource.value}`)
+            ? GENOM_GOLDEN_REFERENCE
+            : null,
         createdAt: Date.now()
       })
     )
@@ -601,6 +624,27 @@ const isApplyingDemo = ref(false)
 function buildDemoBrief(): Record<BriefSectionId, string> {
   const screenTitle = currentScreen.value?.title?.trim() || 'Экран'
   const featureTitle = currentFeature.value?.title?.trim() || 'Фича'
+  const productTitle = currentProduct.value?.title?.trim() || 'Проект'
+  const isGenomFirmwareReport =
+    productTitle.toLowerCase().includes('геном') &&
+    (screenTitle.toLowerCase().includes('прошив') || featureTitle.toLowerCase().includes('прошив'))
+  if (isGenomFirmwareReport) {
+    return {
+      task: 'Собрать enterprise-экран «Отчёт о прошивках» для Геном 2.0: быстрый контроль соответствия прошивок по узлам и модулям, массовая диагностика отклонений и подготовка выгрузки.',
+      users:
+        'Основные пользователи: инженер эксплуатации, инженер платформы и администратор безопасности. Они открывают экран ежедневно для проверки статусов прошивок, поиска критичных расхождений и фиксации действий.',
+      scenarios:
+        '1) Открыть отчёт и быстро увидеть проблемные узлы по статусам. 2) Отфильтровать по типу/модели/узлу и найти точечные расхождения. 3) Выделить несколько строк и выполнить массовое действие (экспорт/диагностика). 4) Перейти к деталям узла из таблицы.',
+      states:
+        'Healthy: прошивка соответствует эталону. Warning: есть несовпадения, требуется проверка. Critical: критическое отклонение, нужно срочное действие. Disabled: данные по узлу временно недоступны.',
+      constraints:
+        'Интерфейс в стиле enterprise SaaS: минибар + сайдбар + breadcrumbs + фильтры + большая таблица. Первая полезная отрисовка до 2 секунд. Не менее 10 строк в таблице. Поддержка массовых операций и плотного табличного режима.',
+      metrics:
+        'Time-to-detect критичного отклонения, доля узлов в статусе Healthy, среднее время фильтрации до результата, доля сессий с массовыми действиями, точность идентификации проблемного модуля.',
+      questions:
+        'Нужны ли предустановленные фильтры по окружениям? Какие поля обязательны для экспорта? Должны ли действия в toolbar быть role-based?'
+    }
+  }
   return {
     task: `Главная задача страницы «${screenTitle}» — дать пользователю быстрый и понятный обзор состояния по фиче «${featureTitle}», чтобы ускорить принятие решений и снизить время на ручную проверку данных.`,
     users:
@@ -633,7 +677,8 @@ async function applyDemoBrief() {
       `Проект: ${currentProduct.value?.title ?? 'Без названия'}`,
       `Экран: ${currentScreen.value?.title ?? 'Без названия'}`,
       `Фича: ${currentFeature.value?.title ?? 'Без названия'}`,
-      'Источник создан автоматически для демонстрации полного заполнения analytics.md.'
+      'Источник создан автоматически для демонстрации полного заполнения analytics.md.',
+      'Golden reference: side mini-bar + navigation sidebar + breadcrumbs + firmware report table.'
     ].join('\n')
     await Promise.all([saveBrief(), saveAnalyticsSource()])
     toast.info('Демо-данные analytics.md заполнены')

@@ -11,18 +11,22 @@ Do not return only prose instructions.
 Required sequence for mockups:
 
 1. `get_components()` and select scene automatically from context.
-2. Build hidden `screen-plan` and `assembly-plan` (compact JSON, no verbose prose).
-3. `build_layout_scaffold(...)` before any content blocks.
-4. Run deterministic assembly with `run_assembly_steps({ section_node_map, steps })`.
-5. Run mapping report with `publish_component_fit(...)` (`available`, `missing`, `fallback`).
-6. Validate with `validate_quality_gate(...)`; on fail run short repair pass (max 2).
-7. `describe(...)` — verify and fix critical issues.
+2. Build hidden `enterprise-screen-plan.v1` JSON first (compact JSON, no verbose prose).
+3. Convert plan to deterministic `screen-plan` and `assembly-plan`.
+4. `build_layout_scaffold(...)` before content blocks.
+5. Run deterministic assembly with `run_assembly_steps({ section_node_map, steps })`.
+6. Run mapping report with `publish_component_fit(...)` (`available`, `missing`, `fallback`).
+7. Validate with `validate_quality_gate(...)`; on fail run short repair pass (max 2).
+8. `describe(...)` — verify and fix critical issues.
 
 Scope guard:
-- Do NOT modify workspace shell/sidebar/breadcrumb layout.
-- Fill only the central content area with generated UI.
+- Do NOT recreate workspace shell/layout wrappers.
+- Sidebar and breadcrumbs are part of persistent layout: fill their existing slots, do not rebuild them.
+- Fill central content area and layout slots (`sidebar`, `breadcrumbs`) with generated UI.
 - Prefer standard PrimeReact components for all generated content.
 - If assembly stalls, call `deterministic_assemble(...)` as watchdog fallback.
+- JSON plan is the single source of truth for screen content.
+- Do not rely on or expect fallback domain content from code (titles, breadcrumbs, table columns, actions).
 
 ## Assumptions / Unknowns (MANDATORY)
 
