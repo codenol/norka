@@ -3,7 +3,6 @@ import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewpor
 import { computed, markRaw, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { didHitStepLimit } from '@/ai/tools'
-import { injectProtoStore } from '@/composables/use-proto-store'
 import { buildAnalyticsFeatureAnalysisPrompt, IS_BROWSER } from '@/constants'
 import { activeTab } from '@/stores/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
@@ -18,7 +17,7 @@ import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
 import type { PropType } from 'vue'
 
-type CanvasTarget = 'editor' | 'proto' | 'analytics'
+type CanvasTarget = 'editor' | 'analytics'
 const { canvasTarget, onImportStructuredAnalytics, isStructuredAnalyticsMessageImported } = defineProps({
   canvasTarget: { type: String as PropType<CanvasTarget>, required: false },
   onImportStructuredAnalytics: {
@@ -30,7 +29,6 @@ const { canvasTarget, onImportStructuredAnalytics, isStructuredAnalyticsMessageI
     required: false
   }
 })
-const injectedProtoStore = injectProtoStore()
 const isAnalyticsRoute = computed(() => {
   if (!IS_BROWSER) return false
   return window.location.pathname.includes('/analytics')
@@ -38,32 +36,27 @@ const isAnalyticsRoute = computed(() => {
 const effectiveTarget = computed<CanvasTarget>(() => {
   if (canvasTarget) return canvasTarget
   if (isAnalyticsRoute.value) return 'analytics'
-  return injectedProtoStore ? 'proto' : 'editor'
+  return 'editor'
 })
-const protoStore = computed(() =>
-  effectiveTarget.value === 'proto' ? (injectedProtoStore ?? undefined) : undefined
-)
 const isAnalyticsMode = computed(
   () => effectiveTarget.value === 'analytics' || isAnalyticsRoute.value
 )
 const PENDING_PROMPT_KEY_BY_TARGET: Record<CanvasTarget, string> = {
   editor: 'norka:pending-editor-prompt',
-  proto: 'norka:pending-design-prompt',
   analytics: 'norka:pending-analytics-prompt'
 }
 const PENDING_PROMPT_EVENT_BY_TARGET: Record<CanvasTarget, string> = {
   editor: 'norka:pending-editor-prompt:updated',
-  proto: 'norka:pending-design-prompt:updated',
   analytics: 'norka:pending-analytics-prompt:updated'
 }
 
-const { isConfigured, ensureChat, stopAndRecreateChat, protoDesignMode, chatSessions, getChatScopeKeyForTarget } =
+const { isConfigured, ensureChat, stopAndRecreateChat } =
   useAIChat()
 const { currentProduct, currentScreen, currentFeature } = useProjects()
 
 const chat = ref<Chat<UIMessage> | null>(null)
 
-ensureChat(effectiveTarget.value, { protoStore: protoStore.value }).then((c) => {
+ensureChat(effectiveTarget.value).then((c) => {
   if (c) chat.value = markRaw(c)
 })
 const messagesEnd = ref<HTMLDivElement>()
@@ -267,7 +260,7 @@ watch(
 watch(
   () => activeTab.value?.id,
   async () => {
-    const nextChat = await ensureChat(effectiveTarget.value, { protoStore: protoStore.value })
+    const nextChat = await ensureChat(effectiveTarget.value)
     chat.value = nextChat ? markRaw(nextChat) : null
   }
 )
@@ -275,7 +268,7 @@ watch(
 async function handleSubmit(text: string) {
   if (status.value === 'streaming' || status.value === 'submitted') return
   try {
-    const c = await ensureChat(effectiveTarget.value, { protoStore: protoStore.value })
+    const c = await ensureChat(effectiveTarget.value)
     if (c) chat.value = markRaw(c)
   } catch (e) {
     console.error('Failed to initialize chat:', e)
@@ -288,69 +281,9 @@ async function handleSubmit(text: string) {
   })
 }
 
-function applyDeterministicProtoAssembly(parsed: {
-  enterpriseScreenPlan?: Record<string, unknown>
-  screenPlan?: { requiredSections?: Array<{ id?: string }> }
-  assemblyPlan?: {
-    steps?: Array<{
-      id?: string
-      section?: string
-      component_id?: string
-      parent_section_id?: string
-      parent_step_id?: string
-      slot_name?: string
-      props?: Record<string, unknown>
-    }>
-  }
-}) {
-  const store = protoStore.value
-  if (!store) return
-  const sectionIds = (parsed.screenPlan?.requiredSections ?? [])
-    .map((section) => section.id ?? '')
-    .filter(Boolean)
-  if (sectionIds.length === 0) return
-  const stepNodeMap = new Map<string, string>()
-  const steps = parsed.assemblyPlan?.steps ?? []
-
-  // Create top-level section anchors only for steps without explicit parent_step_id.
-  for (const step of steps) {
-    if (!step.id || !step.section || !step.component_id || step.parent_step_id) continue
-    const created = store.addNodeAt(step.component_id, {
-      parentId: null,
-      index: store.rootNodes.value.length,
-      slotName: step.slot_name ?? null
-    })
-    if (!created) continue
-    store.updateProps(created.id, {
-      ...(step.props ?? {}),
-      __section: step.section
-    })
-    stepNodeMap.set(step.id, created.id)
-  }
-
-  // Attach children for previously unresolved parent_step_id entries.
-  for (const step of steps) {
-    if (!step.id || !step.section || !step.component_id || !step.parent_step_id) continue
-    if (stepNodeMap.has(step.id)) continue
-    const parentId = stepNodeMap.get(step.parent_step_id) ?? null
-    if (!parentId) continue
-    const created = store.addNodeAt(step.component_id, {
-      parentId,
-      index: store.getChildren(parentId).length,
-      slotName: step.slot_name ?? null
-    })
-    if (!created) continue
-    store.updateProps(created.id, {
-      ...(step.props ?? {}),
-      __section: step.section
-    })
-    stepNodeMap.set(step.id, created.id)
-  }
-}
-
 async function handleStop() {
   chat.value?.stop()
-  const recreated = await stopAndRecreateChat(effectiveTarget.value, { protoStore: protoStore.value })
+  const recreated = await stopAndRecreateChat(effectiveTarget.value)
   if (recreated) chat.value = markRaw(recreated)
 }
 
@@ -364,23 +297,6 @@ async function consumePendingDesignPrompt() {
     const parsed = JSON.parse(raw) as {
       text?: string
       target?: CanvasTarget
-      mode?: 'auto-scene' | 'code-components'
-      uiMode?: 'editor' | 'view'
-      resetSession?: boolean
-      autoBuildOnly?: boolean
-      enterpriseScreenPlan?: Record<string, unknown>
-      screenPlan?: { requiredSections?: Array<{ id?: string }> }
-      assemblyPlan?: {
-        steps?: Array<{
-          id?: string
-          section?: string
-          component_id?: string
-          parent_section_id?: string
-          parent_step_id?: string
-          slot_name?: string
-          props?: Record<string, unknown>
-        }>
-      }
       createdAt?: number
     }
     const ageMs = typeof parsed.createdAt === 'number' ? Date.now() - parsed.createdAt : 0
@@ -388,27 +304,6 @@ async function consumePendingDesignPrompt() {
     if (parsed.target !== target || !parsed.text?.trim() || !isFresh) {
       localStorage.removeItem(key)
       return
-    }
-    if (target === 'proto') {
-      if (parsed.resetSession) {
-        const scopeKey = getChatScopeKeyForTarget('proto')
-        chatSessions.saveMessages(scopeKey, [])
-        protoStore.value?.clearAll()
-        const recreated = await stopAndRecreateChat('proto', { protoStore: protoStore.value })
-        if (recreated) chat.value = markRaw(recreated)
-      }
-      if (parsed.mode) protoDesignMode.value = parsed.mode
-      if (parsed.uiMode && protoStore.value) {
-        protoStore.value.mode.value = parsed.uiMode
-      } else if (protoStore.value) {
-        protoStore.value.mode.value = 'editor'
-      }
-      if (parsed.autoBuildOnly) {
-        applyDeterministicProtoAssembly(parsed)
-        localStorage.removeItem(key)
-        window.dispatchEvent(new CustomEvent('norka:preview-layout:updated'))
-        return
-      }
     }
     localStorage.removeItem(key)
     await handleSubmit(parsed.text)

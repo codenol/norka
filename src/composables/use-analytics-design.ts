@@ -18,6 +18,8 @@ import {
   buildEnterpriseScreenPlan,
   enterprisePlanToScreenPlan,
   evaluateQualityGate,
+  normalizeRenderPlan,
+  RENDER_CONTRACT_VERSION,
   repairEnterpriseScreenPlan
 } from '@/ai/screen-pipeline'
 import { useProjects } from '@/composables/use-projects'
@@ -325,8 +327,13 @@ export function useAnalyticsDesign() {
           }
         }
         const screenPlan = payload.screenPlan ?? enterprisePlanToScreenPlan(enterpriseScreenPlan)
-        const assemblyPlan =
+        const incomingAssemblyPlan =
           payload.assemblyPlan ?? buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
+        const normalizedAssemblyPlan =
+          Array.isArray(incomingAssemblyPlan?.steps) && incomingAssemblyPlan.steps.length > 0
+            ? incomingAssemblyPlan
+            : buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
+        const usedFallbackAssembly = normalizedAssemblyPlan !== incomingAssemblyPlan
         const fallbackGate = evaluateQualityGate({
           nodeCount: 0,
           requiredSections: (screenPlan as { requiredSections?: Array<{ id?: string }> }).requiredSections
@@ -351,9 +358,10 @@ export function useAnalyticsDesign() {
           : screenPlan
         const finalAssemblyPlan = repairedEnterprisePlan
           ? buildAssemblyPlanFromEnterprisePlan(repairedEnterprisePlan)
-          : assemblyPlan
+          : normalizedAssemblyPlan
         const normalizedPayload = {
           ...payload,
+          contractVersion: RENDER_CONTRACT_VERSION,
           enterpriseScreenPlan: finalEnterprisePlan,
           screenPlan: finalScreenPlan,
           assemblyPlan: finalAssemblyPlan,
@@ -372,11 +380,22 @@ export function useAnalyticsDesign() {
             planGenerated: true,
             assembled: false,
             stage: shouldRepair ? 'validation' : 'planning',
-            status: shouldRepair ? 'Repair pass подготовлен' : 'Сборка'
+            status: shouldRepair
+              ? 'Repair pass подготовлен'
+              : usedFallbackAssembly
+                ? 'fallback-assembly'
+                : 'Сборка'
           },
           goldenReference:
             payload.goldenReference ??
             (/геном|прошив/i.test(`${analyticsMd}\n${analyticsSourceMd}`) ? GENOM_GOLDEN_REFERENCE : null)
+        }
+        const contractCheck = normalizeRenderPlan(normalizedPayload)
+        if (!contractCheck.ok) {
+          return {
+            ok: false,
+            error: `invalid-contract: ${contractCheck.diagnostics.join('; ')}`
+          }
         }
         await writeFeatureFile(
           root,
@@ -410,23 +429,20 @@ export function useAnalyticsDesign() {
 export const ANALYTICS_DESIGN_INSTRUCTIONS = `
 ## Mockup assembly (PrimeReact Core Library)
 
-You are connected to a live design canvas and can mutate it via tools.
-Do not stop at textual advice — for mockup requests you MUST execute canvas tools.
+Return only JSON payload that matches the render contract.
+Do not return markdown explanations.
 
 When the user asks for a mockup or screen design:
-1. Auto-select a scene from analytics context and create internal \`screen-plan\`
-2. Build internal \`assembly-plan\` with deterministic step order
-3. Call \`build_layout_scaffold(...)\` before content blocks
-4. Call \`run_assembly_steps({ section_node_map, steps })\` for sequential execution
-5. Call \`publish_component_fit({ blocks })\` and \`validate_quality_gate(...)\`
-6. If execution stalls, call \`deterministic_assemble({ sections, steps })\` watchdog fallback
-7. If gate fails: run repair pass (max 2 attempts), never report false success
-8. Call \`describe(...)\` and reply with selected scene, mapping, and pipeline status
+1. Produce \`enterpriseScreenPlan\` with version \`enterprise-screen-plan.v1\`
+2. Provide \`assemblyPlan.steps\` using component_id/section/parent_step_id/slot_name/props
+3. Fill sidebar, breadcrumbs, header/main/actions according to analytics
+4. Ensure table-heavy screens include DataTable + Column steps
+5. Include \`flow.status\` describing plan quality (\`ready\`, \`partial\`, or \`invalid-contract\`)
 
 Hybrid assumptions policy (MANDATORY):
 - Build immediately, no blocking questionnaire.
-- Any guessed value MUST be marked as assumption both in text and on canvas with \`mark_assumption(...)\`.
-- Ensure output contains only real components and placeholder nodes for gaps.
+- Any guessed value MUST be marked in \`assumptions[]\`.
+- Ensure output contains only real components and explicit diagnostics for gaps.
 - Use standard PrimeReact components as the first choice for generated UI.
 - Do not alter workspace shell or component sidebar; fill only the main content area.
 `.trim()

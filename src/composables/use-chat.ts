@@ -7,7 +7,6 @@ import { useLocalStorage } from '@vueuse/core'
 import { DirectChatTransport, stepCountIs, ToolLoopAgent } from 'ai'
 import { computed, ref, watch } from 'vue'
 
-import { createProtoAITools } from '@/ai/proto-tools'
 import SYSTEM_PROMPT from '@/ai/system-prompt.md?raw'
 import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/ai/tools'
 import { useChatSessions } from '@/composables/use-chat-sessions'
@@ -24,7 +23,6 @@ import {
   setUnsplashAccessKey
 } from '@norka/core'
 
-import type { ProtoStore } from '@/composables/use-proto-store'
 import type { ACPAgentID, AIProviderID } from '@norka/core'
 import type { ChatTransport, LanguageModel, UIMessage } from 'ai'
 
@@ -65,12 +63,7 @@ const maxOutputTokens = useLocalStorage(`${STORAGE_PREFIX}ai-max-output-tokens`,
 const pexelsApiKey = useLocalStorage(`${STORAGE_PREFIX}pexels-api-key`, '')
 const unsplashAccessKey = useLocalStorage(`${STORAGE_PREFIX}unsplash-access-key`, '')
 const activeTab = ref<'design' | 'code' | 'ai' | 'lint' | 'snapshots'>('design')
-type ChatTarget = 'editor' | 'proto' | 'analytics'
-export type ProtoDesignMode = 'auto-scene' | 'code-components'
-const protoDesignMode = useLocalStorage<ProtoDesignMode>(
-  `${STORAGE_PREFIX}proto-design-mode`,
-  'auto-scene'
-)
+type ChatTarget = 'editor' | 'analytics'
 
 const providerDef = computed(
   () => AI_PROVIDERS.find((p) => p.id === providerID.value) ?? AI_PROVIDERS[0]
@@ -100,7 +93,6 @@ function markACPReady(id: string) {
 let transportDirty = false
 let editorChatStore: ReturnType<typeof getActiveEditorStore> | null = null
 let stopMessageWatcherEditor: (() => void) | null = null
-let stopMessageWatcherProto: (() => void) | null = null
 let stopMessageWatcherAnalytics: (() => void) | null = null
 
 const chatSessions = useChatSessions()
@@ -232,10 +224,8 @@ export { createModel }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test-only mock transports don't implement full generics
 let overrideTransport: (() => any) | null = null
 let editorChat: Chat<UIMessage> | null = null
-let protoChat: Chat<UIMessage> | null = null
 let analyticsChat: Chat<UIMessage> | null = null
 let editorScopeKey = ''
-let protoScopeKey = ''
 let analyticsScopeKey = ''
 
 const ANTHROPIC_CACHE_CONTROL = {
@@ -338,58 +328,6 @@ function createTransport(store: ReturnType<typeof getActiveEditorStore>) {
   return new DirectChatTransport({ agent })
 }
 
-function createProtoTransport(protoStore: ProtoStore) {
-  const cacheProviderOptions = supportsAnthropicCaching() ? ANTHROPIC_CACHE_CONTROL : undefined
-  const isLMStudio = providerID.value === 'lm-studio'
-  const effectiveMaxOutputTokens = isLMStudio ? undefined : maxOutputTokens.value
-  const modeInstructions =
-    protoDesignMode.value === 'auto-scene'
-      ? [
-          'Design mode: auto-scene.',
-          'Select scene automatically based on analytics intent. Use deterministic fallback scene "overview-dashboard" if confidence is low.',
-          'Build internal contracts first: screen-plan -> assembly-plan -> quality-gate.',
-          'Assemble with sequential step runner and per-step validation.',
-          'If a component is missing, create a Panel placeholder and set props __missingComponent=true, __missingReason, __suggestedComponent.'
-        ]
-      : [
-          'Design mode: code-components.',
-          'Use only available real components from get_components.',
-          'For unavailable components, create Panel placeholder with __missingComponent metadata.'
-        ]
-  const protoInstructions = [
-    EXECUTION_FIRST_CANVAS_PREFIX,
-    'You are editing the PrimeReact proto canvas.',
-    'Always execute tools to make concrete changes.',
-    'You and the user are co-editing the same canvas state in real time.',
-    'Execution order: get_components -> build enterprise-screen-plan.v1 JSON -> build_layout_scaffold -> run_assembly_steps(section_node_map, steps) -> publish_component_fit -> validate_quality_gate -> describe.',
-    'Call get_components first, then scaffold and run assembly steps with section_node_map returned by scaffold.',
-    'Do not rebuild shell wrappers; fill existing layout slots (sidebar, breadcrumbs, center sections) using __section metadata.',
-    'When user asks to modify selected element, call get_selection first and operate on that node.',
-    'After each mutation batch, call describe to verify tree and fix obvious structural issues.',
-    'Do not report final success when validate_quality_gate.passed=false.',
-    'When gate fails, run a short repair pass (max 2 attempts) and mark status "Черновик неполный".',
-    'If there is no mutation progress after initial calls, immediately execute deterministic scaffold+assembly and continue.',
-    'Use deterministic_assemble({ sections, steps }) as watchdog fallback when step execution stalls.',
-    ...modeInstructions
-  ].join('\n\n')
-
-  const agent = new ToolLoopAgent({
-    model: createModel(),
-    instructions: protoInstructions,
-    tools: createProtoAITools(protoStore),
-    stopWhen: stepCountIs(MAX_AGENT_STEPS),
-    maxOutputTokens: effectiveMaxOutputTokens,
-    providerOptions: cacheProviderOptions,
-    prepareCall: (options) => ({
-      ...options,
-      maxOutputTokens: effectiveMaxOutputTokens,
-      providerOptions: cacheProviderOptions
-    })
-  })
-
-  return new DirectChatTransport({ agent })
-}
-
 function createAnalyticsTransport() {
   const isLMStudio = providerID.value === 'lm-studio'
   const effectiveMaxOutputTokens = isLMStudio ? undefined : Math.min(maxOutputTokens.value, 4096)
@@ -426,7 +364,6 @@ function createAnalyticsTransport() {
 
 interface TargetState {
   isEditorTarget: boolean
-  isProtoTarget: boolean
   store: ReturnType<typeof getActiveEditorStore> | null
   currentChat: Chat<UIMessage> | null
   currentScopeKey: string
@@ -434,18 +371,14 @@ interface TargetState {
 
 function getTargetState(target: ChatTarget): TargetState {
   const isEditorTarget = target === 'editor'
-  const isProtoTarget = target === 'proto'
   const store = isEditorTarget ? getActiveEditorStore() : null
   let currentChat = analyticsChat
   let currentScopeKey = analyticsScopeKey
   if (isEditorTarget) {
     currentChat = editorChat
     currentScopeKey = editorScopeKey
-  } else if (isProtoTarget) {
-    currentChat = protoChat
-    currentScopeKey = protoScopeKey
   }
-  return { isEditorTarget, isProtoTarget, store, currentChat, currentScopeKey }
+  return { isEditorTarget, store, currentChat, currentScopeKey }
 }
 
 function clearTargetWatcher(state: TargetState) {
@@ -454,25 +387,15 @@ function clearTargetWatcher(state: TargetState) {
     stopMessageWatcherEditor = null
     return
   }
-  if (state.isProtoTarget) {
-    stopMessageWatcherProto?.()
-    stopMessageWatcherProto = null
-    return
-  }
   stopMessageWatcherAnalytics?.()
   stopMessageWatcherAnalytics = null
 }
 
 async function createTargetTransport(
-  state: TargetState,
-  options?: { protoStore?: ProtoStore }
+  state: TargetState
 ): Promise<ChatTransport<UIMessage>> {
   if (isACPProvider.value) {
     return await createACPTransport()
-  }
-  if (state.isProtoTarget) {
-    if (!options?.protoStore) throw new Error('Proto chat requires proto store')
-    return createProtoTransport(options.protoStore) as unknown as ChatTransport<UIMessage>
   }
   const activeStore = getActiveEditorStore()
   if (state.isEditorTarget) {
@@ -488,11 +411,6 @@ function assignTargetChat(state: TargetState, chat: Chat<UIMessage>, scopeKey: s
     editorScopeKey = scopeKey
     return
   }
-  if (state.isProtoTarget) {
-    protoChat = chat
-    protoScopeKey = scopeKey
-    return
-  }
   analyticsChat = chat
   analyticsScopeKey = scopeKey
 }
@@ -502,16 +420,11 @@ function assignTargetWatcher(state: TargetState, stop: () => void) {
     stopMessageWatcherEditor = stop
     return
   }
-  if (state.isProtoTarget) {
-    stopMessageWatcherProto = stop
-    return
-  }
   stopMessageWatcherAnalytics = stop
 }
 
 async function ensureChat(
-  target: ChatTarget = 'editor',
-  options?: { protoStore?: ProtoStore }
+  target: ChatTarget = 'editor'
 ): Promise<Chat<UIMessage> | null> {
   if (!isConfigured.value) return null
 
@@ -527,7 +440,7 @@ async function ensureChat(
   if (needsRecreate) {
     clearTargetWatcher(state)
     const messages = chatSessions.getMessages(scopeKey)
-    const transport = await createTargetTransport(state, options)
+    const transport = await createTargetTransport(state)
     const nextChat = new Chat<UIMessage>({ transport, messages })
     assignTargetChat(state, nextChat, scopeKey)
     transportDirty = false
@@ -542,35 +455,26 @@ async function ensureChat(
     assignTargetWatcher(state, stop)
   }
   if (state.isEditorTarget) return editorChat
-  if (state.isProtoTarget) return protoChat
   return analyticsChat
 }
 
-async function stopAndRecreateChat(
-  target: ChatTarget = 'editor',
-  options?: { protoStore?: ProtoStore }
-): Promise<Chat<UIMessage> | null> {
+async function stopAndRecreateChat(target: ChatTarget = 'editor'): Promise<Chat<UIMessage> | null> {
   const state = getTargetState(target)
   state.currentChat?.stop()
   markTransportDirty()
-  return ensureChat(target, options)
+  return ensureChat(target)
 }
 
 function resetChat() {
   stopMessageWatcherEditor?.()
   stopMessageWatcherEditor = null
-  stopMessageWatcherProto?.()
-  stopMessageWatcherProto = null
   stopMessageWatcherAnalytics?.()
   stopMessageWatcherAnalytics = null
   chatSessions.saveMessages(editorScopeKey || 'editor:global', [])
-  chatSessions.saveMessages(protoScopeKey || 'proto:global', [])
   chatSessions.saveMessages(analyticsScopeKey || 'analytics:global', [])
   editorChat = null
-  protoChat = null
   analyticsChat = null
   editorScopeKey = ''
-  protoScopeKey = ''
   analyticsScopeKey = ''
   editorChatStore = null
   transportDirty = false
@@ -596,7 +500,6 @@ export function useAIChat() {
     pexelsApiKey,
     unsplashAccessKey,
     activeTab,
-    protoDesignMode,
     isConfigured,
     markACPReady,
     ensureChat,

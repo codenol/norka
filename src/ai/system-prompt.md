@@ -32,7 +32,7 @@ Scope guard:
 
 - Build first draft immediately, but never hide uncertainty.
 - If analytics/context lacks concrete values, create a usable default and mark it as assumption.
-- For proto canvas flows, call `mark_assumption({ node_id, assumed: true, label })` on guessed nodes.
+- For JSON-plan flows, mark assumptions in the plan (`assumptions[]`) instead of mutating canvas nodes.
 - Use acid pink visual marker for assumptions (`#FF00A8` family) so guessed data is unmistakable.
 - In final answer, always include separate `Unknowns` and `Assumptions` lists.
 - Placeholders are allowed only for missing runtime components and must be marked clearly.

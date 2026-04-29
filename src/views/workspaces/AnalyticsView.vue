@@ -20,7 +20,6 @@ import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
 import { workspacePath, writeFeatureFile, readFeatureFile } from '@/composables/use-workspace-fs'
 import {
-  buildAnalyticsDesignPrompt,
   GENOM_GOLDEN_REFERENCE,
   validateAnalyticsDesignSources
 } from '@/composables/use-analytics-design'
@@ -28,7 +27,9 @@ import {
   buildAssemblyPlanFromEnterprisePlan,
   buildEnterpriseScreenPlan,
   enterprisePlanToScreenPlan,
-  evaluateQualityGate
+  evaluateQualityGate,
+  normalizeRenderPlan,
+  RENDER_CONTRACT_VERSION
 } from '@/ai/screen-pipeline'
 import {
   IS_TAURI,
@@ -50,7 +51,6 @@ const BRIEF_SECTIONS = [
   { id: 'metrics', title: 'Метрики' },
   { id: 'questions', title: 'Открытые вопросы' }
 ] as const
-const PENDING_DESIGN_PROMPT_EVENT = 'norka:pending-design-prompt:updated'
 const PENDING_ANALYTICS_PROMPT_KEY = 'norka:pending-analytics-prompt'
 const PENDING_ANALYTICS_PROMPT_EVENT = 'norka:pending-analytics-prompt:updated'
 const PREVIEW_LAYOUT_UPDATED_EVENT = 'norka:preview-layout:updated'
@@ -90,7 +90,7 @@ function briefToMd(): string {
 }
 
 const router = useRouter()
-const { isConfigured, providerID, ensureChat, chatSessions, protoDesignMode } = useAIChat()
+const { isConfigured, providerID, ensureChat, chatSessions } = useAIChat()
 const settings = useSettingsDialog()
 const { context: projectContext, currentProduct, currentScreen, currentFeature } = useProjects()
 const chatInst = ref<Chat<UIMessage> | null>(null)
@@ -513,12 +513,6 @@ async function generateDesignFromAnalytics() {
       toast.error(validation.message)
       return
     }
-    protoDesignMode.value = 'auto-scene'
-    const designPrompt = buildAnalyticsDesignPrompt({
-      analyticsMd: briefToMd(),
-      analyticsSourceMd: analyticsSource.value,
-      mode: 'auto-scene'
-    })
     let enterprisePlanPayload: ReturnType<typeof buildEnterpriseScreenPlan> | null = null
     let screenPlanPayload: ReturnType<typeof enterprisePlanToScreenPlan> | null = null
     let assemblyPlanPayload: ReturnType<typeof buildAssemblyPlanFromEnterprisePlan> | null = null
@@ -529,6 +523,10 @@ async function generateDesignFromAnalytics() {
         const enterpriseScreenPlan = buildEnterpriseScreenPlan(briefToMd(), analyticsSource.value)
         const screenPlan = enterprisePlanToScreenPlan(enterpriseScreenPlan)
         const assemblyPlan = buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
+        const normalizedAssemblyPlan =
+          Array.isArray(assemblyPlan.steps) && assemblyPlan.steps.length > 0
+            ? assemblyPlan
+            : buildAssemblyPlanFromEnterprisePlan(enterpriseScreenPlan)
         enterprisePlanPayload = enterpriseScreenPlan
         screenPlanPayload = screenPlan
         assemblyPlanPayload = assemblyPlan
@@ -546,38 +544,55 @@ async function generateDesignFromAnalytics() {
           featureId,
           'preview-layout.json',
           JSON.stringify(
-            {
-              mode: 'auto-scene',
-              uiMode: 'editor',
-              enterpriseScreenPlan,
-              planVersions: [
-                {
-                  version: 1,
-                  createdAt: Date.now(),
+            (() => {
+              const payload = {
+                mode: 'auto-scene',
+                contractVersion: RENDER_CONTRACT_VERSION,
+                enterpriseScreenPlan,
+                planVersions: [
+                  {
+                    version: 1,
+                    createdAt: Date.now(),
+                    stage: 'planning',
+                    plan: enterpriseScreenPlan
+                  }
+                ],
+                screenPlan,
+                assemblyPlan: normalizedAssemblyPlan,
+                componentMapping: {
+                  blocks: [],
+                  availableComponents: [],
+                  missingComponents: [],
+                  fallbackPlan: []
+                },
+                flow: {
+                  planGenerated: true,
+                  assembled: false,
                   stage: 'planning',
-                  plan: enterpriseScreenPlan
+                  status:
+                    normalizedAssemblyPlan.steps.length === assemblyPlan.steps.length
+                      ? 'ready'
+                      : 'partial'
+                },
+                qualityGate,
+                goldenReference:
+                  /геном|прошив/i.test(`${briefToMd()}\n${analyticsSource.value}`)
+                    ? GENOM_GOLDEN_REFERENCE
+                    : null
+              }
+              const contractCheck = normalizeRenderPlan(payload)
+              if (!contractCheck.ok) {
+                return {
+                  ...payload,
+                  flow: {
+                    ...payload.flow,
+                    status: 'invalid-contract',
+                    diagnostics: contractCheck.diagnostics
+                  }
                 }
-              ],
-              screenPlan,
-              assemblyPlan,
-              componentMapping: {
-                blocks: [],
-                availableComponents: [],
-                missingComponents: [],
-                fallbackPlan: []
-              },
-              flow: {
-                planGenerated: true,
-                assembled: false,
-                stage: 'planning',
-                status: 'Сборка'
-              },
-              qualityGate,
-              goldenReference:
-                /геном|прошив/i.test(`${briefToMd()}\n${analyticsSource.value}`)
-                  ? GENOM_GOLDEN_REFERENCE
-                  : null
-            },
+              }
+              return payload
+            })(),
             null,
             2
           )
@@ -585,26 +600,6 @@ async function generateDesignFromAnalytics() {
         window.dispatchEvent(new CustomEvent(PREVIEW_LAYOUT_UPDATED_EVENT))
       }
     }
-    localStorage.setItem(
-      'norka:pending-design-prompt',
-      JSON.stringify({
-        text: designPrompt,
-        target: 'proto',
-        mode: 'auto-scene',
-        uiMode: 'editor',
-        resetSession: true,
-        autoBuildOnly: true,
-        enterpriseScreenPlan: enterprisePlanPayload,
-        screenPlan: screenPlanPayload,
-        assemblyPlan: assemblyPlanPayload,
-        goldenReference:
-          /геном|прошив/i.test(`${briefToMd()}\n${analyticsSource.value}`)
-            ? GENOM_GOLDEN_REFERENCE
-            : null,
-        createdAt: Date.now()
-      })
-    )
-    window.dispatchEvent(new CustomEvent(PENDING_DESIGN_PROMPT_EVENT))
     if (!projectContext.value) {
       toast.error('Контекст фичи не выбран')
       return

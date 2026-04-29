@@ -131,6 +131,47 @@ export interface AssemblyPlan {
   steps: AssemblyStep[]
 }
 
+export const RENDER_CONTRACT_VERSION = 'render-contract.v1'
+
+export interface RenderContractPayload {
+  contractVersion?: string
+  enterpriseScreenPlan?: unknown
+  assemblyPlan?: { steps?: Array<Record<string, unknown>> }
+  flow?: { status?: string; diagnostics?: string[] }
+}
+
+export interface RenderTreeNode {
+  id: string
+  section: string
+  component_id: string
+  props: Record<string, unknown>
+  slot_name?: string
+  parent_step_id?: string
+  children: RenderTreeNode[]
+}
+
+export interface RenderTree {
+  sidebar: RenderTreeNode[]
+  breadcrumbs: RenderTreeNode[]
+  main: RenderTreeNode[]
+  actions: RenderTreeNode[]
+  diagnostics: string[]
+}
+
+export type NormalizeRenderPlanResult =
+  | {
+      ok: true
+      contractVersion: string
+      enterpriseScreenPlan: EnterpriseScreenPlanV1
+      assemblyPlan: AssemblyPlan
+      diagnostics: string[]
+    }
+  | {
+      ok: false
+      contractVersion: string
+      diagnostics: string[]
+    }
+
 export interface QualityGateResult {
   passed: boolean
   checks: Array<{ id: string; passed: boolean; detail: string }>
@@ -155,6 +196,210 @@ export interface EnterpriseQualitySignals {
   jsonStructureMatch?: boolean
 }
 
+function normalizeComponentName(name: string): string {
+  if (name === 'Breadcrum' || name === 'BreadCrumb') return 'Breadcrumb'
+  return name
+}
+
+function normalizeAssemblySteps(raw: Array<Record<string, unknown>>): AssemblyStep[] {
+  return raw
+    .map((step) => {
+      const id = typeof step.id === 'string' ? step.id : ''
+      const section =
+        typeof step.section === 'string'
+          ? step.section
+          : typeof step.sectionId === 'string'
+            ? step.sectionId
+            : ''
+      const component_id =
+        typeof step.component_id === 'string'
+          ? step.component_id
+          : typeof step.componentId === 'string'
+            ? step.componentId
+            : typeof step.component === 'string'
+              ? step.component
+              : ''
+      const normalizedComponentId = normalizeComponentName(component_id)
+      const parent_step_id =
+        typeof step.parent_step_id === 'string'
+          ? step.parent_step_id
+          : typeof step.parentStepId === 'string'
+            ? step.parentStepId
+            : undefined
+      const slot_name =
+        typeof step.slot_name === 'string'
+          ? step.slot_name
+          : typeof step.slotName === 'string'
+            ? step.slotName
+            : undefined
+      const props = step.props && typeof step.props === 'object' ? (step.props as Record<string, unknown>) : {}
+      if (!id || !section || !normalizedComponentId) return null
+      return {
+        id,
+        section,
+        intent: typeof step.intent === 'string' ? step.intent : `Render ${id}`,
+        component_id: normalizedComponentId,
+        parent_step_id,
+        slot_name,
+        props,
+        expectedChecks: []
+      } satisfies AssemblyStep
+    })
+    .filter((step): step is AssemblyStep => step !== null)
+}
+
+export function normalizeRenderPlan(input: unknown): NormalizeRenderPlanResult {
+  const payload = (input && typeof input === 'object' ? input : {}) as RenderContractPayload
+  const errors: string[] = []
+  const diagnostics: string[] = []
+  const contractVersion =
+    typeof payload.contractVersion === 'string' ? payload.contractVersion : RENDER_CONTRACT_VERSION
+  const enterprise = payload.enterpriseScreenPlan
+  if (!enterprise || typeof enterprise !== 'object') {
+    return {
+      ok: false,
+      contractVersion,
+      diagnostics: ['enterpriseScreenPlan is required']
+    }
+  }
+  const plan = structuredClone(enterprise) as EnterpriseScreenPlanV1
+  if (plan.version !== 'enterprise-screen-plan.v1') {
+    errors.push('enterpriseScreenPlan.version must be enterprise-screen-plan.v1')
+  }
+  if (!Array.isArray(plan.layout?.requiredSections) || plan.layout.requiredSections.length === 0) {
+    errors.push('layout.requiredSections must be non-empty')
+  }
+  if (!Array.isArray(plan.sections) || plan.sections.length === 0) errors.push('sections[] is required')
+  if (!Array.isArray(plan.blocks) || plan.blocks.length === 0) errors.push('blocks[] is required')
+  if (!plan.quality) errors.push('quality is required')
+  if (errors.length > 0) return { ok: false, contractVersion, diagnostics: errors }
+  const requiredByPolicy = ['sidebar', 'breadcrumbs', 'main']
+  const requiredSet = new Set(
+    Array.isArray(plan.layout?.requiredSections) ? plan.layout.requiredSections.filter(Boolean) : []
+  )
+  const ensureRequiredSection = (sectionId: string, title: string, kind: EnterpriseSectionKind) => {
+    if (!plan.sections.some((section) => section.id === sectionId)) {
+      plan.sections.push({ id: sectionId, title, required: true, kind, items: [] })
+      diagnostics.push(`section synthesized: ${sectionId}`)
+    }
+    if (!requiredSet.has(sectionId)) {
+      requiredSet.add(sectionId)
+      diagnostics.push(`required section normalized: ${sectionId}`)
+    }
+  }
+  ensureRequiredSection('sidebar', 'Sidebar', 'navigation')
+  ensureRequiredSection('breadcrumbs', 'Breadcrumbs', 'navigation')
+  ensureRequiredSection('main', 'Main', 'data')
+  plan.layout.requiredSections = Array.from(requiredSet)
+  const hasSectionContent = (sectionId: string) =>
+    plan.blocks.some((block) => block.sectionId === sectionId) ||
+    plan.sections.some((section) => section.id === sectionId && (section.items?.length ?? 0) > 0)
+  if (!hasSectionContent('sidebar')) {
+    plan.blocks.push({
+      id: 'contract-sidebar-card',
+      sectionId: 'sidebar',
+      kind: 'summaryPanel',
+      title: 'Navigation',
+      component: 'Card',
+      props: { title: 'Navigation' }
+    })
+    diagnostics.push('sidebar content synthesized')
+  }
+  if (!hasSectionContent('breadcrumbs')) {
+    plan.blocks.push({
+      id: 'contract-breadcrumbs',
+      sectionId: 'breadcrumbs',
+      kind: 'breadcrumbTrail',
+      title: 'Home / Screen',
+      component: 'Breadcrumb',
+      props: { model: [{ label: 'Home' }, { label: 'Screen' }] }
+    })
+    diagnostics.push('breadcrumbs content synthesized')
+  }
+  if (!hasSectionContent('main')) {
+    plan.blocks.push({
+      id: 'contract-main-table',
+      sectionId: 'main',
+      kind: 'entityTable',
+      title: 'Data Table',
+      component: 'DataTable',
+      props: { paginator: true, rows: 10, stripedRows: true }
+    })
+    diagnostics.push('main content synthesized')
+  }
+  const incomingSteps = Array.isArray(payload.assemblyPlan?.steps) ? payload.assemblyPlan.steps : []
+  const normalizedIncoming = normalizeAssemblySteps(incomingSteps)
+  const incomingSections = new Set(normalizedIncoming.map((step) => step.section))
+  const incomingHasMain = incomingSections.has('main') || incomingSections.has('header') || incomingSections.has('actions')
+  const useIncoming = normalizedIncoming.length > 0 && incomingHasMain
+  const assemblyPlan = useIncoming ? { steps: normalizedIncoming } : buildAssemblyPlanFromEnterprisePlan(plan)
+  if (!useIncoming) {
+    diagnostics.push(
+      normalizedIncoming.length === 0
+        ? 'assemblyPlan.steps empty; generated deterministically'
+        : 'assemblyPlan missing main zones; regenerated from enterpriseScreenPlan'
+    )
+  }
+  return {
+    ok: true,
+    contractVersion,
+    enterpriseScreenPlan: plan,
+    assemblyPlan,
+    diagnostics
+  }
+}
+
+export function buildRenderTree(plan: EnterpriseScreenPlanV1, assemblyPlan: AssemblyPlan): RenderTree {
+  const diagnostics: string[] = []
+  const byId = new Map<string, RenderTreeNode>()
+  const nodes: RenderTreeNode[] = []
+  for (const step of assemblyPlan.steps) {
+    const node: RenderTreeNode = {
+      id: step.id,
+      section: step.section,
+      component_id: step.component_id,
+      props: step.props ?? {},
+      slot_name: step.slot_name,
+      parent_step_id: step.parent_step_id,
+      children: []
+    }
+    nodes.push(node)
+    byId.set(node.id, node)
+  }
+  const roots: RenderTreeNode[] = []
+  for (const node of nodes) {
+    const parentId = node.parent_step_id
+    if (!parentId) {
+      roots.push(node)
+      continue
+    }
+    const parent = byId.get(parentId)
+    if (!parent) {
+      diagnostics.push(`Unresolved parent: ${node.id} -> ${parentId}`)
+      roots.push(node)
+      continue
+    }
+    if (parent.section !== node.section) {
+      diagnostics.push(`Cross-section parent recovered: ${node.id} -> ${parentId}`)
+      roots.push(node)
+      continue
+    }
+    parent.children.push(node)
+  }
+  const zoned = {
+    sidebar: roots.filter((node) => node.section === 'sidebar'),
+    breadcrumbs: roots.filter((node) => node.section === 'breadcrumbs'),
+    main: roots.filter((node) => node.section !== 'sidebar' && node.section !== 'breadcrumbs' && node.section !== 'actions'),
+    actions: roots.filter((node) => node.section === 'actions')
+  }
+  const missingRequired = ['sidebar', 'breadcrumbs', 'main'].filter((zone) => zoned[zone as keyof typeof zoned].length === 0)
+  for (const zone of missingRequired) diagnostics.push(`Zone has no root nodes: ${zone}`)
+  if (zoned.main.length === 0 && zoned.actions.length > 0) {
+    zoned.main = [...zoned.actions]
+  }
+  return { ...zoned, diagnostics }
+}
+
 export function buildDeterministicScreenPlan(brief: string, source: string): ScreenPlan {
   const enterprise = buildEnterpriseScreenPlan(brief, source)
   return enterprisePlanToScreenPlan(enterprise)
@@ -163,6 +408,164 @@ export function buildDeterministicScreenPlan(brief: string, source: string): Scr
 export function buildEnterpriseScreenPlan(brief: string, source: string): EnterpriseScreenPlanV1 {
   const content = `${brief}\n${source}`.trim()
   const confidence = content.length > 0 ? 0.7 : 0.55
+  const isGenomFirmware = /геном|genom/i.test(content) && /прошив|firmware/i.test(content)
+  if (isGenomFirmware) {
+    const sections: EnterpriseSection[] = [
+      {
+        id: 'sidebar',
+        title: 'Sidebar',
+        required: true,
+        kind: 'navigation',
+        items: [
+          {
+            id: 'sidebar-genom-title',
+            component: 'Card',
+            props: { title: 'Геном 2.0', subTitle: 'Обзор' }
+          },
+          {
+            id: 'sidebar-genom-nav',
+            component: 'Panel',
+            props: { header: 'Навигация' }
+          }
+        ]
+      },
+      {
+        id: 'breadcrumbs',
+        title: 'Breadcrumbs',
+        required: true,
+        kind: 'navigation',
+        items: [
+          {
+            id: 'breadcrumbs-genom',
+            component: 'Breadcrumb',
+            props: {
+              model: [{ label: 'Геном 2.0' }, { label: 'Отчёт о прошивках' }]
+            }
+          }
+        ]
+      },
+      { id: 'header', title: 'Header', required: true, kind: 'header', items: [] },
+      { id: 'main', title: 'Main Content', required: true, kind: 'data', items: [] },
+      { id: 'actions', title: 'Actions', required: true, kind: 'actions', items: [] }
+    ]
+    const tableRows = [
+      ['Сервер BIOS', 'VADRO Vegman R220 G2', 'VALUE', 'mbo-p15vl-r1.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['Сервер BMC', 'VADRO Vegman R220 G2', 'VALUE', 'mbo-p15vl-r1.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['NIC FW', 'B4Com SN12100', 'VALUE', 'mbo-p15blv-r1.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['HW RAID FW', 'AVAGO MegaRAID SAS 9460-8i', 'VALUE', 'mbo-p15blv-r2.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['HBA controller FW', 'Broadcom / LSI HBA 9400-16i', 'VALUE', 'mbo-p15spl-r1.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['CXD FW', 'Gen2/FatLin_UNIFIED', 'VALUE', 'mbo-p15vlv-r1.int.skala-ru', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['Коммутатор FW', 'BCOM.S4132U', 'VALUE', 'MS-MSK49-SNE1036', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS'],
+      ['Коммутатор FW', 'DEPO NGN-OS,4184VD', 'VALUE', 'MS-MSK49-SNE1038', 'MSK49-MB.PX-INT-15-M.BXX', 'STATUS']
+    ].map(([version, model, serial, node, pak, status], index) => ({
+      version,
+      model,
+      serial,
+      node,
+      pak,
+      status,
+      state: index % 4 === 0 ? 'critical' : index % 3 === 0 ? 'warning' : 'healthy'
+    }))
+    const blocks: EnterpriseBlock[] = [
+      {
+        id: 'header-title',
+        sectionId: 'header',
+        kind: 'pageHeader',
+        title: 'Отчёт о прошивках',
+        component: 'Card',
+        props: { title: 'Отчёт о прошивках' }
+      },
+      {
+        id: 'header-filters-row',
+        sectionId: 'header',
+        kind: 'filtersBar',
+        title: 'Фильтры',
+        component: 'Toolbar',
+        props: {}
+      },
+      {
+        id: 'filter-search',
+        sectionId: 'header',
+        kind: 'filtersBar',
+        title: 'Поиск',
+        component: 'InputText',
+        props: { placeholder: 'Input' }
+      },
+      {
+        id: 'filter-zone',
+        sectionId: 'header',
+        kind: 'filtersBar',
+        title: 'Зона',
+        component: 'Dropdown',
+        props: { placeholder: 'Text' }
+      },
+      {
+        id: 'filter-type',
+        sectionId: 'header',
+        kind: 'filtersBar',
+        title: 'Тип',
+        component: 'Dropdown',
+        props: { placeholder: 'Text' }
+      },
+      {
+        id: 'main-table',
+        sectionId: 'main',
+        kind: 'entityTable',
+        title: 'Firmware table',
+        component: 'DataTable',
+        props: { paginator: false, rows: 12, stripedRows: true, size: 'small' }
+      },
+      {
+        id: 'actions-toolbar',
+        sectionId: 'actions',
+        kind: 'primaryActions',
+        title: 'Actions',
+        component: 'Toolbar',
+        props: {}
+      }
+    ]
+    return {
+      version: 'enterprise-screen-plan.v1',
+      screenMeta: { kind: 'list', sceneId: 'genom-firmware-report', confidence: 0.92 },
+      layout: { requiredSections: ['sidebar', 'breadcrumbs', 'header', 'main', 'actions'] },
+      sections,
+      blocks,
+      dataSchema: {
+        entityName: 'firmware',
+        fields: [
+          { key: 'version', label: 'Версия ПО', type: 'string' },
+          { key: 'model', label: 'Компонент: модель', type: 'string' },
+          { key: 'serial', label: 'Компонент: серийный номер', type: 'string' },
+          { key: 'node', label: 'Узел', type: 'string' },
+          { key: 'pak', label: 'ПАК', type: 'string' },
+          { key: 'status', label: 'STATUS', type: 'status' }
+        ]
+      },
+      tableSpec: {
+        rowCountTarget: 12,
+        density: 'compact',
+        columns: [
+          { key: 'version', label: 'Версия ПО' },
+          { key: 'model', label: 'Компонент: модель' },
+          { key: 'serial', label: 'Компонент: серийный номер' },
+          { key: 'node', label: 'Узел' },
+          { key: 'pak', label: 'ПАК' },
+          { key: 'status', label: 'STATUS' }
+        ],
+        sampleRows: tableRows
+      },
+      interactions: ['обновить', 'экспорт'],
+      quality: {
+        mustHaveTable: true,
+        mustHaveFilters: true,
+        mustHaveActions: true,
+        mustFillSidebar: true,
+        mustFillBreadcrumbs: true
+      },
+      unknowns: [],
+      assumptions: []
+    }
+  }
   const sections: EnterpriseSection[] = [
     { id: 'sidebar', title: 'Sidebar', required: true, kind: 'navigation', items: [] },
     { id: 'breadcrumbs', title: 'Breadcrumbs', required: true, kind: 'navigation', items: [] },
@@ -362,7 +765,15 @@ function screenPlanToEnterprisePlan(screenPlan: ScreenPlan): EnterpriseScreenPla
 }
 
 export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1): AssemblyPlan {
-  const requiredSections = new Set(plan.layout.requiredSections)
+  const requiredSections = new Set<string>([
+    ...plan.layout.requiredSections,
+    ...plan.sections.filter((section) => section.required).map((section) => section.id)
+  ])
+  if (plan.quality.mustHaveTable) requiredSections.add('main')
+  if (plan.quality.mustHaveFilters) requiredSections.add('header')
+  if (plan.quality.mustHaveActions) requiredSections.add('actions')
+  if (plan.quality.mustFillSidebar) requiredSections.add('sidebar')
+  if (plan.quality.mustFillBreadcrumbs) requiredSections.add('breadcrumbs')
   const fields = plan.dataSchema.fields.length > 0 ? plan.dataSchema.fields : []
   const tableSpec = plan.tableSpec
   const rowCountTarget = Math.max(1, tableSpec?.rowCountTarget ?? 10)
@@ -375,7 +786,7 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
   const resolveComponent = (
     preferred: string | undefined,
     fallback: 'Card' | 'Toolbar' | 'Dropdown' | 'DataTable' | 'Button' | 'Breadcrumb'
-  ) => preferred ?? fallback
+  ) => (preferred ? normalizeComponentName(preferred) : fallback)
   const buildRowsFromSchema = (count: number): Array<Record<string, unknown>> =>
     Array.from({ length: count }, (_, index) => {
       const row: Record<string, unknown> = {}
@@ -392,6 +803,7 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
 
   const steps: AssemblyStep[] = []
   const blocks = plan.blocks.filter((block) => requiredSections.has(block.sectionId))
+  const sectionFilterContainer = new Map<string, string>()
   const dataRows = Array.isArray(tableSpec?.sampleRows) && tableSpec.sampleRows.length > 0
     ? tableSpec.sampleRows
     : buildRowsFromSchema(rowCountTarget)
@@ -403,7 +815,7 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
         id: item.id,
         section: section.id,
         intent: `Create section item ${item.id}`,
-        component_id: item.component,
+        component_id: normalizeComponentName(item.component),
         parent_section_id: section.id,
         props: item.props ?? (item.title ? { title: item.title } : {}),
         expectedChecks: [`${item.id}-created`]
@@ -487,15 +899,23 @@ export function buildAssemblyPlanFromEnterprisePlan(plan: EnterpriseScreenPlanV1
         : block.kind === 'primaryActions' || block.kind === 'bulkActions'
           ? 'Toolbar'
           : 'Card'
+    const isFilterContainer =
+      block.kind === 'filtersBar' &&
+      resolveComponent(block.component, fallbackComponent) === 'Toolbar'
+    const filterParentId =
+      block.kind === 'filtersBar' && !isFilterContainer ? sectionFilterContainer.get(block.sectionId) : undefined
     steps.push({
       id: block.id,
       section: block.sectionId,
       intent: `Create block ${block.id}`,
       component_id: resolveComponent(block.component, fallbackComponent),
-      parent_section_id: block.sectionId,
+      parent_section_id: filterParentId ? undefined : block.sectionId,
+      parent_step_id: filterParentId,
+      slot_name: filterParentId ? 'start' : undefined,
       props: block.props ?? (block.title ? { title: block.title, placeholder: block.title } : {}),
       expectedChecks: [`${block.id}-created`]
     })
+    if (isFilterContainer) sectionFilterContainer.set(block.sectionId, block.id)
   }
 
   const kpiRow = blocks.find((block) => block.kind === 'kpiRow')

@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'bun:test'
 
 import {
+  buildAssemblyPlanFromEnterprisePlan,
   buildAssemblyPlanFromScreenPlan,
   buildDeterministicScreenPlan,
-  evaluateQualityGate
+  buildEnterpriseScreenPlan,
+  buildRenderTree,
+  evaluateQualityGate,
+  normalizeRenderPlan,
+  RENDER_CONTRACT_VERSION
 } from '@/ai/screen-pipeline'
 import { getPrimeCoverageForDemoScenes, getPrimeCoverageSnapshot } from '@/composables/use-primereact-preview'
 
@@ -25,6 +30,44 @@ describe('screen pipeline contracts', () => {
     })
     expect(result.passed).toBe(false)
     expect(result.failReasons.length).toBeGreaterThan(0)
+  })
+
+  it('normalizes valid render contract payload', () => {
+    const enterprise = buildEnterpriseScreenPlan('firmware report', 'source')
+    const payload = {
+      contractVersion: RENDER_CONTRACT_VERSION,
+      enterpriseScreenPlan: enterprise,
+      assemblyPlan: buildAssemblyPlanFromEnterprisePlan(enterprise)
+    }
+    const normalized = normalizeRenderPlan(payload)
+    expect(normalized.ok).toBe(true)
+    if (normalized.ok) {
+      expect(normalized.contractVersion).toBe(RENDER_CONTRACT_VERSION)
+      expect(normalized.assemblyPlan.steps.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('rejects invalid render contract payload', () => {
+    const normalized = normalizeRenderPlan({ contractVersion: RENDER_CONTRACT_VERSION })
+    expect(normalized.ok).toBe(false)
+    if (!normalized.ok) {
+      expect(normalized.diagnostics.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('builds zoned render tree from normalized payload', () => {
+    const enterprise = buildEnterpriseScreenPlan('firmware report', 'source')
+    const normalized = normalizeRenderPlan({
+      contractVersion: RENDER_CONTRACT_VERSION,
+      enterpriseScreenPlan: enterprise,
+      assemblyPlan: buildAssemblyPlanFromEnterprisePlan(enterprise)
+    })
+    expect(normalized.ok).toBe(true)
+    if (!normalized.ok) return
+    const tree = buildRenderTree(normalized.enterpriseScreenPlan, normalized.assemblyPlan)
+    expect(tree.sidebar.length).toBeGreaterThan(0)
+    expect(tree.breadcrumbs.length).toBeGreaterThan(0)
+    expect(tree.main.length + tree.actions.length).toBeGreaterThan(0)
   })
 })
 
