@@ -359,6 +359,18 @@ export const PRIME_PREVIEW_DEFS: PrimePreviewDef[] = [
     previewProps: { title: 'Page Title' },
     propSchema: { title: { type: 'string' } },
     llm: { category: 'layout', layout: 'leaf', fallbackComponent: 'Panel' }
+  },
+  {
+    name: 'DesignSystemMenuItem',
+    importPath: '@/design-system/runtime',
+    exportName: 'DesignSystemMenuItem',
+    previewProps: { label: 'Обзор', icon: 'workflow', state: 'default' },
+    propSchema: {
+      label: { type: 'string' },
+      icon: { type: 'string' },
+      state: { type: 'enum', options: ['default', 'hover', 'active', 'active-hover'] }
+    },
+    llm: { category: 'navigation', layout: 'leaf', fallbackComponent: 'Panel' }
   }
 ]
 

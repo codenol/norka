@@ -173,6 +173,40 @@ function validateTreeJson(raw: string): { ok: true; payload: TreeContractPayload
     }
   }
 
+  const sidebarPanels = (node.sidebar as TreeNodeLike[]).filter(
+    (entry) =>
+      entry &&
+      typeof entry === 'object' &&
+      ((entry as Record<string, unknown>).component_id === 'DesignSystemSidebarPanel' ||
+        (entry as Record<string, unknown>).component_id === 'sidebar_panel')
+  )
+  if (sidebarPanels.length > 1) {
+    return {
+      ok: false,
+      error: {
+        message: 'Sidebar allows only one DesignSystemSidebarPanel (single logo block).',
+        line: null,
+        column: null
+      }
+    }
+  }
+  for (const panel of sidebarPanels) {
+    const panelProps =
+      panel && typeof panel === 'object' && (panel as Record<string, unknown>).props
+        ? ((panel as Record<string, unknown>).props as Record<string, unknown>)
+        : {}
+    if (!Array.isArray(panelProps.items) || panelProps.items.length === 0) {
+      return {
+        ok: false,
+        error: {
+          message: 'DesignSystemSidebarPanel must contain at least one menu item in props.items.',
+          line: null,
+          column: null
+        }
+      }
+    }
+  }
+
   return {
     ok: true,
     payload: {

@@ -116,6 +116,7 @@ export function buildAnalyticsDesignPrompt(sources: AnalyticsDesignSources): str
     'В плане обязательно укажи sections, blocks, dataSchema, tableSpec, interactions и quality.',
     'Не меняй shell/layout workspace; план должен заполнять существующие зоны sidebar/breadcrumbs/header/main/actions.',
     'Если данных не хватает, заполни unknowns и assumptions, но не пропускай обязательные секции.',
+    'Раздел «Важные замечания» из analytics.md обязателен к исполнению: трактуй его как набор жёстких инвариантов JSON-контракта и рендера.',
     'JSON-план — единственный источник истины для сборки. Не рассчитывай на fallback-контент из кода.',
     'Обязательно заполни sections[].items и blocks[].component/props для sidebar, breadcrumbs и main.',
     ...(goldenReference

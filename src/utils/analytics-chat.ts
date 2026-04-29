@@ -5,6 +5,7 @@ export const ANALYTICS_SECTION_IDS = [
   'states',
   'constraints',
   'metrics',
+  'importantNotes',
   'questions'
 ] as const
 

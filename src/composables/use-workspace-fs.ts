@@ -385,7 +385,30 @@ export async function ensureWorkspaceStructure(
               2
             )
           ],
-          ['analytics.md', '# Аналитика\n\n<!-- Заполните аналитический бриф -->\n'],
+          [
+            'analytics.md',
+            [
+              '# Аналитика',
+              '',
+              '## Задача',
+              '',
+              '## Пользователь',
+              '',
+              '## Сценарии',
+              '',
+              '## Состояния',
+              '',
+              '## Ограничения',
+              '',
+              '## Метрики',
+              '',
+              '## Важные замечания',
+              '<!-- Этот блок обязателен для LLM при генерации JSON -->',
+              '',
+              '## Открытые вопросы',
+              ''
+            ].join('\n')
+          ],
           [
             'analytics-source.md',
             '# Analytics Source\n\n<!-- Paste source analytics from Confluence -->\n'

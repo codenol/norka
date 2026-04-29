@@ -316,7 +316,14 @@ export function normalizeRenderPlan(input: unknown): NormalizeRenderPlanResult {
       kind: 'summaryPanel',
       title: 'Navigation',
       component: 'DesignSystemSidebarPanel',
-      props: { title: 'Navigation' }
+      props: {
+        title: 'Navigation',
+        activeId: 'overview',
+        items: [
+          { id: 'overview', label: 'Overview', icon: 'circle', selected: true },
+          { id: 'report', label: 'Report', icon: 'layout-grid', selected: false }
+        ]
+      }
     })
     diagnostics.push('sidebar content synthesized')
   }
@@ -420,10 +427,65 @@ export function buildDeterministicScreenPlan(brief: string, source: string): Scr
   return enterprisePlanToScreenPlan(enterprise)
 }
 
+type SidebarMenuRule = {
+  items: Array<{ id: string; label: string; icon: string; selected: boolean }>
+  activeId: string
+}
+
+function extractMarkdownSection(md: string, title: string): string {
+  const match = md.match(new RegExp(`## ${title}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`))
+  return match?.[1]?.trim() ?? ''
+}
+
+function normalizeComparableLabel(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\u00a0/g, ' ')
+    .replace(/ё/g, 'е')
+    .replace(/[«»"']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function buildSidebarRuleFromImportantNotes(brief: string): SidebarMenuRule | null {
+  const notes = extractMarkdownSection(brief, 'Важные замечания')
+  if (!notes) return null
+  const menuChunk = notes.match(/Внутри меню должны быть пункты:\s*([\s\S]*?)(?:\n{2,}|$)/i)?.[1] ?? ''
+  const menuLabels = menuChunk
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^[-*]\s+/.test(line))
+    .map((line) => line.replace(/^[-*]\s+/, '').trim())
+    .filter(Boolean)
+  if (menuLabels.length === 0) return null
+  const selectedLabelRaw = notes.match(/Выбран пункт\s+[«"]([^"\n»]+)[»"]?/i)?.[1]?.trim() ?? ''
+  const selectedLabel = normalizeComparableLabel(selectedLabelRaw)
+  const items = menuLabels.map((label, index) => {
+    const isSelected =
+      selectedLabel.length > 0 && normalizeComparableLabel(label) === selectedLabel
+    return {
+      id: `menu-item-${index + 1}`,
+      label,
+      icon: index % 2 === 0 ? 'circle' : 'layout-grid',
+      selected: isSelected
+    }
+  })
+  const selectedItem = items.find((item) => item.selected) ?? items[0]
+  if (!selectedItem) return null
+  if (!items.some((item) => item.selected)) {
+    selectedItem.selected = true
+  }
+  return {
+    items,
+    activeId: selectedItem.id
+  }
+}
+
 export function buildEnterpriseScreenPlan(brief: string, source: string): EnterpriseScreenPlanV1 {
   const content = `${brief}\n${source}`.trim()
   const confidence = content.length > 0 ? 0.7 : 0.55
   const isGenomFirmware = /геном|genom/i.test(content) && /прошив|firmware/i.test(content)
+  const sidebarRule = buildSidebarRuleFromImportantNotes(brief)
   if (isGenomFirmware) {
     const sections: EnterpriseSection[] = [
       {
@@ -435,12 +497,15 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
           {
             id: 'sidebar-genom-title',
             component: 'DesignSystemSidebarPanel',
-            props: { title: 'Геном 2.0', subTitle: 'Обзор' }
-          },
-          {
-            id: 'sidebar-genom-nav',
-            component: 'DesignSystemSidebarPanel',
-            props: { header: 'Навигация' }
+            props: {
+              title: 'Геном 2.0',
+              subTitle: 'Обзор',
+              activeId: sidebarRule?.activeId ?? 'fw-report',
+              items: sidebarRule?.items ?? [
+                { id: 'overview', label: 'Обзор', icon: 'circle', selected: false },
+                { id: 'fw-report', label: 'Отчет о прошивках', icon: 'layout-grid', selected: true }
+              ]
+            }
           }
         ]
       },
@@ -595,8 +660,16 @@ export function buildEnterpriseScreenPlan(brief: string, source: string): Enterp
       sectionId: 'sidebar',
       kind: 'summaryPanel',
       title: 'Sidebar Summary',
-      component: 'Card',
-      props: { title: 'Sidebar Summary' }
+      component: 'DesignSystemSidebarPanel',
+      props: {
+        title: 'геном 2.0',
+        subTitle: 'Обзор',
+        activeId: sidebarRule?.activeId ?? 'overview',
+        items: sidebarRule?.items ?? [
+          { id: 'overview', label: 'Обзор', icon: 'circle', selected: true },
+          { id: 'report', label: 'Отчет', icon: 'layout-grid', selected: false }
+        ]
+      }
     },
     {
       id: 'breadcrumbs-trail',

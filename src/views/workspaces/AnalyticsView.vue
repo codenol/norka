@@ -50,6 +50,7 @@ const BRIEF_SECTIONS = [
   { id: 'states', title: 'Состояния' },
   { id: 'constraints', title: 'Ограничения' },
   { id: 'metrics', title: 'Метрики' },
+  { id: 'importantNotes', title: 'Важные замечания' },
   { id: 'questions', title: 'Открытые вопросы' }
 ] as const
 const PENDING_ANALYTICS_PROMPT_KEY = 'norka:pending-analytics-prompt'
@@ -64,6 +65,7 @@ const briefContent = ref<Record<BriefSectionId, string>>({
   states: '',
   constraints: '',
   metrics: '',
+  importantNotes: '',
   questions: ''
 })
 const analyticsSource = ref('')
@@ -88,6 +90,23 @@ function briefToMd(): string {
   const lines = ['# Аналитика\n']
   for (const s of BRIEF_SECTIONS) lines.push(`## ${s.title}\n\n${briefContent.value[s.id]}\n`)
   return lines.join('\n')
+}
+
+function ensureBriefSections(md: string): string {
+  const source = md.trim()
+  const base = source.length > 0 ? source : '# Аналитика\n'
+  const missingSections = BRIEF_SECTIONS.filter(
+    (section) => !new RegExp(`(^|\\n)## ${section.title}(\\n|$)`).test(base)
+  )
+  if (missingSections.length === 0) return md
+  const suffix = missingSections
+    .map((section) =>
+      section.id === 'importantNotes'
+        ? `## ${section.title}\n\n<!-- Этот блок обязателен для LLM при генерации JSON -->\n`
+        : `## ${section.title}\n\n`
+    )
+    .join('\n')
+  return `${base.replace(/\s+$/, '')}\n\n${suffix}`.replace(/\n{3,}/g, '\n\n')
 }
 
 const router = useRouter()
@@ -133,7 +152,12 @@ async function loadAnalyticsFilesForCurrentContext() {
       readFeatureFile(root, productId, screenId, featureId, 'analytics.md'),
       readFeatureFile(root, productId, screenId, featureId, 'analytics-source.md')
     ])
-    if (md) parseBriefMd(md)
+    const normalizedMd = ensureBriefSections(md)
+    const canonicalMd = normalizedMd.trim() ? normalizedMd : ensureBriefSections('')
+    parseBriefMd(canonicalMd)
+    if (canonicalMd !== md) {
+      await writeFeatureFile(root, productId, screenId, featureId, 'analytics.md', canonicalMd)
+    }
     analyticsSource.value = sourceMd
   } finally {
     isHydratingAnalyticsFiles.value = false
@@ -442,7 +466,7 @@ async function updateBriefFromChat() {
     const currentBrief = BRIEF_SECTIONS.map(
       (s) => `## ${s.title}\n${briefContent.value[s.id] || '(пусто)'}`
     ).join('\n\n')
-    const prompt = `Диалог:\n${context}\n\nТекущий бриф:\n${currentBrief}\n\nВерни только JSON:\n{"task":"...","users":"...","scenarios":"...","states":"...","constraints":"...","metrics":"...","questions":"..."}`
+    const prompt = `Диалог:\n${context}\n\nТекущий бриф:\n${currentBrief}\n\nВерни только JSON:\n{"task":"...","users":"...","scenarios":"...","states":"...","constraints":"...","metrics":"...","importantNotes":"...","questions":"..."}`
     const agent = new ToolLoopAgent({
       model: createModel(),
       instructions: 'Возвращай только валидный JSON без markdown.',
@@ -490,6 +514,9 @@ const analyticsPlanBlocks = computed(() => {
   }
   if (briefContent.value.constraints.trim()) {
     rows.push({ title: 'Ограничения', description: briefContent.value.constraints.trim() })
+  }
+  if (briefContent.value.importantNotes.trim()) {
+    rows.push({ title: 'Важные замечания', description: briefContent.value.importantNotes.trim() })
   }
   return rows.slice(0, 8)
 })
@@ -672,6 +699,8 @@ function buildDemoBrief(): Record<BriefSectionId, string> {
         'Интерфейс в стиле enterprise SaaS: минибар + сайдбар + breadcrumbs + фильтры + большая таблица. Первая полезная отрисовка до 2 секунд. Не менее 10 строк в таблице. Поддержка массовых операций и плотного табличного режима.',
       metrics:
         'Time-to-detect критичного отклонения, доля узлов в статусе Healthy, среднее время фильтрации до результата, доля сессий с массовыми действиями, точность идентификации проблемного модуля.',
+      importantNotes:
+        'Это обязательный для LLM блок при генерации JSON. Строгие инварианты: в sidebar только один logo-блок (единственный DesignSystemSidebarPanel), в sidebar всегда минимум один menuitem, между logo и первым пунктом меню gap 8px.',
       questions:
         'Нужны ли предустановленные фильтры по окружениям? Какие поля обязательны для экспорта? Должны ли действия в toolbar быть role-based?'
     }
@@ -688,6 +717,8 @@ function buildDemoBrief(): Record<BriefSectionId, string> {
       'Обновление данных не реже 1 раза в минуту. Время первого отображения до 2 секунд. Корректная работа на desktop-экранах от 1280px. Все значения должны иметь единые форматы и подписи.',
     metrics:
       'Время до первого полезного отображения, доля пользователей, нашедших причину инцидента без перехода на другие страницы, время реакции на критичное состояние, точность интерпретации статусов.',
+    importantNotes:
+      'Это обязательный для LLM блок при генерации JSON. Фиксируй не только функциональность, но и жёсткие правила структуры и визуальные инварианты (например, требования к меню, лого, отступам, обязательным элементам).',
     questions:
       'Нужно ли показывать исторические данные на этой же странице? Какие пороги для Warning/Critical считаются официальными? Какие действия пользователь должен выполнять прямо из этого экрана?'
   }

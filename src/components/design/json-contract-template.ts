@@ -1,5 +1,9 @@
 export const TREE_JSON_CONTRACT_TEMPLATE = `{
   "meta": {
+    "sidebarRules": {
+      "singleLogoBlock": true,
+      "minMenuItems": 1
+    },
     "possibleIcons": ["layout-grid", "settings-2", "rows-3", "circle", "search", "download", "trash-2"],
     "fallbackIcon": "circle",
     "miniBar": [
@@ -17,8 +21,9 @@ export const TREE_JSON_CONTRACT_TEMPLATE = `{
         "subTitle": "Overview",
         "activeId": "item-2",
         "items": [
-          { "id": "item-1", "label": "Dashboard" },
-          { "id": "item-2", "label": "Report" }
+          { "id": "item-1", "label": "Dashboard", "icon": "circle", "selected": false },
+          { "id": "item-2", "label": "Report", "icon": "layout-grid", "selected": true },
+          { "id": "item-3", "label": "System", "icon": "server", "selected": false }
         ]
       }
     }

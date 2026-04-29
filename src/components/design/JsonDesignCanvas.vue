@@ -167,7 +167,17 @@ const childrenByParent = computed(() => {
   return out
 })
 
-const sidebarRoots = computed(() => parsedTree.value.sidebar)
+const sidebarRoots = computed(() => {
+  let hasSidebarPanel = false
+  return parsedTree.value.sidebar.filter((node) => {
+    const normalized = normalizeComponentName(node.component_id)
+    const isSidebarPanel = normalized === 'DesignSystemSidebarPanel' || normalized === 'sidebar_panel'
+    if (!isSidebarPanel) return true
+    if (hasSidebarPanel) return false
+    hasSidebarPanel = true
+    return true
+  })
+})
 const breadcrumbRoots = computed(() => parsedTree.value.breadcrumbs)
 const mainRoots = computed(() => [...parsedTree.value.main, ...parsedTree.value.actions])
 const miniBarItems = computed(() => {
@@ -268,8 +278,14 @@ async function createRuntimeSubtree(node: AssemblyStepNode): Promise<unknown | n
   const isPageHeaderNode =
     (node.id.includes('header-title') || node.id.includes('page-header')) &&
     typeof node.props.title === 'string'
+  const isSidebarPanelNode =
+    node.section === 'sidebar' &&
+    (node.id.includes('sidebar-summary') || node.id.includes('sidebar-main') || node.id.includes('contract-sidebar')) &&
+    (normalizedComponentIdBase === 'Card' || normalizedComponentIdBase === 'Panel')
   const normalizedComponentId = isPageHeaderNode && normalizedComponentIdBase === 'Card'
     ? 'DesignSystemPageHeader'
+    : isSidebarPanelNode
+      ? 'DesignSystemSidebarPanel'
     : normalizedComponentIdBase
   const primaryDef = getPrimePreviewDef(normalizedComponentId)
   const resolvedComponentId = primaryDef?.name ?? normalizedComponentId
@@ -282,6 +298,16 @@ async function createRuntimeSubtree(node: AssemblyStepNode): Promise<unknown | n
   const Comp = mod[resolvedDef.exportName]
   if (!Comp) return null
   const normalizedProps = normalizePrimeProps(resolvedDef.name, node.props)
+  if (resolvedDef.name === 'DesignSystemSidebarPanel') {
+    const items = Array.isArray((normalizedProps as { items?: unknown[] }).items)
+      ? (normalizedProps as { items?: unknown[] }).items
+      : []
+    if (items.length === 0) {
+      ;(normalizedProps as { items: Array<Record<string, unknown>> }).items = [
+        { id: 'overview', label: 'Обзор', icon: 'circle', selected: true }
+      ]
+    }
+  }
   const iconPolicy = resolveIconPolicy(parsedTree.value.meta)
   const icon = sanitizeIconName(node.props.icon, iconPolicy)
   const iconLeft = sanitizeIconName(node.props.iconLeft, iconPolicy)
@@ -454,7 +480,7 @@ const hasMain = computed(() =>
           </div>
         </div>
         <div class="h-full w-px shrink-0 bg-border/70" />
-        <div class="ds-sidebar-content flex min-w-0 flex-1 flex-col gap-2 overflow-auto p-3">
+        <div class="ds-sidebar-content flex min-w-0 flex-1 flex-col overflow-auto">
           <template v-if="sidebarRoots.length === 0">
             <div class="h-6 w-24 rounded bg-hover/40" />
             <div class="h-5 w-full rounded bg-hover/30" />
@@ -464,7 +490,7 @@ const hasMain = computed(() =>
             v-for="node in sidebarRoots"
             :key="node.id"
             :ref="(el) => onNodeRef(node, el)"
-            class="rounded-lg border border-transparent"
+            class="ds-sidebar-slot rounded-lg border border-transparent"
           />
         </div>
       </aside>

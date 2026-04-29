@@ -1,5 +1,9 @@
 {
   "meta": {
+    "sidebarRules": {
+      "singleLogoBlock": true,
+      "minMenuItems": 1
+    },
     "possibleIcons": [
       "layout-grid",
       "blocks",
