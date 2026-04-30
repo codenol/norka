@@ -4,66 +4,360 @@ import {
   ScrollAreaRoot,
   ScrollAreaScrollbar,
   ScrollAreaThumb,
-  ScrollAreaViewport,
-  SplitterGroup,
-  SplitterPanel,
-  SplitterResizeHandle,
-  TabsContent,
-  TabsList,
-  TabsRoot,
-  TabsTrigger
+  ScrollAreaViewport
 } from 'reka-ui'
 
-import { toast } from '@/utils/toast'
+import { buildRenderTree, normalizeRenderPlan } from '@/ai/screen-pipeline'
+import JsonDesignCanvas from '@/components/design/JsonDesignCanvas.vue'
+import {
+  readFeatureComments,
+  readFeatureVersions,
+  useWorkspaceFs,
+  writeFeatureFile,
+  writeFeatureVersions,
+  type FeatureComment,
+  type FeatureCommentRole,
+  type FeatureCommentStatus,
+  type FeatureVersion
+} from '@/composables/use-workspace-fs'
 import { useProjects } from '@/composables/use-projects'
-import { useWorkspaceFs, writeFeatureFile, readFeatureFile } from '@/composables/use-workspace-fs'
+import { toast } from '@/utils/toast'
 
-const { context, workspacePath } = useProjects()
+interface RenderNode {
+  id: string
+  section: string
+  component_id: string
+  props: Record<string, unknown>
+  slot_name?: string
+  parent_step_id?: string
+  children?: RenderNode[]
+}
+
+interface InspectorMetrics {
+  width: number
+  height: number
+  x: number
+  y: number
+}
+
+const { context, workspacePath, currentProduct, currentScreen, currentFeature } = useProjects()
 const { isDesktop } = useWorkspaceFs()
 
-// ── Concept code preview ──────────────────────────────────────────────────────
+const versionComments = ref<FeatureComment[]>([])
+const handoffVersions = ref<FeatureVersion[]>([])
+const activePackageVersionId = ref('')
+const selectedNodeId = ref<string | null>(null)
+const selectedNodeMetrics = ref<InspectorMetrics | null>(null)
 
-const conceptCode = ref('')
-const finalExport = ref('')
+const activePackageVersion = computed(
+  () => handoffVersions.value.find((version) => version.id === activePackageVersionId.value) ?? null
+)
 
-async function loadConceptCode() {
-  if (!workspacePath.value || !context.value) return
+const packageComments = computed(() =>
+  versionComments.value.filter((comment) => comment.versionId === activePackageVersionId.value)
+)
+
+const packageSummary = computed(() => {
+  const total = packageComments.value.length
+  const closed = packageComments.value.filter((comment) => isCommentClosed(comment)).length
+  const wontDo = packageComments.value.filter((comment) =>
+    commentStatusesFor(comment).includes('wont_do')
+  ).length
+  return {
+    total,
+    closed,
+    wontDo,
+    unresolved: total - closed,
+    devFeedback: activePackageVersion.value?.devFeedback?.length ?? 0
+  }
+})
+
+const packageTreeJson = computed(() => {
+  const payload =
+    activePackageVersion.value?.renderContract?.payload ?? activePackageVersion.value?.snapshot?.payload
+  if (!payload) return ''
+  try {
+    const normalized = normalizeRenderPlan(JSON.parse(payload))
+    if (!normalized.ok) return ''
+    return JSON.stringify(buildRenderTree(normalized.enterpriseScreenPlan, normalized.assemblyPlan))
+  } catch {
+    return ''
+  }
+})
+
+const renderNodes = computed(() => parseRenderNodes(packageTreeJson.value))
+const selectedNode = computed(() =>
+  selectedNodeId.value ? (renderNodes.value.get(selectedNodeId.value) ?? null) : null
+)
+const selectedNodeComments = computed(() =>
+  selectedNodeId.value
+    ? packageComments.value.filter((comment) => comment.nodeId === selectedNodeId.value)
+    : []
+)
+const decisionComments = computed(() =>
+  packageComments.value.filter((comment) => isCommentClosed(comment))
+)
+const frontendReviewComments = computed(() => commentsByStatus('needs_frontend'))
+const backendReviewComments = computed(() => commentsByStatus('needs_backend'))
+const analyticsReviewComments = computed(() => commentsByStatus('needs_analytics'))
+const attentionComments = computed(() => [
+  ...frontendReviewComments.value,
+  ...backendReviewComments.value,
+  ...analyticsReviewComments.value
+])
+
+const packageTitle = computed(
+  () =>
+    activePackageVersion.value?.description ||
+    activePackageVersion.value?.title ||
+    currentFeature.value?.title ||
+    'Пакет передачи'
+)
+
+const handoffShareUrl = computed(() => {
+  if (!context.value) return ''
   const { productId, screenId, featureId } = context.value
-  conceptCode.value = await readFeatureFile(
-    workspacePath.value,
-    productId,
-    screenId,
-    featureId,
-    'concept.tsx'
+  return `norka://handoff/${productId}/${screenId}/${featureId}/${activePackageVersionId.value}`
+})
+
+function parseRenderNodes(treeJson: string): Map<string, RenderNode> {
+  const nodes = new Map<string, RenderNode>()
+  if (!treeJson) return nodes
+  try {
+    const raw = JSON.parse(treeJson) as Partial<Record<'sidebar' | 'breadcrumbs' | 'main' | 'actions', unknown>>
+    const visit = (input: unknown) => {
+      if (!input || typeof input !== 'object') return
+      const node = input as Partial<RenderNode>
+      if (typeof node.id === 'string') {
+        nodes.set(node.id, {
+          id: node.id,
+          section: typeof node.section === 'string' ? node.section : 'unknown',
+          component_id: typeof node.component_id === 'string' ? node.component_id : 'unknown',
+          props: node.props && typeof node.props === 'object' && !Array.isArray(node.props)
+            ? (node.props as Record<string, unknown>)
+            : {},
+          slot_name: typeof node.slot_name === 'string' ? node.slot_name : undefined,
+          parent_step_id: typeof node.parent_step_id === 'string' ? node.parent_step_id : undefined,
+          children: Array.isArray(node.children) ? (node.children as RenderNode[]) : []
+        })
+      }
+      if (Array.isArray(node.children)) {
+        for (const child of node.children) visit(child)
+      }
+    }
+    for (const section of ['sidebar', 'breadcrumbs', 'main', 'actions'] as const) {
+      const items = raw[section]
+      if (!Array.isArray(items)) continue
+      for (const item of items) visit(item)
+    }
+  } catch {
+    return nodes
+  }
+  return nodes
+}
+
+function commentStatusesFor(comment: FeatureComment): FeatureCommentStatus[] {
+  if (Array.isArray(comment.statuses) && comment.statuses.length > 0) return comment.statuses
+  return comment.status === 'resolved' ? ['resolved'] : ['new']
+}
+
+function isCommentClosed(comment: FeatureComment): boolean {
+  const statuses = commentStatusesFor(comment)
+  return statuses.includes('resolved') || statuses.includes('wont_do')
+}
+
+function commentsByStatus(status: FeatureCommentStatus): FeatureComment[] {
+  return packageComments.value.filter((comment) => commentStatusesFor(comment).includes(status))
+}
+
+function roleLabel(role?: FeatureCommentRole): string {
+  switch (role) {
+    case 'analyst':
+      return 'Аналитик'
+    case 'frontend':
+      return 'Frontend'
+    case 'backend':
+      return 'Backend'
+    case 'designer':
+    default:
+      return 'Дизайнер'
+  }
+}
+
+function statusLabel(status: FeatureCommentStatus): string {
+  switch (status) {
+    case 'needs_frontend':
+      return 'Проверка фронтами'
+    case 'needs_backend':
+      return 'Проверка бэками'
+    case 'needs_analytics':
+      return 'Проверка аналитиком'
+    case 'wont_do':
+      return 'Не будем делать'
+    case 'resolved':
+      return 'Решён'
+    case 'new':
+    default:
+      return 'Новый'
+  }
+}
+
+function formatDate(value?: string): string {
+  if (!value) return '—'
+  return new Date(value).toLocaleString('ru')
+}
+
+function propPreview(value: unknown): string {
+  if (value === null || value === undefined) return '—'
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  const serialized = JSON.stringify(value)
+  return serialized.length > 180 ? `${serialized.slice(0, 180)}…` : serialized
+}
+
+function nodeDisplayName(node: RenderNode | null): string {
+  if (!node) return 'Компонент не выбран'
+  const title = node.props.title ?? node.props.label ?? node.props.text ?? node.props.name
+  return typeof title === 'string' ? title : node.component_id
+}
+
+function handlePreviewClick(event: MouseEvent) {
+  const target = event.target instanceof Element ? event.target : null
+  const nodeElement = target?.closest<HTMLElement>('[data-node-id]')
+  selectedNodeId.value = nodeElement?.dataset.nodeId ?? null
+  if (!nodeElement) {
+    selectedNodeMetrics.value = null
+    return
+  }
+  const rect = nodeElement.getBoundingClientRect()
+  selectedNodeMetrics.value = {
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+    x: Math.round(rect.left),
+    y: Math.round(rect.top)
+  }
+}
+
+async function loadPackageData() {
+  if (!context.value) return
+  const { productId, screenId, featureId } = context.value
+  const root = workspacePath.value ?? 'browser'
+  const [versions, comments] = await Promise.all([
+    readFeatureVersions(root, productId, screenId, featureId),
+    readFeatureComments(root, productId, screenId, featureId)
+  ])
+  handoffVersions.value = versions
+  versionComments.value = comments
+  const active =
+    versions.find((version) => version.status === 'ready_for_handoff' && !version.isArchived) ??
+    versions.find((version) => version.status === 'handed_off' && !version.isArchived) ??
+    null
+  activePackageVersionId.value = active?.id ?? ''
+  if (active?.status === 'ready_for_handoff') {
+    active.status = 'handed_off'
+    await writeFeatureVersions(root, productId, screenId, featureId, versions)
+  }
+}
+
+function buildHandoffMarkdown(): string {
+  return [
+    ...handoffHeaderLines(),
+    ...commentListLines('Decisions', decisionComments.value, '- Нет закрытых решений.'),
+    ...commentListLines('Requires Attention', attentionComments.value, '- Нет дополнительных проверок.'),
+    '## Acceptance Criteria',
+    '',
+    ...acceptanceCriteria().map((criterion) => `- [ ] ${criterion}`),
+    ''
+  ].join('\n')
+}
+
+function handoffHeaderLines(): string[] {
+  return [
+    '# Handoff',
+    '',
+    `## ${packageTitle.value}`,
+    '',
+    ...handoffContextLines(),
+    '## Analytics',
+    '',
+    ...handoffAnalyticsLines(),
+    '',
+    '## Discussion Summary',
+    '',
+    `- Closed: ${packageSummary.value.closed}/${packageSummary.value.total}`,
+    `- Unresolved: ${packageSummary.value.unresolved}`,
+    `- Dev feedback: ${packageSummary.value.devFeedback}`,
+    ''
+  ]
+}
+
+function handoffContextLines(): string[] {
+  const version = activePackageVersion.value
+  const productTitle = currentProduct.value ? currentProduct.value.title : '—'
+  const screenTitle = currentScreen.value ? currentScreen.value.title : '—'
+  const featureTitle = currentFeature.value ? currentFeature.value.title : '—'
+  return [
+    `- Product: ${productTitle}`,
+    `- Screen: ${screenTitle}`,
+    `- Feature: ${featureTitle}`,
+    `- Version: ${version ? version.title : '—'} (${version ? version.status : '—'})`,
+    `- Owner: ${version?.owner ?? '—'}`,
+    `- Branch: ${version?.branchId ?? 'main'}`,
+    `- Created: ${formatDate(version?.createdAt)}`,
+    ''
+  ]
+}
+
+function handoffAnalyticsLines(): string[] {
+  const analyticsRef = activePackageVersion.value?.analyticsRef
+  return [
+    `- Source: ${analyticsRef?.sourceFile ?? 'analytics.md'}`,
+    `- Hash: ${analyticsRef?.hash ?? '—'}`,
+    `- Captured: ${formatDate(analyticsRef?.capturedAt)}`
+  ]
+}
+
+function commentListLines(title: string, comments: FeatureComment[], emptyText: string): string[] {
+  if (comments.length === 0) return [`## ${title}`, '', emptyText, '']
+  return [
+    `## ${title}`,
+    '',
+    ...comments.map(
+      (comment) => `- ${comment.text} (${commentStatusesFor(comment).map(statusLabel).join(', ')})`
+    ),
+    ''
+  ]
+}
+
+function buildFinalExport(): string {
+  return JSON.stringify(
+    {
+      version: activePackageVersion.value,
+      summary: packageSummary.value,
+      decisions: decisionComments.value,
+      attention: attentionComments.value,
+      comments: packageComments.value,
+      renderContract: activePackageVersion.value?.renderContract ?? activePackageVersion.value?.snapshot
+    },
+    null,
+    2
   )
+}
+
+function acceptanceCriteria(): string[] {
+  return [
+    'Финальная версия макета доступна в пакете и совпадает с переданной версией.',
+    'Все комментарии обсуждения закрыты или явно помечены как “не будем делать”.',
+    'Проверки frontend/backend/analytics вынесены в блок “Требует внимания”.',
+    'Разработчик может кликнуть компонент в макете и увидеть nodeId, размеры и свойства.'
+  ]
 }
 
 async function saveHandoffMd() {
   if (!workspacePath.value || !context.value) {
     toast.error('Нет рабочей папки или контекста фичи')
     return
-  }
-  const lines: string[] = ['# Handoff\n']
-  for (const section of docSections.value) {
-    lines.push(`## ${section.title}\n`)
-    lines.push(section.content)
-    lines.push('')
-  }
-  if (specRows.length) {
-    lines.push('## Спецификации\n')
-    lines.push('| Компонент | Свойство | Значение |')
-    lines.push('|-----------|----------|----------|')
-    for (const row of specRows) {
-      lines.push(`| ${row.component} | ${row.property} | ${row.value} |`)
-    }
-    lines.push('')
-  }
-  if (resourceLinks.length) {
-    lines.push('## Ресурсы\n')
-    for (const link of resourceLinks) {
-      lines.push(`- [${link.label}](${link.url})`)
-    }
-    lines.push('')
   }
   const { productId, screenId, featureId } = context.value
   await writeFeatureFile(
@@ -72,7 +366,7 @@ async function saveHandoffMd() {
     screenId,
     featureId,
     'handoff.md',
-    lines.join('\n')
+    buildHandoffMarkdown()
   )
   toast.info('handoff.md сохранён')
 }
@@ -83,676 +377,255 @@ async function generateFinalExportMd() {
     return
   }
   const { productId, screenId, featureId } = context.value
-  const [sourceAnalytics, previewLayout, commentsRaw] = await Promise.all([
-    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'analytics.md'),
-    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'preview-layout.json'),
-    readFeatureFile(workspacePath.value, productId, screenId, featureId, 'comments.json')
-  ])
-  const lines: string[] = [
-    '# Final Prototype Export',
-    '',
-    '## Source Analytics',
-    sourceAnalytics || '(not provided)',
-    '',
-    '## Prototype Snapshot',
-    '```json',
-    previewLayout || '{}',
-    '```',
-    '',
-    '## Review Summary',
-    commentsRaw || '[]',
-    '',
-    '## Auto Screenshots',
-    '- ![Main state](./screenshots/main.png)',
-    '- ![Empty state](./screenshots/empty.png)',
-    '- ![Error state](./screenshots/error.png)',
-    ''
-  ]
-  finalExport.value = lines.join('\n')
   await writeFeatureFile(
     workspacePath.value,
     productId,
     screenId,
     featureId,
-    'final-export.md',
-    finalExport.value
+    'final-export.json',
+    buildFinalExport()
   )
-  toast.info('final-export.md сохранён')
+  toast.info('final-export.json сохранён')
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type Step = 1 | 2 | 3
-
-interface Feature {
-  id: string
-  name: string
-  selected: boolean
+async function copyShareLink() {
+  if (!handoffShareUrl.value) return
+  await navigator.clipboard?.writeText(handoffShareUrl.value)
+  toast.info('Ссылка на пакет скопирована')
 }
 
-interface DocSection {
-  id: string
-  title: string
-  content: string
-  expanded: boolean
-}
-
-interface SpecRow {
-  component: string
-  property: string
-  value: string
-}
-
-interface ResourceLink {
-  id: string
-  label: string
-  url: string
-  icon: string
-}
-
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-const features = ref<Feature[]>([
-  { id: 'f1', name: 'Онбординг — шаг 1', selected: true },
-  { id: 'f2', name: 'Онбординг — шаг 2', selected: false },
-  { id: 'f3', name: 'Создание проекта', selected: false },
-  { id: 'f4', name: 'Приглашение коллег', selected: false },
-  { id: 'f5', name: 'Главный экран', selected: false }
-])
-
-const docSections = ref<DocSection[]>([
-  {
-    id: 'ds1',
-    title: 'Описание',
-    expanded: true,
-    content:
-      'Первый шаг онбординга. Пользователь видит приветственный экран с ключевыми преимуществами продукта. Цель — мотивировать продолжить и не уйти.'
-  },
-  {
-    id: 'ds2',
-    title: 'Компоненты',
-    expanded: false,
-    content:
-      '• Hero-блок (иллюстрация + заголовок + подзаголовок)\n• Button/Primary — "Начать →"\n• Button/Text — "Пропустить"\n• ProgressBar (шаг 1 из 5)'
-  },
-  {
-    id: 'ds3',
-    title: 'Взаимодействия',
-    expanded: false,
-    content:
-      '• Кнопка "Начать" → переход к шагу 2 с анимацией slide-left\n• Кнопка "Пропустить" → показ подтверждения\n• Свайп влево (mobile) = "Начать"'
-  },
-  {
-    id: 'ds4',
-    title: 'Состояния',
-    expanded: false,
-    content:
-      '• Default — стандартный вид\n• Loading — если загружается профиль пользователя\n• Error — если не удалось загрузить данные'
-  }
-])
-
-const specRows: SpecRow[] = [
-  { component: 'Hero', property: 'Отступ сверху', value: '64px' },
-  { component: 'Hero', property: 'Иллюстрация', value: '240 × 200 px' },
-  { component: 'Заголовок', property: 'Font size', value: '28px / Bold' },
-  { component: 'Заголовок', property: 'Color', value: 'Neutral/900' },
-  { component: 'Подзаголовок', property: 'Font size', value: '15px / Regular' },
-  { component: 'Подзаголовок', property: 'Color', value: 'Neutral/500' },
-  { component: 'Button/Primary', property: 'Height', value: '48px' },
-  { component: 'Button/Primary', property: 'Color', value: 'Primary/500' },
-  { component: 'ProgressBar', property: 'Progress', value: '20% (1/5)' }
-]
-
-const resourceLinks: ResourceLink[] = [
-  { id: 'l1', label: 'Дизайн-файл Nork', url: '#', icon: 'pen-tool' },
-  { id: 'l2', label: 'Storybook компоненты', url: '#', icon: 'book-open' },
-  { id: 'l3', label: 'GitHub PR #142', url: '#', icon: 'git-pull-request' },
-  { id: 'l4', label: 'Confluence: Онбординг', url: '#', icon: 'file-text' }
-]
-
-// ── State ─────────────────────────────────────────────────────────────────────
-
-const currentStep = ref<Step>(1)
-const isGenerating = ref(false)
-const activeFeatureId = ref('f1')
-const activeDocTab = ref('documentation')
-
-const activeFeature = computed(() => features.value.find((f) => f.id === activeFeatureId.value))
-
-const stepLabels: Record<Step, string> = {
-  1: 'Подготовка',
-  2: 'Ревью',
-  3: 'Шеринг'
-}
-
-async function handleCta() {
-  if (currentStep.value === 1) {
-    isGenerating.value = true
-    await new Promise((r) => setTimeout(r, 1500))
-    isGenerating.value = false
-    docSections.value.forEach((s) => {
-      s.expanded = true
-    })
-    currentStep.value = 2
-    toast.info('Документация сгенерирована')
-  } else if (currentStep.value === 2) {
-    currentStep.value = 3
-    toast.info('Документация утверждена')
-  } else {
-    toast.info('Ссылка скопирована: norka.app/handoff/abc123')
-  }
-}
-
-function toggleDocSection(id: string) {
-  const s = docSections.value.find((s) => s.id === id)
-  if (s) s.expanded = !s.expanded
-}
-
-const progressWidth = computed(() => {
-  const map: Record<Step, string> = { 1: '0%', 2: '50%', 3: '100%' }
-  return map[currentStep.value]
-})
-
-onMounted(async () => {
-  await loadConceptCode()
-  if (!workspacePath.value || !context.value) return
-  const { productId, screenId, featureId } = context.value
-  finalExport.value = await readFeatureFile(
-    workspacePath.value,
-    productId,
-    screenId,
-    featureId,
-    'final-export.md'
-  )
+onMounted(() => {
+  void loadPackageData()
 })
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col overflow-hidden">
-    <!-- Top bar: stepper -->
-    <header class="flex h-10 shrink-0 items-center gap-3 border-b border-border px-4">
-      <!-- Steps -->
-      <div class="flex items-center gap-2">
-        <template v-for="step in [1, 2, 3] as Step[]" :key="step">
-          <div
-            class="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all"
-            :class="
-              currentStep === step
-                ? 'bg-accent/15 text-accent'
-                : currentStep > step
-                  ? 'text-emerald-400'
-                  : 'text-muted'
-            "
-          >
-            <icon-lucide-check v-if="currentStep > step" class="size-3" />
-            <span
-              v-else
-              class="flex size-4 items-center justify-center rounded-full border text-[10px]"
-              :class="
-                currentStep === step ? 'border-accent text-accent' : 'border-border text-muted'
-              "
-              >{{ step }}</span
-            >
-            {{ stepLabels[step as Step] }}
-          </div>
-          <icon-lucide-chevron-right v-if="step < 3" class="size-3 shrink-0 text-border" />
-        </template>
-      </div>
+  <div class="flex h-full w-full flex-col overflow-hidden bg-canvas">
+    <header class="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3">
+      <span class="text-xs font-medium text-surface">{{ packageTitle }}</span>
+      <span class="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-400">
+        {{ activePackageVersion?.status ?? 'empty' }}
+      </span>
+      <span class="text-[11px] text-muted">
+        {{ activePackageVersion?.title ?? '—' }} · {{ activePackageVersion?.owner ?? '—' }} ·
+        {{ activePackageVersion?.branchId ?? 'main' }}
+      </span>
 
       <div class="flex-1" />
 
-      <!-- CTA -->
       <button
-        class="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
-        :class="
-          currentStep === 1
-            ? 'bg-accent text-white hover:bg-accent/80'
-            : currentStep === 2
-              ? 'bg-emerald-600 text-white hover:bg-emerald-600/80'
-              : 'bg-hover text-surface hover:bg-hover/80'
-        "
-        :disabled="isGenerating"
-        @click="handleCta"
+        class="rounded border border-border px-2.5 py-1 text-xs text-muted hover:bg-hover hover:text-surface"
+        :disabled="!activePackageVersion"
+        @click="copyShareLink"
       >
-        <icon-lucide-loader-circle v-if="isGenerating" class="size-3.5 animate-spin" />
-        <icon-lucide-file-search v-else-if="currentStep === 1" class="size-3.5" />
-        <icon-lucide-check v-else-if="currentStep === 2" class="size-3.5" />
-        <icon-lucide-link v-else class="size-3.5" />
-
-        <span>{{
-          isGenerating
-            ? 'Генерация…'
-            : currentStep === 1
-              ? 'Сгенерировать документацию'
-              : currentStep === 2
-                ? 'Утвердить и продолжить'
-                : 'Скопировать ссылку'
-        }}</span>
+        Скопировать ссылку
       </button>
-
       <template v-if="isDesktop">
-        <div class="h-4 w-px bg-border" />
         <button
-          class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
+          class="rounded border border-border px-2.5 py-1 text-xs text-muted hover:bg-hover hover:text-surface"
+          :disabled="!activePackageVersion"
           @click="saveHandoffMd"
         >
-          <icon-lucide-save class="size-3.5" />
           handoff.md
         </button>
         <button
-          class="flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
+          class="rounded border border-border px-2.5 py-1 text-xs text-muted hover:bg-hover hover:text-surface"
+          :disabled="!activePackageVersion"
           @click="generateFinalExportMd"
         >
-          <icon-lucide-file-down class="size-3.5" />
-          final-export.md
+          final-export.json
         </button>
       </template>
     </header>
 
-    <!-- Body -->
-    <SplitterGroup
-      direction="horizontal"
-      auto-save-id="handoff-layout"
-      class="flex-1 overflow-hidden"
-    >
-      <!-- Left: Feature list + progress -->
-      <SplitterPanel
-        :default-size="20"
-        :min-size="14"
-        :max-size="30"
-        class="flex flex-col overflow-hidden border-r border-border bg-panel"
-      >
-        <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">
-          Задачи
-        </header>
-        <ScrollAreaRoot class="flex-1">
-          <ScrollAreaViewport class="h-full px-2 pb-2">
-            <div class="flex flex-col gap-0.5">
-              <button
-                v-for="feature in features"
-                :key="feature.id"
-                class="flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors"
-                :class="
-                  activeFeatureId === feature.id
-                    ? 'bg-hover text-surface'
-                    : 'text-muted hover:bg-hover/70 hover:text-surface'
-                "
-                @click="activeFeatureId = feature.id"
-              >
-                <div
-                  class="flex size-4 shrink-0 items-center justify-center rounded border transition-colors"
-                  :class="feature.selected ? 'border-accent bg-accent/20' : 'border-border'"
-                  @click.stop="feature.selected = !feature.selected"
-                >
-                  <icon-lucide-check v-if="feature.selected" class="size-2.5 text-accent" />
+    <div v-if="!activePackageVersion" class="flex flex-1 items-center justify-center text-muted">
+      Нет версии, готовой к handoff.
+    </div>
+
+    <div v-else class="min-h-0 flex flex-1 overflow-hidden">
+      <main class="min-w-0 flex flex-1 flex-col gap-2 overflow-hidden p-2">
+        <section class="shrink-0 rounded-lg border border-border bg-panel px-3 py-2">
+          <div class="flex items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold text-surface">{{ packageTitle }}</p>
+              <p class="truncate text-[11px] text-muted">
+                {{ activePackageVersion.description || currentProduct?.title || 'Итоговый пакет версии' }}
+              </p>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-[10px] text-muted">
+              <div class="rounded border border-border bg-canvas px-2 py-1">
+                Owner: <span class="text-surface">{{ activePackageVersion.owner ?? '—' }}</span>
+              </div>
+              <div class="rounded border border-border bg-canvas px-2 py-1">
+                Comments: <span class="text-surface">{{ packageSummary.closed }}/{{ packageSummary.total }}</span>
+              </div>
+              <div class="rounded border border-border bg-canvas px-2 py-1">
+                Feedback: <span class="text-surface">{{ packageSummary.devFeedback }}</span>
+              </div>
+              <div class="rounded border border-border bg-canvas px-2 py-1">
+                Analytics:
+                <span class="font-mono text-surface">{{ activePackageVersion.analyticsRef?.hash ?? '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="min-h-0 flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-panel">
+          <div class="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
+            <div>
+              <h2 class="text-xs font-semibold text-surface">Макет версии</h2>
+              <p class="text-[10px] text-muted">Клик по компоненту открывает inspector справа.</p>
+            </div>
+            <span class="text-[10px] text-muted">
+              {{ activePackageVersion.id }} · {{ formatDate(activePackageVersion.createdAt) }}
+            </span>
+          </div>
+          <div class="min-h-0 flex-1 overflow-hidden bg-canvas" @click.capture="handlePreviewClick">
+            <JsonDesignCanvas :tree-json="packageTreeJson" />
+          </div>
+        </section>
+
+        <section class="grid h-44 shrink-0 grid-cols-3 gap-2">
+          <div class="min-h-0 overflow-hidden rounded-lg border border-border bg-panel p-3">
+            <h2 class="text-xs font-semibold text-surface">Решения</h2>
+            <ScrollAreaRoot class="mt-2 h-[124px]">
+              <ScrollAreaViewport class="h-full pr-2">
+                <div v-if="decisionComments.length === 0" class="text-xs text-muted">
+                  Закрытых решений нет.
                 </div>
-                <span class="truncate text-xs">{{ feature.name }}</span>
-              </button>
+                <div v-else class="flex flex-col gap-1.5">
+                  <article
+                    v-for="comment in decisionComments"
+                    :key="comment.id"
+                    class="rounded border border-border bg-canvas px-2 py-1.5"
+                  >
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="truncate text-[10px] font-medium text-surface">{{ comment.author }}</span>
+                      <span class="shrink-0 text-[9px] text-muted">{{ formatDate(comment.createdAt) }}</span>
+                    </div>
+                    <p class="mt-1 line-clamp-2 text-[11px] text-surface/85">{{ comment.text }}</p>
+                  </article>
+                </div>
+              </ScrollAreaViewport>
+            </ScrollAreaRoot>
+          </div>
+
+          <div class="min-h-0 overflow-hidden rounded-lg border border-border bg-panel p-3">
+            <h2 class="text-xs font-semibold text-surface">Требует внимания</h2>
+            <ScrollAreaRoot class="mt-2 h-[124px]">
+              <ScrollAreaViewport class="h-full pr-2">
+                <div v-if="attentionComments.length === 0" class="text-xs text-muted">
+                  Дополнительных проверок нет.
+                </div>
+                <div v-else class="flex flex-col gap-1.5">
+                  <article
+                    v-for="comment in attentionComments"
+                    :key="`${comment.id}-${commentStatusesFor(comment).join('-')}`"
+                    class="rounded border border-border bg-canvas px-2 py-1.5"
+                  >
+                    <p class="line-clamp-2 text-[11px] text-surface/85">{{ comment.text }}</p>
+                    <div class="mt-1 flex flex-wrap gap-1">
+                      <span
+                        v-for="status in commentStatusesFor(comment).filter((item) => item.startsWith('needs_'))"
+                        :key="status"
+                        class="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] text-accent"
+                      >
+                        {{ statusLabel(status) }}
+                      </span>
+                    </div>
+                  </article>
+                </div>
+              </ScrollAreaViewport>
+            </ScrollAreaRoot>
+          </div>
+
+          <div class="min-h-0 overflow-hidden rounded-lg border border-border bg-panel p-3">
+            <h2 class="text-xs font-semibold text-surface">DoD / артефакты</h2>
+            <ul class="mt-2 flex flex-col gap-1 text-[11px] text-surface/85">
+              <li v-for="criterion in acceptanceCriteria().slice(0, 3)" :key="criterion" class="flex gap-1.5">
+                <icon-lucide-check class="mt-0.5 size-3 shrink-0 text-emerald-400" />
+                <span class="line-clamp-1">{{ criterion }}</span>
+              </li>
+            </ul>
+            <div class="mt-2 rounded border border-border bg-canvas px-2 py-1 text-[10px] text-muted">
+              preview-layout.json ·
+              {{ activePackageVersion.renderContract?.savedAt ? formatDate(activePackageVersion.renderContract.savedAt) : '—' }}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="flex w-72 shrink-0 flex-col border-l border-border bg-panel">
+        <header class="border-b border-border px-3 py-2">
+          <p class="text-xs font-semibold text-surface">Inspector</p>
+          <p class="text-[10px] text-muted">Readonly данные выбранного компонента</p>
+        </header>
+        <ScrollAreaRoot class="min-h-0 flex-1">
+          <ScrollAreaViewport class="h-full p-3">
+            <div v-if="!selectedNode" class="rounded-lg border border-dashed border-border p-4 text-xs text-muted">
+              Выберите компонент в макете, чтобы посмотреть размеры, свойства и связанные решения.
+            </div>
+            <div v-else class="flex flex-col gap-3">
+              <div class="rounded-lg border border-border bg-canvas p-3">
+                <p class="text-xs font-semibold text-surface">{{ nodeDisplayName(selectedNode) }}</p>
+                <p class="mt-1 font-mono text-[10px] text-muted">{{ selectedNode.id }}</p>
+                <p class="mt-1 text-[10px] text-muted">
+                  {{ selectedNode.component_id }} · {{ selectedNode.section }}
+                </p>
+              </div>
+
+              <div class="rounded-lg border border-border bg-canvas p-3">
+                <p class="mb-2 text-[11px] font-medium text-surface">Размеры</p>
+                <div class="grid grid-cols-2 gap-2 text-[11px] text-muted">
+                  <span>W: {{ selectedNodeMetrics?.width ?? '—' }} px</span>
+                  <span>H: {{ selectedNodeMetrics?.height ?? '—' }} px</span>
+                  <span>X: {{ selectedNodeMetrics?.x ?? '—' }}</span>
+                  <span>Y: {{ selectedNodeMetrics?.y ?? '—' }}</span>
+                </div>
+              </div>
+
+              <div class="min-h-0 rounded-lg border border-border bg-canvas p-3">
+                <p class="mb-2 text-[11px] font-medium text-surface">Props</p>
+                <div v-if="Object.keys(selectedNode.props).length === 0" class="text-xs text-muted">
+                  Нет свойств.
+                </div>
+                <div v-else class="flex max-h-48 flex-col gap-1 overflow-auto pr-1">
+                  <div
+                    v-for="[key, value] in Object.entries(selectedNode.props)"
+                    :key="key"
+                    class="grid grid-cols-[72px_1fr] gap-2 text-[10px]"
+                  >
+                    <span class="truncate text-muted">{{ key }}</span>
+                    <span class="break-all font-mono text-surface/80">{{ propPreview(value) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-border bg-canvas p-3">
+                <p class="mb-2 text-[11px] font-medium text-surface">Комментарии по узлу</p>
+                <div v-if="selectedNodeComments.length === 0" class="text-xs text-muted">
+                  К этому компоненту нет решений.
+                </div>
+                <div v-else class="flex flex-col gap-2">
+                  <article
+                    v-for="comment in selectedNodeComments"
+                    :key="comment.id"
+                    class="rounded border border-border px-2 py-1.5"
+                  >
+                    <p class="text-xs text-surface/85">{{ comment.text }}</p>
+                    <p class="mt-1 text-[10px] text-muted">
+                      {{ comment.author }} · {{ roleLabel(comment.role) }}
+                    </p>
+                  </article>
+                </div>
+              </div>
             </div>
           </ScrollAreaViewport>
           <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
             <ScrollAreaThumb class="rounded-full bg-border" />
           </ScrollAreaScrollbar>
         </ScrollAreaRoot>
-
-        <!-- Progress -->
-        <div class="shrink-0 border-t border-border p-3">
-          <div class="mb-1 flex items-center justify-between">
-            <span class="text-[11px] text-muted">Прогресс</span>
-            <span class="text-[11px] font-medium text-surface">{{
-              { 1: '0%', 2: '50%', 3: '100%' }[currentStep]
-            }}</span>
-          </div>
-          <div class="h-1.5 overflow-hidden rounded-full bg-hover">
-            <div
-              class="h-full rounded-full bg-accent transition-all duration-700"
-              :style="{ width: progressWidth }"
-            />
-          </div>
-        </div>
-      </SplitterPanel>
-
-      <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div
-          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
-        />
-      </SplitterResizeHandle>
-
-      <!-- Center: Annotated canvas -->
-      <SplitterPanel
-        :default-size="50"
-        :min-size="28"
-        class="relative flex flex-col overflow-hidden bg-canvas"
-      >
-        <div class="relative flex flex-1 items-center justify-center overflow-hidden p-8">
-          <!-- Mock artboard -->
-          <div
-            class="relative flex h-full w-full max-h-[580px] max-w-[360px] flex-col overflow-hidden rounded-2xl border border-border/50 bg-panel/80 shadow-2xl"
-          >
-            <!-- Artboard label -->
-            <div class="absolute -top-6 left-0 text-[11px] text-muted">
-              {{ activeFeature?.name }}
-            </div>
-
-            <!-- Mock screen content -->
-            <div class="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-              <!-- Illustration placeholder -->
-              <div class="relative h-32 w-full">
-                <div class="h-32 w-full rounded-xl bg-accent/10" />
-                <!-- Width annotation (step 1 only) -->
-                <template v-if="currentStep === 1">
-                  <div
-                    class="absolute -bottom-5 left-0 right-0 flex items-center gap-1 text-[10px] text-red-400"
-                  >
-                    <div class="h-px flex-1 bg-red-400" />
-                    <span>320px</span>
-                    <div class="h-px flex-1 bg-red-400" />
-                  </div>
-                  <div
-                    class="absolute -right-8 top-0 bottom-0 flex flex-col items-center gap-1 text-[10px] text-red-400"
-                  >
-                    <div class="w-px flex-1 bg-red-400" />
-                    <span class="-rotate-90 whitespace-nowrap">128px</span>
-                    <div class="w-px flex-1 bg-red-400" />
-                  </div>
-                </template>
-              </div>
-
-              <!-- Title -->
-              <div class="relative w-full text-center">
-                <div class="h-7 w-full rounded bg-surface/20" />
-                <template v-if="currentStep === 1">
-                  <div
-                    class="absolute -right-16 top-0 rounded border border-accent/40 bg-canvas px-1.5 py-0.5 text-[9px] text-accent"
-                  >
-                    H1 / Bold
-                  </div>
-                </template>
-              </div>
-
-              <div class="h-4 w-4/5 rounded bg-surface/10" />
-              <div class="h-4 w-3/5 rounded bg-surface/10" />
-
-              <!-- CTA button -->
-              <div class="relative mt-4 w-full">
-                <div class="flex h-12 w-full items-center justify-center rounded-xl bg-accent/30">
-                  <span class="text-xs font-medium text-accent">Начать →</span>
-                </div>
-                <template v-if="currentStep === 1">
-                  <div
-                    class="absolute -bottom-5 left-0 right-0 flex items-center gap-1 text-[10px] text-red-400"
-                  >
-                    <div class="h-px flex-1 bg-red-400" />
-                    <span>48px</span>
-                    <div class="h-px flex-1 bg-red-400" />
-                  </div>
-                </template>
-              </div>
-
-              <!-- Progress dots -->
-              <div class="mt-4 flex gap-1.5">
-                <div
-                  v-for="i in 5"
-                  :key="i"
-                  class="size-1.5 rounded-full"
-                  :class="i === 1 ? 'bg-accent' : 'bg-muted/30'"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2: Review overlay -->
-          <div
-            v-if="currentStep === 2"
-            class="absolute inset-0 flex items-start justify-center pt-4 pointer-events-none"
-          >
-            <div
-              class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400"
-            >
-              Review mode
-            </div>
-          </div>
-
-          <!-- Step 3: Shared overlay -->
-          <div
-            v-if="currentStep === 3"
-            class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-canvas/60 backdrop-blur-sm"
-          >
-            <icon-lucide-check-circle class="size-12 text-emerald-400" />
-            <p class="text-sm font-medium text-surface">Документация опубликована</p>
-            <p class="text-xs text-muted">norka.app/handoff/abc123</p>
-          </div>
-        </div>
-      </SplitterPanel>
-
-      <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div
-          class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border"
-        />
-      </SplitterResizeHandle>
-
-      <!-- Right: Documentation -->
-      <SplitterPanel
-        :default-size="30"
-        :min-size="22"
-        :max-size="42"
-        class="flex flex-col overflow-hidden border-l border-border bg-panel"
-      >
-        <TabsRoot v-model="activeDocTab" class="flex h-full flex-col overflow-hidden">
-          <TabsList class="flex shrink-0 border-b border-border">
-            <TabsTrigger
-              v-for="(label, value) in {
-                documentation: 'Документация',
-                specifications: 'Спецификации',
-                links: 'Ссылки',
-                code: 'Код',
-                export: 'Экспорт'
-              }"
-              :key="value"
-              :value="value"
-              class="flex-1 border-b-2 border-transparent px-2 py-2 text-[11px] transition-colors data-[state=active]:border-accent data-[state=active]:text-accent"
-              :class="activeDocTab === value ? 'text-accent' : 'text-muted hover:text-surface'"
-            >
-              {{ label }}
-            </TabsTrigger>
-          </TabsList>
-
-          <!-- Documentation tab -->
-          <TabsContent value="documentation" class="flex flex-1 flex-col overflow-hidden">
-            <div
-              v-if="currentStep === 1 && !isGenerating"
-              class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-            >
-              <icon-lucide-file-text class="size-8 opacity-30" />
-              <p class="text-center text-xs px-4">
-                Нажмите «Сгенерировать документацию» чтобы создать описание макетов
-              </p>
-            </div>
-            <div
-              v-else-if="isGenerating"
-              class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-            >
-              <icon-lucide-loader-circle class="size-8 animate-spin opacity-50" />
-              <p class="text-xs">Анализирую макеты…</p>
-            </div>
-            <ScrollAreaRoot v-else class="flex-1">
-              <ScrollAreaViewport class="h-full p-3">
-                <div class="flex flex-col gap-1">
-                  <div
-                    v-for="section in docSections"
-                    :key="section.id"
-                    class="overflow-hidden rounded-lg border border-border"
-                  >
-                    <button
-                      class="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-hover/50 transition-colors"
-                      @click="toggleDocSection(section.id)"
-                    >
-                      <icon-lucide-chevron-right
-                        class="size-3 shrink-0 text-muted transition-transform"
-                        :class="section.expanded ? 'rotate-90' : ''"
-                      />
-                      <span class="text-xs font-medium text-surface">{{ section.title }}</span>
-                    </button>
-                    <div
-                      v-if="section.expanded"
-                      class="border-t border-border bg-canvas/40 px-3 py-2"
-                    >
-                      <p class="whitespace-pre-wrap text-xs leading-relaxed text-surface/80">
-                        {{ section.content }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollAreaViewport>
-              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-                <ScrollAreaThumb class="rounded-full bg-border" />
-              </ScrollAreaScrollbar>
-            </ScrollAreaRoot>
-          </TabsContent>
-
-          <!-- Specifications tab -->
-          <TabsContent value="specifications" class="flex flex-1 flex-col overflow-hidden">
-            <ScrollAreaRoot class="flex-1">
-              <ScrollAreaViewport class="h-full">
-                <table class="w-full">
-                  <thead class="sticky top-0 bg-panel">
-                    <tr class="border-b border-border">
-                      <th
-                        class="px-3 py-2 text-left text-[10px] uppercase tracking-wider text-muted"
-                      >
-                        Компонент
-                      </th>
-                      <th
-                        class="px-3 py-2 text-left text-[10px] uppercase tracking-wider text-muted"
-                      >
-                        Свойство
-                      </th>
-                      <th
-                        class="px-3 py-2 text-left text-[10px] uppercase tracking-wider text-muted"
-                      >
-                        Значение
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="row in specRows"
-                      :key="`${row.component}-${row.property}`"
-                      class="border-b border-border/50 hover:bg-hover/30 transition-colors"
-                    >
-                      <td class="px-3 py-1.5 text-xs text-muted">{{ row.component }}</td>
-                      <td class="px-3 py-1.5 text-xs text-surface">{{ row.property }}</td>
-                      <td class="px-3 py-1.5 font-mono text-xs text-surface/80">{{ row.value }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </ScrollAreaViewport>
-              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-                <ScrollAreaThumb class="rounded-full bg-border" />
-              </ScrollAreaScrollbar>
-            </ScrollAreaRoot>
-          </TabsContent>
-
-          <!-- Links tab -->
-          <TabsContent value="links" class="flex flex-1 flex-col overflow-hidden">
-            <ScrollAreaRoot class="flex-1">
-              <ScrollAreaViewport class="h-full p-2">
-                <!-- Share link (step 3 only) -->
-                <div
-                  v-if="currentStep === 3"
-                  class="mb-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3"
-                >
-                  <p class="mb-1.5 text-[11px] font-medium text-emerald-400">
-                    Ссылка для разработчика
-                  </p>
-                  <div
-                    class="flex items-center gap-2 rounded border border-border bg-canvas px-2 py-1.5"
-                  >
-                    <span class="flex-1 truncate font-mono text-[11px] text-surface/80"
-                      >norka.app/handoff/abc123</span
-                    >
-                    <button
-                      class="text-muted hover:text-surface transition-colors"
-                      @click="toast.info('Ссылка скопирована!')"
-                    >
-                      <icon-lucide-copy class="size-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div class="flex flex-col gap-0.5">
-                  <a
-                    v-for="link in resourceLinks"
-                    :key="link.id"
-                    href="#"
-                    class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors hover:bg-hover"
-                    @click.prevent
-                  >
-                    <component
-                      :is="`icon-lucide-${link.icon}`"
-                      class="size-4 shrink-0 text-muted"
-                    />
-                    <span class="flex-1 text-xs text-surface">{{ link.label }}</span>
-                    <icon-lucide-external-link class="size-3.5 text-muted" />
-                  </a>
-                </div>
-              </ScrollAreaViewport>
-              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-                <ScrollAreaThumb class="rounded-full bg-border" />
-              </ScrollAreaScrollbar>
-            </ScrollAreaRoot>
-          </TabsContent>
-
-          <!-- Code tab -->
-          <TabsContent value="code" class="flex flex-1 flex-col overflow-hidden">
-            <div
-              v-if="!conceptCode"
-              class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-            >
-              <icon-lucide-file-code class="size-8 opacity-30" />
-              <p class="text-center text-xs px-4">
-                {{
-                  isDesktop
-                    ? 'concept.tsx не найден. Сгенерируйте его в шаге Аналитика.'
-                    : 'Доступно в десктоп-версии'
-                }}
-              </p>
-            </div>
-            <ScrollAreaRoot v-else class="flex-1">
-              <ScrollAreaViewport class="h-full">
-                <pre
-                  class="p-3 font-mono text-[11px] leading-relaxed text-surface/80 whitespace-pre-wrap break-words"
-                  >{{ conceptCode }}</pre
-                >
-              </ScrollAreaViewport>
-              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-                <ScrollAreaThumb class="rounded-full bg-border" />
-              </ScrollAreaScrollbar>
-            </ScrollAreaRoot>
-          </TabsContent>
-
-          <TabsContent value="export" class="flex flex-1 flex-col overflow-hidden">
-            <div
-              v-if="!finalExport"
-              class="flex flex-1 flex-col items-center justify-center gap-3 text-muted"
-            >
-              <icon-lucide-file-down class="size-8 opacity-30" />
-              <p class="text-center text-xs px-4">Сгенерируйте final-export.md</p>
-            </div>
-            <ScrollAreaRoot v-else class="flex-1">
-              <ScrollAreaViewport class="h-full">
-                <pre
-                  class="p-3 font-mono text-[11px] leading-relaxed text-surface/80 whitespace-pre-wrap break-words"
-                  >{{ finalExport }}</pre
-                >
-              </ScrollAreaViewport>
-              <ScrollAreaScrollbar orientation="vertical" class="w-1.5">
-                <ScrollAreaThumb class="rounded-full bg-border" />
-              </ScrollAreaScrollbar>
-            </ScrollAreaRoot>
-          </TabsContent>
-        </TabsRoot>
-      </SplitterPanel>
-    </SplitterGroup>
+      </aside>
+    </div>
   </div>
 </template>

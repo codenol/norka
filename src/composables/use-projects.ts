@@ -238,6 +238,11 @@ function defaultProducts(): Product[] {
 
 const products = ref<Product[]>(loadProducts())
 const context = ref<ProjectContext | null>(loadContext())
+const handoffAccess = ref<Record<string, string>>({})
+
+function featureAccessKey(productId: string, screenId: string, featureId: string): string {
+  return `${productId}:${screenId}:${featureId}`
+}
 
 // Persist to localStorage
 watch(products, (val) => localStorage.setItem(LS_PRODUCTS, JSON.stringify(val)), { deep: true })
@@ -341,6 +346,30 @@ export function useProjects() {
     if (!feature.completedSteps.includes(step)) {
       feature.completedSteps.push(step)
     }
+  }
+
+  function grantHandoffAccess(
+    productId: string,
+    screenId: string,
+    featureId: string,
+    versionId: string
+  ) {
+    handoffAccess.value[featureAccessKey(productId, screenId, featureId)] = versionId
+    handoffAccess.value = { ...handoffAccess.value }
+  }
+
+  function consumeHandoffAccess(
+    productId: string,
+    screenId: string,
+    featureId: string
+  ): string | null {
+    const key = featureAccessKey(productId, screenId, featureId)
+    const versionId = handoffAccess.value[key]
+    if (!versionId) return null
+    const next = { ...handoffAccess.value }
+    delete next[key]
+    handoffAccess.value = next
+    return versionId
   }
 
   // ── CRUD ────────────────────────────────────────────────────────────────────
@@ -456,6 +485,8 @@ export function useProjects() {
     stepProgress,
     isStepCompleted,
     markStepVisited,
+    grantHandoffAccess,
+    consumeHandoffAccess,
     addProduct,
     addScreen,
     addFeature,

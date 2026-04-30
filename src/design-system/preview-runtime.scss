@@ -6,6 +6,7 @@
   --ds-text: var(--text-color, var(--sidebar-text-default));
   --ds-muted: var(--text-color-secondary, var(--icon-action-icon-default));
   --ds-accent: var(--primary-color, var(--button-filled-accent-background-default));
+  font-family: Roboto, sans-serif;
   color: var(--ds-text);
   background: var(--layout-background-default);
 }
@@ -79,9 +80,10 @@
 .ds-preview-root .ds-page-header__title {
   margin: 0;
   color: var(--content-text-primary);
-  font-size: 32px;
+  font-family: Roboto, sans-serif;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 40px;
+  line-height: 24px;
   letter-spacing: 0;
 }
 

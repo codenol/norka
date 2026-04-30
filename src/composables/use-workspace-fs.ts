@@ -29,6 +29,8 @@ import { ref, watch } from 'vue'
 import { IS_TAURI } from '@/constants'
 import { migrateLegacyLocalStorageValue } from '@/utils/local-storage'
 
+import type { Vector } from '@norka/core'
+
 import type { Product } from './use-projects'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -61,24 +63,89 @@ export interface CoreRuntimeManifest {
   components: CoreRuntimeComponentSpec[]
 }
 
+export type FeatureCommentRole = 'designer' | 'analyst' | 'frontend' | 'backend'
+export type FeatureCommentStatus =
+  | 'new'
+  | 'needs_frontend'
+  | 'needs_backend'
+  | 'needs_analytics'
+  | 'wont_do'
+  | 'resolved'
+
 export interface FeatureComment {
   id: string
   versionId: string
   status: 'open' | 'in_progress' | 'resolved'
+  statuses?: FeatureCommentStatus[]
+  role?: FeatureCommentRole
   author: string
   text: string
   createdAt: string
   resolvedAt?: string
   resolvedInVersionId?: string
   nodeId?: string
-  replies: Array<{ id: string; author: string; text: string; createdAt: string }>
+  anchor?: Vector
+  replies: Array<{
+    id: string
+    author: string
+    role?: FeatureCommentRole
+    text: string
+    createdAt: string
+  }>
+}
+
+export interface FeatureVersionSnapshot {
+  sourceFile: 'preview-layout.json'
+  payload: string
+  savedAt: string
+}
+
+export type FeatureVersionStatus = 'draft' | 'in_review' | 'ready_for_handoff' | 'handed_off'
+
+export interface FeatureVersionAnalyticsRef {
+  sourceFile: 'analytics.md'
+  hash: string
+  capturedAt: string
+}
+
+export interface FeatureVersionDiscussionSummary {
+  total: number
+  unresolved: number
+  resolved: number
+  updatedAt: string
+}
+
+export interface FeatureVersionDevFeedbackItem {
+  id: string
+  author: string
+  text: string
+  createdAt: string
+  status: 'open' | 'resolved'
 }
 
 export interface FeatureVersion {
   id: string
   title: string
+  description?: string
+  owner?: string
   createdAt: string
   notes?: string
+  status?: FeatureVersionStatus
+  parentVersionIds?: string[]
+  branchId?: string
+  analyticsRef?: FeatureVersionAnalyticsRef
+  renderContract?: {
+    sourceFile: 'preview-layout.json'
+    payload: string
+    savedAt: string
+  }
+  snapshot?: FeatureVersionSnapshot
+  discussionSummary?: FeatureVersionDiscussionSummary
+  devFeedback?: FeatureVersionDevFeedbackItem[]
+  isArchived?: boolean
+  archivedAt?: string
+  archivedBy?: string
+  archiveRootId?: string
 }
 
 interface NorkaJson {
@@ -573,9 +640,36 @@ export async function readFeatureVersions(
   if (!raw.trim()) return []
   try {
     const parsed = JSON.parse(raw) as FeatureVersion[]
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed.map(normalizeFeatureVersion) : []
   } catch {
     return []
+  }
+}
+
+function normalizeFeatureVersion(version: FeatureVersion): FeatureVersion {
+  const createdAt = version.createdAt || new Date().toISOString()
+  const renderContract =
+    version.renderContract ??
+    (version.snapshot
+      ? {
+          sourceFile: version.snapshot.sourceFile,
+          payload: version.snapshot.payload,
+          savedAt: version.snapshot.savedAt
+        }
+      : undefined)
+  return {
+    ...version,
+    title: version.title || version.id,
+    description: version.description ?? version.notes ?? '',
+    owner: version.owner ?? 'Дизайнер',
+    createdAt,
+    status: version.status ?? 'in_review',
+    parentVersionIds: Array.isArray(version.parentVersionIds) ? version.parentVersionIds : [],
+    branchId: version.branchId ?? 'main',
+    renderContract,
+    snapshot: version.snapshot ?? renderContract,
+    devFeedback: Array.isArray(version.devFeedback) ? version.devFeedback : [],
+    isArchived: version.isArchived ?? false
   }
 }
 

@@ -489,6 +489,7 @@ const hasMain = computed(() =>
           <div
             v-for="node in sidebarRoots"
             :key="node.id"
+            :data-node-id="node.id"
             :ref="(el) => onNodeRef(node, el)"
             class="ds-sidebar-slot rounded-lg border border-transparent"
           />
@@ -505,6 +506,7 @@ const hasMain = computed(() =>
           <div
             v-for="node in breadcrumbRoots"
             :key="node.id"
+            :data-node-id="node.id"
             :ref="(el) => onNodeRef(node, el)"
             class="min-w-0 shrink-0"
           />
@@ -523,6 +525,7 @@ const hasMain = computed(() =>
           <div
             v-for="node in mainRoots"
             :key="node.id"
+            :data-node-id="node.id"
             :ref="(el) => onNodeRef(node, el)"
             class="mt-3 rounded-lg border border-transparent"
           />

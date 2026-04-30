@@ -4,10 +4,12 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import AISettingsDialog from '@/components/AISettingsDialog.vue'
 import WorkspaceBar from '@/components/WorkspaceBar.vue'
+import { usePrimeTheme } from '@/composables/use-prime-theme'
 import { useProjects, type PipelineStep } from '@/composables/use-projects'
 import { buildWorkspacePath, isPipelineStep } from '@/utils/workspace-route'
 
 const route = useRoute()
+const { theme, themes } = usePrimeTheme()
 const {
   context,
   currentFeature,
@@ -57,6 +59,7 @@ watch(
   () => route.path,
   () => {
     if (!currentStep.value || !context.value) return
+    if (currentStep.value.key === 'handoff') return
     const { productId, screenId, featureId } = context.value
     markStepVisited(productId, screenId, featureId, currentStep.value.key as PipelineStep)
   },
@@ -110,6 +113,16 @@ watch(
         </template>
 
         <div class="flex-1" />
+
+        <select
+          v-if="currentStep?.key === 'design' || currentStep?.key === 'discussion' || currentStep?.key === 'handoff'"
+          v-model="theme"
+          class="rounded border border-border bg-canvas px-2 py-1 text-[11px] text-muted outline-none focus:border-accent/60"
+        >
+          <option v-for="item in themes" :key="item.id" :value="item.id">
+            {{ item.label }}
+          </option>
+        </select>
 
         <RouterLink
           v-if="!context && isWorkspaceRoute"

@@ -1,6 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useProjects } from '@/composables/use-projects'
+import {
+  readFeatureComments,
+  readFeatureVersions,
+  workspacePath as workspaceRoot
+} from '@/composables/use-workspace-fs'
 import { buildWorkspacePath } from '@/utils/workspace-route'
 
 import WorkspaceLayout from './layouts/WorkspaceLayout.vue'
@@ -8,7 +13,7 @@ import EditorView from './views/EditorView.vue'
 
 import type { NavigationGuard } from 'vue-router'
 
-const { findFeature, context, setContext } = useProjects()
+const { findFeature, context, setContext, consumeHandoffAccess } = useProjects()
 
 const ensureWorkspaceContext: NavigationGuard = (to) => {
   const productId = typeof to.params.productId === 'string' ? to.params.productId : null
@@ -20,6 +25,55 @@ const ensureWorkspaceContext: NavigationGuard = (to) => {
   if (!feature) return '/projects'
 
   setContext(productId, screenId, featureId)
+  return true
+}
+
+const ensureHandoffAccess: NavigationGuard = async (to) => {
+  const productId = typeof to.params.productId === 'string' ? to.params.productId : null
+  const screenId = typeof to.params.screenId === 'string' ? to.params.screenId : null
+  const featureId = typeof to.params.featureId === 'string' ? to.params.featureId : null
+  if (!productId || !screenId || !featureId) return '/projects'
+  const versionId = consumeHandoffAccess(productId, screenId, featureId)
+  if (!versionId) {
+    return buildWorkspacePath('discussion', { productId, screenId, featureId })
+  }
+
+  const root = workspaceRoot.value ?? 'browser'
+  const [versions, comments] = await Promise.all([
+    readFeatureVersions(root, productId, screenId, featureId),
+    readFeatureComments(root, productId, screenId, featureId)
+  ])
+  const targetVersion = versions.find((version) => version.id === versionId)
+  if (!targetVersion) {
+    return buildWorkspacePath('discussion', { productId, screenId, featureId })
+  }
+  if (targetVersion.status !== 'ready_for_handoff' && targetVersion.status !== 'handed_off') {
+    return buildWorkspacePath('discussion', { productId, screenId, featureId })
+  }
+  const unresolved = comments.some(
+    (comment) =>
+      comment.versionId === targetVersion.id &&
+      !(
+        comment.status === 'resolved' ||
+        comment.statuses?.includes('resolved') ||
+        comment.statuses?.includes('wont_do')
+      )
+  )
+  if (unresolved) {
+    return buildWorkspacePath('discussion', { productId, screenId, featureId })
+  }
+  return true
+}
+
+const ensureDiscussionAccess: NavigationGuard = async (to) => {
+  const productId = typeof to.params.productId === 'string' ? to.params.productId : null
+  const screenId = typeof to.params.screenId === 'string' ? to.params.screenId : null
+  const featureId = typeof to.params.featureId === 'string' ? to.params.featureId : null
+  if (!productId || !screenId || !featureId) return '/projects'
+  const versions = await readFeatureVersions(workspaceRoot.value ?? 'browser', productId, screenId, featureId)
+  if (!versions.some((version) => !version.isArchived)) {
+    return buildWorkspacePath('design', { productId, screenId, featureId })
+  }
   return true
 }
 
@@ -68,12 +122,12 @@ const router = createRouter({
         },
         {
           path: ':productId/:screenId/:featureId/discussion',
-          beforeEnter: ensureWorkspaceContext,
+          beforeEnter: [ensureWorkspaceContext, ensureDiscussionAccess],
           component: () => import('./views/workspaces/DiscussionView.vue')
         },
         {
           path: ':productId/:screenId/:featureId/handoff',
-          beforeEnter: ensureWorkspaceContext,
+          beforeEnter: [ensureWorkspaceContext, ensureHandoffAccess],
           component: () => import('./views/workspaces/HandoffView.vue')
         },
         { path: 'analytics', redirect: () => redirectLegacyWorkspace('analytics') },

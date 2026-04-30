@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger
+} from 'reka-ui'
 import { RouterLink, useRoute } from 'vue-router'
 
 import Tip from '@/components/ui/Tip.vue'
+import { menuItem, useMenuUI } from '@/components/ui/menu'
 import IconBrainCircuit from '~icons/lucide/brain-circuit'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconMessageCircle from '~icons/lucide/message-circle'
@@ -13,6 +21,7 @@ import IconSettings from '~icons/lucide/settings'
 import { useAIChat } from '@/composables/use-chat'
 import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useProjects } from '@/composables/use-projects'
+import { initialsForName, roleLabel, roleTitle, useWorkspaceUser } from '@/composables/use-workspace-user'
 import { buildWorkspacePath } from '@/utils/workspace-route'
 
 import type { PipelineStep } from '@/composables/use-projects'
@@ -21,6 +30,10 @@ const route = useRoute()
 const { isConfigured } = useAIChat()
 const settings = useSettingsDialog()
 const { currentFeature } = useProjects()
+const { currentUser, users, selectUser } = useWorkspaceUser()
+const menuCls = useMenuUI({ content: 'min-w-52' })
+const itemCls = menuItem({ justify: 'start', class: 'justify-between gap-3' })
+const userMenuOpen = ref(false)
 
 const ICONS = {
   analytics: IconBrainCircuit,
@@ -137,6 +150,47 @@ function isDone(key: PipelineStep): boolean {
           />
         </button>
       </Tip>
+
+      <DropdownMenuRoot v-model:open="userMenuOpen">
+        <DropdownMenuTrigger as-child>
+          <button
+            class="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-surface"
+            :title="`${currentUser.name} · ${roleTitle(currentUser.role)}`"
+          >
+            <span
+              class="flex size-6 items-center justify-center rounded-full border border-accent/30 bg-accent/15 text-[10px] font-semibold text-accent"
+            >
+              {{ initialsForName(currentUser.name) }}
+            </span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent :side-offset="8" side="right" align="end" :class="menuCls.content">
+            <div class="border-b border-border px-2 py-1.5 text-[10px] uppercase tracking-wide text-muted">
+              Пользователь Норки
+            </div>
+            <DropdownMenuItem
+              v-for="user in users"
+              :key="user.id"
+              :class="itemCls"
+              @select="selectUser(user.id)"
+            >
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-[10px] font-semibold text-accent"
+                >
+                  {{ initialsForName(user.name) }}
+                </span>
+                <span class="min-w-0">
+                  <span class="block truncate text-xs">{{ user.name }}</span>
+                  <span class="block text-[10px] text-muted">{{ roleTitle(user.role) }}</span>
+                </span>
+              </span>
+              <icon-lucide-check v-if="currentUser.id === user.id" class="size-3 text-accent" />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenuRoot>
     </div>
   </nav>
 </template>
