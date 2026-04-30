@@ -2,8 +2,6 @@
 import { computed, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import AISettingsDialog from '@/components/AISettingsDialog.vue'
-import WorkspaceBar from '@/components/WorkspaceBar.vue'
 import { usePrimeTheme } from '@/composables/use-prime-theme'
 import { useProjects, type PipelineStep } from '@/composables/use-projects'
 import { buildWorkspacePath, isPipelineStep } from '@/utils/workspace-route'
@@ -68,8 +66,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex h-screen w-screen overflow-hidden">
-    <WorkspaceBar />
+  <div class="flex h-full w-full overflow-hidden">
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header class="flex h-10 shrink-0 items-center gap-1 border-b border-border bg-panel px-3">
         <RouterLink
@@ -136,6 +133,5 @@ watch(
         <RouterView />
       </div>
     </div>
-    <AISettingsDialog />
   </div>
 </template>

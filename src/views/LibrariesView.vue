@@ -58,20 +58,9 @@ function confirmCreate() {
 </script>
 
 <template>
-  <div class="flex h-screen w-screen select-text flex-col overflow-hidden bg-canvas">
+  <div class="flex h-full w-full select-text flex-col overflow-hidden bg-canvas">
     <!-- Header -->
     <header class="flex h-12 shrink-0 items-center gap-3 border-b border-border px-5">
-      <Tip label="Главная" side="bottom">
-        <button
-          class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-          @click="router.push('/home')"
-        >
-          <icon-lucide-arrow-left class="size-3.5" />
-        </button>
-      </Tip>
-
-      <div class="h-4 w-px bg-border" />
-
       <icon-lucide-library class="size-4 text-accent" />
       <span class="text-sm font-semibold text-surface">Библиотеки</span>
 
@@ -94,7 +83,7 @@ function confirmCreate() {
       </button>
     </header>
 
-    <ScrollAreaRoot class="flex-1">
+    <ScrollAreaRoot class="min-h-0 flex-1">
       <ScrollAreaViewport class="h-full">
         <div class="mx-auto max-w-3xl px-5 py-6">
           <!-- Inline creation -->

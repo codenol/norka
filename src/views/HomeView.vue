@@ -3,12 +3,10 @@ import { RouterLink } from 'vue-router'
 
 import { useLibraries, LIBRARY_TYPE_COLORS, LIBRARY_TYPE_LABELS } from '@/composables/use-libraries'
 import { useProjects, type Product } from '@/composables/use-projects'
-import { useSettingsDialog } from '@/composables/use-settings-dialog'
 import { useWorkspaceFs } from '@/composables/use-workspace-fs'
 
 const { libraries } = useLibraries()
 const { products } = useProjects()
-const settings = useSettingsDialog()
 const { workspacePath } = useWorkspaceFs()
 
 function workspaceName(path: string): string {
@@ -35,7 +33,7 @@ function pluralProjects(n: number): string {
 </script>
 
 <template>
-  <div class="flex h-screen w-screen flex-col overflow-hidden bg-canvas select-text">
+  <div class="flex h-full w-full flex-col overflow-hidden bg-canvas select-text">
     <!-- Header -->
     <header class="flex h-12 shrink-0 items-center gap-3 border-b border-border px-5">
       <icon-lucide-pencil class="size-4 text-accent" />
@@ -50,13 +48,6 @@ function pluralProjects(n: number): string {
       </div>
 
       <div class="flex-1" />
-
-      <button
-        class="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-surface"
-        @click="settings.show()"
-      >
-        <icon-lucide-settings class="size-4" />
-      </button>
     </header>
 
     <!-- Hub cards -->

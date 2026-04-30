@@ -281,7 +281,7 @@ function stepColor(feature: Feature): string {
 </script>
 
 <template>
-  <div class="flex h-screen w-screen select-text flex-col overflow-hidden bg-canvas">
+  <div class="flex h-full w-full select-text flex-col overflow-hidden bg-canvas">
     <!-- Top bar -->
     <header class="flex h-12 shrink-0 items-center gap-3 border-b border-border px-5">
       <icon-lucide-layout-grid class="size-4 text-accent" />
@@ -314,25 +314,6 @@ function stepColor(feature: Feature): string {
         </button>
       </Tip>
 
-      <Tip label="Главная" side="bottom">
-        <button
-          class="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-          @click="$router.push('/home')"
-        >
-          <icon-lucide-home class="size-3.5" />
-          Главная
-        </button>
-      </Tip>
-
-      <Tip label="Библиотеки компонентов" side="bottom">
-        <button
-          class="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-hover hover:text-surface"
-          @click="$router.push('/libraries')"
-        >
-          <icon-lucide-library class="size-3.5" />
-          Библиотеки
-        </button>
-      </Tip>
       <button
         class="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent/80"
         @click="creatingProduct = true; newProductTitle = ''"
@@ -342,7 +323,7 @@ function stepColor(feature: Feature): string {
       </button>
     </header>
 
-    <ScrollAreaRoot class="flex-1">
+    <ScrollAreaRoot class="min-h-0 flex-1">
       <ScrollAreaViewport class="h-full">
         <div class="mx-auto max-w-3xl px-5 py-6">
           <!-- New product input -->

@@ -4,31 +4,42 @@ import type { FeatureCommentRole } from './use-workspace-fs'
 
 export interface WorkspaceUser {
   id: string
+  login: string
   name: string
   role: FeatureCommentRole
 }
 
-const STORAGE_KEY = 'norka:workspace-user-id'
+const USER_STORAGE_KEY = 'norka:workspace-user-id'
+const AUTH_STORAGE_KEY = 'norka:workspace-authenticated'
 
 export const WORKSPACE_USERS: WorkspaceUser[] = [
-  { id: 'designer-vika', name: 'Вика Петрова', role: 'designer' },
-  { id: 'analyst-anna', name: 'Анна Смирнова', role: 'analyst' },
-  { id: 'frontend-fedor', name: 'Фёдор Иванов', role: 'frontend' },
-  { id: 'backend-boris', name: 'Борис Орлов', role: 'backend' }
+  { id: 'designer-vika', login: 'v.petrova', name: 'Вика Петрова', role: 'designer' },
+  { id: 'analyst-anna', login: 'a.smirnova', name: 'Анна Смирнова', role: 'analyst' },
+  { id: 'frontend-fedor', login: 'f.ivanov', name: 'Фёдор Иванов', role: 'frontend' },
+  { id: 'backend-boris', login: 'b.orlov', name: 'Борис Орлов', role: 'backend' }
 ]
 
 const DEFAULT_WORKSPACE_USER: WorkspaceUser = WORKSPACE_USERS[0] ?? {
   id: 'designer-vika',
+  login: 'v.petrova',
   name: 'Вика Петрова',
   role: 'designer'
 }
 const storedUserId =
-  typeof localStorage === 'undefined' ? null : localStorage.getItem(STORAGE_KEY)
+  typeof localStorage === 'undefined' ? null : localStorage.getItem(USER_STORAGE_KEY)
 const currentUserId = ref(storedUserId ?? DEFAULT_WORKSPACE_USER.id)
+const authenticated = ref(
+  typeof localStorage === 'undefined' ? false : localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
+)
 
 watch(currentUserId, (userId) => {
   if (typeof localStorage === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, userId)
+  localStorage.setItem(USER_STORAGE_KEY, userId)
+})
+
+watch(authenticated, (value) => {
+  if (typeof localStorage === 'undefined') return
+  localStorage.setItem(AUTH_STORAGE_KEY, String(value))
 })
 
 export function initialsForName(name: string): string {
@@ -75,10 +86,22 @@ export function useWorkspaceUser() {
     currentUserId.value = userId
   }
 
+  function login(userId: string) {
+    selectUser(userId)
+    authenticated.value = true
+  }
+
+  function logout() {
+    authenticated.value = false
+  }
+
   return {
     currentUser,
     currentUserId,
+    isAuthenticated: authenticated,
     users: WORKSPACE_USERS,
-    selectUser
+    selectUser,
+    login,
+    logout
   }
 }

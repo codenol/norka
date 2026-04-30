@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useProjects } from '@/composables/use-projects'
+import { useWorkspaceUser } from '@/composables/use-workspace-user'
 import {
   readFeatureComments,
   readFeatureVersions,
@@ -14,6 +15,7 @@ import EditorView from './views/EditorView.vue'
 import type { NavigationGuard } from 'vue-router'
 
 const { findFeature, context, setContext, consumeHandoffAccess } = useProjects()
+const { isAuthenticated } = useWorkspaceUser()
 
 const ensureWorkspaceContext: NavigationGuard = (to) => {
   const productId = typeof to.params.productId === 'string' ? to.params.productId : null
@@ -86,6 +88,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', redirect: '/home' },
+    { path: '/login', component: () => import('./views/LoginView.vue'), meta: { public: true } },
     { path: '/editor', component: EditorView },
     { path: '/demo', component: EditorView, meta: { demo: true } },
     { path: '/share/:roomId', component: EditorView },
@@ -137,6 +140,15 @@ const router = createRouter({
       ]
     }
   ]
+})
+
+router.beforeEach((to) => {
+  if (to.meta.public) return true
+  if (isAuthenticated.value) return true
+  return {
+    path: '/login',
+    query: to.fullPath === '/' ? undefined : { redirect: to.fullPath }
+  }
 })
 
 export default router
